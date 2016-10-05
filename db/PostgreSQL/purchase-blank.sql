@@ -1,9 +1,39 @@
-﻿-->-->-- C:/Users/nirvan/Desktop/mixerp/frapid/src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/01.types-domains-tables-and-constraints/tables-and-constraints.sql --<--<--
+﻿-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/01.types-domains-tables-and-constraints/tables-and-constraints.sql --<--<--
 DROP SCHEMA IF EXISTS purchase CASCADE;
-
 CREATE SCHEMA purchase;
 
 --TODO: CREATE UNIQUE INDEXES
+
+CREATE TABLE purchase.price_types
+(
+    price_type_id                           SERIAL PRIMARY KEY,
+    price_type_code                         national character varying(24) NOT NULL,
+    price_type_name                         national character varying(500) NOT NULL,
+    audit_user_id                           integer REFERENCES account.users,
+    audit_ts                                TIMESTAMP WITH TIME ZONE NULL DEFAULT(NOW()),
+	deleted									boolean DEFAULT(false)
+);
+
+
+CREATE TABLE purchase.item_cost_prices
+(   
+    item_cost_price_id                      BIGSERIAL PRIMARY KEY,
+    item_id                                 integer NOT NULL REFERENCES inventory.items,
+    entry_ts                                TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(NOW()),
+    unit_id                                 integer NOT NULL REFERENCES inventory.units,
+    supplier_id                             integer REFERENCES inventory.suppliers,
+    lead_time_in_days                       integer NOT NULL DEFAULT(0),
+    includes_tax                            boolean NOT NULL
+                                            CONSTRAINT item_cost_prices_includes_tax_df   
+                                            DEFAULT(false),
+    price                                   public.money_strict NOT NULL,
+    audit_user_id                           integer REFERENCES account.users,
+    audit_ts                                TIMESTAMP WITH TIME ZONE NULL DEFAULT(NOW()),
+	deleted									boolean DEFAULT(false)
+);
+
+
+
 CREATE TABLE purchase.purchases
 (
     purchase_id                             BIGSERIAL PRIMARY KEY,
@@ -27,7 +57,7 @@ CREATE TABLE purchase.quotations
     value_date                              date NOT NULL,
     transaction_timestamp                   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(NOW()),
     supplier_id                             integer NOT NULL REFERENCES inventory.customers,
-    price_type_id                           integer NOT NULL REFERENCES sales.price_types,
+    price_type_id                           integer NOT NULL REFERENCES purchase.price_types,
     user_id                                 integer NOT NULL REFERENCES account.users,
     office_id                               integer NOT NULL REFERENCES core.offices,
     reference_number                        national character varying(24),
@@ -41,7 +71,7 @@ CREATE TABLE purchase.quotations
 CREATE TABLE purchase.quotation_details
 (
     quotation_detail_id                     BIGSERIAL PRIMARY KEY,
-    quotation_id                            bigint NOT NULL REFERENCES sales.quotations,
+    quotation_id                            bigint NOT NULL REFERENCES purchase.quotations,
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
@@ -57,11 +87,11 @@ CREATE TABLE purchase.quotation_details
 CREATE TABLE purchase.orders
 (
     order_id                                BIGSERIAL PRIMARY KEY,
-    quotation_id                            bigint REFERENCES sales.quotations,
+    quotation_id                            bigint REFERENCES purchase.quotations,
     value_date                              date NOT NULL,
     transaction_timestamp                   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(NOW()),
     customer_id                             integer NOT NULL REFERENCES inventory.customers,
-    price_type_id                           integer NOT NULL REFERENCES sales.price_types,
+    price_type_id                           integer NOT NULL REFERENCES purchase.price_types,
     user_id                                 integer NOT NULL REFERENCES account.users,
     office_id                               integer NOT NULL REFERENCES core.offices,
     reference_number                        national character varying(24),
@@ -75,7 +105,7 @@ CREATE TABLE purchase.orders
 CREATE TABLE purchase.order_details
 (
     order_detail_id                         BIGSERIAL PRIMARY KEY,
-    order_id                                bigint NOT NULL REFERENCES sales.orders,
+    order_id                                bigint NOT NULL REFERENCES purchase.orders,
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
@@ -89,16 +119,16 @@ CREATE TABLE purchase.order_details
 
 
 
--->-->-- C:/Users/nirvan/Desktop/mixerp/frapid/src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/03.menus/menus.sql --<--<--
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/03.menus/menus.sql --<--<--
 
 
--->-->-- C:/Users/nirvan/Desktop/mixerp/frapid/src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/04.default-values/01.default-values.sql --<--<--
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/04.default-values/01.default-values.sql --<--<--
 
 
--->-->-- C:/Users/nirvan/Desktop/mixerp/frapid/src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.reports/cinesys.sales_by_cashier_view.sql --<--<--
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.reports/cinesys.sales_by_cashier_view.sql --<--<--
 
 
--->-->-- C:/Users/nirvan/Desktop/mixerp/frapid/src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/99.ownership.sql --<--<--
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/99.ownership.sql --<--<--
 DO
 $$
     DECLARE this record;
