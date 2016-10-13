@@ -187,10 +187,9 @@ LANGUAGE plpgsql;
 
 
 
-SELECT * FROM purchase.post_purchase(1, 1, 1, '2/2/2015', '2/2/2015', 1, '', '', 1, 1, NULL, 1, 
-      ARRAY[
-                 ROW(1, 1, 1, 1,180000, 0, 200)::purchase.purchase_detail_type,
-                 ROW(1, 2, 1, 7,130000, 300, 30)::purchase.purchase_detail_type,
-                 ROW(1, 3, 1, 1,110000, 5000, 50)::purchase.purchase_detail_type]);
+-- SELECT * FROM purchase.post_purchase(1, 1, 1, '2/2/2015', '2/2/2015', 1, '', '', 1, 1, NULL, 1, 
+      -- ARRAY[
+                 -- ROW(1, 1, 1, 1,180000, 0, 200)::purchase.purchase_detail_type,
+                 -- ROW(1, 2, 1, 7,130000, 300, 30)::purchase.purchase_detail_type,
+                 -- ROW(1, 3, 1, 1,110000, 5000, 50)::purchase.purchase_detail_type]);
 
---SELECT * FROM inventory.suppliers

@@ -410,13 +410,13 @@ LANGUAGE plpgsql;
 
 
 
-SELECT * FROM purchase.post_purchase(1, 1, 1, '2/2/2015', '2/2/2015', 1, '', '', 1, 1, NULL, 1, 
-      ARRAY[
-                 ROW(1, 1, 1, 1,180000, 0, 200)::purchase.purchase_detail_type,
-                 ROW(1, 2, 1, 7,130000, 300, 30)::purchase.purchase_detail_type,
-                 ROW(1, 3, 1, 1,110000, 5000, 50)::purchase.purchase_detail_type]);
+-- SELECT * FROM purchase.post_purchase(1, 1, 1, '2/2/2015', '2/2/2015', 1, '', '', 1, 1, NULL, 1, 
+      -- ARRAY[
+                 -- ROW(1, 1, 1, 1,180000, 0, 200)::purchase.purchase_detail_type,
+                 -- ROW(1, 2, 1, 7,130000, 300, 30)::purchase.purchase_detail_type,
+                 -- ROW(1, 3, 1, 1,110000, 5000, 50)::purchase.purchase_detail_type]);
 
---SELECT * FROM inventory.suppliers
+
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/03.menus/menus.sql --<--<--
 SELECT * FROM core.create_app('Purchase', 'Purchase', '1.0', 'MixERP Inc.', 'December 1, 2015', 'newspaper yellow', '/dashboard/purchase/tasks/purchase-entry', NULL::text[]);
