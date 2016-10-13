@@ -1,0 +1,397 @@
+﻿#dashboard-container {
+    padding: 0 !important;
+}
+
+iframe {
+    background-color: white;
+    width: 100%;
+    height: 500px;
+    border: none;
+    display: none;
+}
+
+.inverted.header, .inverted.form {
+    background: transparent !important;
+}
+
+input.invoice.number.for.reprint {
+    background: transparent !important;
+    border: 1px solid #555 !important;
+    color: #eee !important;
+}
+
+.inverted.info.message {
+    background-color: #B3A12E !important;
+    border: 1px solid #B3A12E !important;
+    color: #fff !important;
+}
+
+.info {
+    padding: 0.25em 0.5em;
+    display: inline-block;
+    margin: 1px;
+    -ms-border-radius: 4px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.92em;
+}
+
+.office.info {
+    background-color: #D65302;
+}
+
+.user.info {
+    background-color: #68A800;
+}
+
+.area.info {
+    background-color: #02B3D6;
+}
+
+.counter.info {
+    background-color: #AC02D6;
+}
+
+
+
+.status.head {
+    background-color: #444;
+    padding: 1em;
+    cursor: pointer;
+}
+
+.inline.blocks > .item {
+    display: inline-block !important;
+    padding: 2px;
+}
+
+.two.inline.blocks > .item {
+    width: 50%;
+}
+
+.three.inline.blocks > .item {
+    width: 33%;
+}
+
+.four.inline.blocks > .item {
+    width: 25%;
+}
+
+.status.head .left {
+    display: inline-block;
+    width: 50%;
+}
+
+.status.head .right {
+    display: inline-block;
+    text-align: right;
+    width: 50%;
+}
+
+.item.list {
+    background-color: #333;
+    cursor: pointer;
+    text-align: center;
+}
+
+    .item.list .item {
+        display: inline-flex;
+        background-color: #333;
+        margin: 4px;
+        height: 310px;
+        padding: 0.5em;
+        width: 242px;
+        cursor: pointer;
+    }
+
+        .item.list .item:hover {
+            background-color: #444;
+        }
+
+        .item.list .item .info {
+            overflow: hidden;
+        }
+
+        .item.list .item .photo {
+            position: relative;
+            top: -16px;
+            left: -2px;
+            width: 212px;
+            height: 300px;
+        }
+
+
+        .item.list .item:hover img {
+            filter: grayscale(0%) !important;
+        }
+
+        .item.list .item .info .photo img {
+            height: 390px;
+            filter: grayscale(70%);
+        }
+
+        .item.list .item .info .name {
+            font-size: 1.4em;
+            font-weight: 100;
+            position: relative;
+            z-index: 1;
+            top: -5.5em;
+            line-height: 1.2em;
+            text-align: center;
+            text-shadow: 2px 2px 10px black;
+        }
+
+        .item.list .item .info .price {
+            font-size: 3em;
+            font-weight: 100 !important;
+            text-align: right;
+            position: relative;
+            z-index: 1;
+            top: 0.7em;
+            text-shadow: -2px 3px 10px #000;
+            color: #eee;
+        }
+
+
+.category.list {
+    padding: 4px;
+    text-align: center;
+    background-color: #555;
+}
+
+    .category.list .filter {
+        text-align: right;
+        display: inline-block;
+    }
+
+    .category.list .category, .cat.filter {
+        display: inline-block;
+        background-color: #555;
+        color: white;
+        padding: 4px 12px;
+        margin: 2px;
+        border-radius: 12px;
+        text-transform: uppercase;
+        font-size: 0.9em;
+        letter-spacing: 1px;
+        cursor: pointer;
+        text-shadow: 0 0 2px white;
+    }
+
+    .category.list .cat.filter {
+        background-color: #444;
+    }
+
+    .category.list .category.selected, .category.list .category:hover {
+        background-color: #78AD05;
+    }
+
+    .category.list .cat.filter:hover {
+        background-color: #FA6400 !important;
+    }
+
+.search.panel {
+    background-color: #666;
+    padding: 1em;
+    text-align: center;
+}
+
+    .search.panel input {
+        text-align: center;
+        font-size: 1.1em;
+        background-color: transparent;
+        border: 1px solid #999;
+        border-radius: 2em;
+        text-transform: uppercase;
+        height: 2em;
+        width: 20em;
+    }
+
+
+.purchase.items .item {
+    background-color: #333;
+    padding: 3px 9px;
+    border-bottom: 1px dotted #444;
+    cursor: pointer;
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit (konqueror) browsers */
+    -ms-user-select: none; /* IE10+ */
+}
+
+    .purchase.items .item:nth-child(even) {
+        background-color: #373737 !important;
+    }
+
+    .purchase.items .item:hover {
+        background-color: #3a3a3a !important;
+    }
+
+    .purchase.items .item .block {
+        display: inline-block;
+        height: 112px;
+        overflow: hidden;
+    }
+
+        .purchase.items .item .block img {
+            height: 112px;
+        }
+
+    .purchase.items .item .photo.block {
+        width: 90px;
+        overflow: hidden;
+    }
+
+    .purchase.items .item .number.block {
+        width: 120px;
+    }
+
+
+        .purchase.items .item .number.block button {
+            height: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 100;
+        }
+
+    .purchase.items .item input{
+        font-size: 1.3em;
+        margin: 0 0 0.3em 0;
+        background-color: #333;
+        border: 1px solid #555;
+        width: 100%;
+        padding: 4px 16px;
+        text-align: right;
+        border-radius: 0.5em;
+    }
+
+    .purchase.items .item .info.block {
+        width: calc(100% - 220px);
+        padding: 1em;
+    }
+
+        .purchase.items .item .info.block .price.info,
+        .purchase.items .item .info.block .discount.info,
+        .purchase.items .item .info.block .header {
+            display: block;
+        }
+
+        .purchase.items .item .info.block .header {
+            font-size: 1.5em;
+            font-weight: 100;
+            text-transform: uppercase;
+        }
+
+        .purchase.items .item .info.block .price.info {
+            padding-top: 4px;
+        }
+
+        .purchase.items .item .info.block .price.info,
+        .purchase.items .item .info.block .discount.info {
+            font-size: 1.1em;
+            text-align: left;
+            padding: 0;
+            text-transform: none;
+            color: #fbd842;
+        }
+
+
+.tender.info {
+    background-color: #333;
+    width: 100%;
+    cursor: pointer;
+    margin: 0 0 8px 0;
+    padding: 6px 0;
+}
+
+
+    .tender.info:hover {
+        background-color: #3f3f3f;
+    }
+
+
+.summary.items {
+    padding: 0.5em 1em;
+    display: flex;
+}
+
+    .summary.items > .item {
+        display: inline-flex;
+        flex-direction: column;
+        padding: 2px;
+    }
+
+.two.summary.items > .item {
+    width: 48%;
+}
+
+.one.summary.items > .item {
+    width: 96%;
+}
+
+.summary.items > .item > .description {
+    padding-bottom: 0.5em;
+    font-size: 0.9em;
+    text-align: left;
+}
+
+.summary.items > .item > .money {
+    padding-top: 0.1em;
+    font-size: 3em;
+}
+
+
+input.pan.number,
+input.customer.name,
+input.customer.address {
+    font-size: 12px !important;
+    padding: 8px !important;
+}
+
+.customer.name.item {
+    width: 40% !important;
+}
+
+.customer.address.item {
+    width: 30% !important;
+}
+
+.pan.number.item {
+    width: 25% !important;
+}
+
+.inverted.dropdown,
+.inverted.dropdown input.search,
+.inverted.dropdown .menu,
+.inverted.dropdown .item,
+.inverted.dropdown .message {
+    background-color: #555 !important;
+    color: #eee !important;
+    border: 1px solid #666 !important;
+}
+
+    .inverted.dropdown .item.selected,
+    .inverted.dropdown .item:hover {
+        background-color: #666 !important;
+    }
+
+.summary.items input,
+.summary.items select {
+    background-color: #555 !important;
+    color: #eee !important;
+    border: 1px solid #666 !important;
+    padding: .87em;
+    border-radius: 0.4em;
+    width: 100%;
+    -moz-appearance: none; /* Firefox */
+}
+
+select.inverted {
+    background-color: #333;
+    border: 1px solid #555;
+    width: 100%;
+    padding: 0.55em 1em;
+    border-radius: 0.5em;
+    -moz-appearance: none; /* Firefox */
+}

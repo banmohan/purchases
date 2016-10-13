@@ -1,0 +1,167 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FrapidReport>
+  <Header />
+  <Title>Purchase Invoice</Title>
+  <TopSection>
+    <table class="table horizontal">
+      <tr>
+        <td>{Resources.Titles.TranId}</td>
+        <td>
+          {DataSource[0].transaction_master_id}
+        </td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.TranCode}</td>
+        <td>
+          {DataSource[0].transaction_code}          
+        </td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.TransactionDate}</td>
+        <td>{DataSource[0].transaction_ts}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.ValueDate}</td>
+        <td>{DataSource[0].value_date}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.EnteredBy}</td>
+        <td> {DataSource[0].entered_by}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.TransactionStatus}</td>
+        <td> {DataSource[0].status}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.VerifiedBy}</td>
+        <td> {DataSource[0].verified_by}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.VerificationReason}</td>
+        <td> {DataSource[0].verification_reason}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.TranCode}</td>
+        <td>{DataSource[0].transaction_code}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.Office}</td>
+        <td>{DataSource[0].office_name}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.PurchaseType}</td>
+        <td>{DataSource[0].purchase_type}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.SupplierName}</td>
+        <td>{DataSource[0].supplier_name}</td>
+      </tr>
+    </table>
+    <br />
+  </TopSection>
+  <Body>
+    <Content>
+      <h2>{Resources.Titles.InvoiceDetails}</h2>
+    </Content>
+    <GridViews>
+      <GridView>
+        <GridViewDataSource Index="1">
+        </GridViewDataSource>
+      </GridView>
+    </GridViews>
+  </Body>
+  <BottomSection>
+    <h3>{Resources.Titles.OtherDetails}</h3>
+    <p>
+      <table class="table horizontal">
+        <tr>
+          <td>{Resources.Titles.CostCenter}</td>
+          <td>{DataSource[0].cost_center_name}</td>
+        </tr>
+        <tr>
+          <td>{Resources.Titles.StatementReference}</td>
+          <td>{DataSource[0].statement_reference}</td>
+        </tr>
+      </table>
+    </p>
+  </BottomSection>
+  <DataSources>
+    <DataSource>
+      <Query>
+        SELECT
+        finance.transaction_master.transaction_master_id,
+        finance.transaction_master.transaction_ts,
+        finance.transaction_master.value_date,
+        account.users.name AS entered_by,
+        finance.verification_statuses.verification_status_name AS status,
+        verified_by_user.name AS verified_by,
+        finance.transaction_master.verification_reason,
+        finance.transaction_master.transaction_code,
+        core.offices.office_name,
+        finance.cost_centers.cost_center_name,
+        finance.transaction_master.statement_reference,
+        inventory.suppliers.supplier_name,
+        'Credit' AS purchase_type,
+        inventory.stores.store_name
+        FROM finance.transaction_master
+        INNER JOIN core.offices
+        ON finance.transaction_master.office_id = core.offices.office_id
+        INNER JOIN finance.cost_centers
+        ON finance.transaction_master.cost_center_id = finance.cost_centers.cost_center_id
+        INNER JOIN inventory.checkouts
+        ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
+        INNER JOIN account.users
+        ON finance.transaction_master.user_id = account.users.user_id
+        INNER JOIN purchase.purchases
+        ON purchase.purchases.checkout_id = inventory.checkouts.checkout_id
+        LEFT JOIN inventory.suppliers
+        ON purchase.purchases.supplier_id = inventory.suppliers.supplier_id
+        INNER JOIN finance.verification_statuses
+        ON finance.transaction_master.verification_status_id = finance.verification_statuses.verification_status_id
+        LEFT JOIN account.users AS verified_by_user
+        ON finance.transaction_master.verified_by_user_id = verified_by_user.user_id
+        LEFT JOIN inventory.stores
+        ON inventory.checkouts.store_id = inventory.stores.store_id
+        WHERE finance.transaction_master.transaction_master_id=@transaction_master_id;
+      </Query>
+      <Parameters>
+        <Parameter Name="@transaction_master_id" Type="Number" />
+      </Parameters>
+    </DataSource>
+    <DataSource>
+      <Query>
+        SELECT
+        inventory.items.item_code,
+        inventory.items.item_name,
+        inventory.checkout_details.quantity,
+        inventory.units.unit_name,
+        inventory.checkout_details.price,
+        inventory.checkout_details.price * inventory.checkout_details.quantity AS amount,
+        inventory.checkout_details.discount,
+        (inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount AS sub_total,
+        (inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount AS total
+        FROM
+        inventory.checkout_details
+        INNER JOIN
+        inventory.items
+        ON inventory.checkout_details.item_id = inventory.items.item_id
+        INNER JOIN
+        inventory.units
+        ON inventory.checkout_details.unit_id = inventory.units.unit_id
+        WHERE
+        checkout_id =
+        (
+        select inventory.checkouts.checkout_id
+        FROM inventory.checkouts
+        WHERE inventory.checkouts.transaction_master_id=@transaction_master_id
+        )
+        ORDER BY checkout_detail_id;
+      </Query>
+      <Parameters>
+        <Parameter Name="@transaction_master_id" Type="Number" />
+      </Parameters>
+      <RunningTotalTextColumnIndex>3</RunningTotalTextColumnIndex>
+      <RunningTotalFieldIndices>5,6,7,8,9</RunningTotalFieldIndices>
+    </DataSource>
+  </DataSources>
+</FrapidReport>

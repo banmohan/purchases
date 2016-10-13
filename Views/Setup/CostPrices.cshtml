@@ -1,0 +1,79 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "Cost Prices";
+    Layout = ViewBag.Layout;
+}
+
+<script>
+    var scrudFactory = new Object();
+
+    scrudFactory.title = "Cost Prices";
+
+    scrudFactory.viewAPI = "/api/views/purchase/item-cost-price-scrud-view";
+    scrudFactory.viewTableName = "purchase.item_cost_price_scrud_view";
+
+    scrudFactory.formAPI = "/api/forms/purchase/item-cost-prices";
+    scrudFactory.formTableName = "purchase.item_cost_prices";
+
+    scrudFactory.excludedColumns = ["audit_user_id", "audit_ts"];
+
+    scrudFactory.allowDelete = true;
+    scrudFactory.allowEdit = true;
+
+    //scrudFactory.live = "";
+
+    //scrudFactory.card = {
+    //    header: "",
+    //    description: "",
+    //    image: ""
+    //};
+
+    //scrudFactory.layout = [
+    //    {
+    //        tab: "",
+    //        fields: [
+    //            ["", ""],
+    //            ["", ""],
+    //        ]
+    //    }
+    //];
+
+    scrudFactory.keys = [
+        {
+            property: "ItemId",
+            url: '/api/forms/inventory/items/display-fields',
+            data: null,
+            valueField: "Key",
+            textField: "Value"
+        },
+        {
+            property: "UnitId",
+            url: '/api/forms/inventory/units/display-fields',
+            data: null,
+            valueField: "Key",
+            textField: "Value"
+        },
+        {
+            property: "SupplierId",
+            url: '/api/forms/inventory/suppliers/display-fields',
+            data: null,
+            valueField: "Key",
+            textField: "Value"
+        }
+    ];
+
+
+
+    $.get('/ScrudFactory/View.html', function (view) {
+        $.get('/ScrudFactory/Form.html', function (form) {
+            $("#ScrudFactoryView").html(view);
+            $("#ScrudFactoryForm").html(form);
+            $.cachedScript("/assets/js/scrudfactory-view.js");
+            $.cachedScript("/assets/js/scrudfactory-form.js");
+        });
+    });
+</script>
+
+<div id="ScrudFactoryForm"></div>
+<div id="ScrudFactoryView"></div>

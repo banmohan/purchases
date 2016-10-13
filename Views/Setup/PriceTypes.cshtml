@@ -1,0 +1,65 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "Price Types";
+    Layout = ViewBag.Layout;
+}
+
+<script>
+    var scrudFactory = new Object();
+
+    scrudFactory.title = "Price Types";
+
+    scrudFactory.viewAPI = "/api/views/purchase/price-types";
+    scrudFactory.viewTableName = "purchase.price_types";
+
+    scrudFactory.formAPI = "/api/forms/purchase/price-types";
+    scrudFactory.formTableName = "purchase.price_types";
+
+    scrudFactory.excludedColumns = ["audit_user_id", "audit_ts"];
+
+    scrudFactory.allowDelete = true;
+    scrudFactory.allowEdit = true;
+
+    scrudFactory.live = "PriceTypeName";
+
+    //scrudFactory.card = {
+    //    header: "",
+    //    description: "",
+    //    image: ""
+    //};
+
+    //scrudFactory.layout = [
+    //    {
+    //        tab: "",
+    //        fields: [
+    //            ["", ""],
+    //            ["", ""],
+    //        ]
+    //    }
+    //];
+
+    //scrudFactory.keys = [
+    //    {
+    //        property: "",
+    //        url: '/api/views/purchase//display-fields',
+    //        data: null,
+    //        valueField: "Key",
+    //        textField: "Value"
+    //    }
+    //];
+
+
+
+    $.get('/ScrudFactory/View.html', function (view) {
+        $.get('/ScrudFactory/Form.html', function (form) {
+            $("#ScrudFactoryView").html(view);
+            $("#ScrudFactoryForm").html(form);
+            $.cachedScript("/assets/js/scrudfactory-view.js");
+            $.cachedScript("/assets/js/scrudfactory-form.js");
+        });
+    });
+</script>
+
+<div id="ScrudFactoryForm"></div>
+<div id="ScrudFactoryView"></div>

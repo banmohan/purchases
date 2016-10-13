@@ -1,0 +1,802 @@
+﻿@using Frapid.ApplicationState.Cache
+@model dynamic
+
+@{
+    ViewBag.Title = "Bank Accounts";
+    Layout = ViewBag.PurchaseLayoutPath;
+    var meta = AppUsers.GetCurrent();
+}
+
+<link rel="stylesheet" href="/Areas/MixERP.Purchases/Styles/purchase.css"></link>
+
+<div class="ui attached inverted pos purchase segment">
+    <div class="ui active inverted dimmer" id="POSDimmer">
+        <div class="ui large text loader">Doing something ...</div>
+    </div>
+    <div class="ui grid">
+        <div class="eleven wide column">
+            <div class="status head">
+                <div class="left">
+                    <span class="office info" title="Current Branch Office">
+                        @meta.OfficeName
+                    </span>
+                    <span class="user info" title="You">
+                        @meta.Name
+                    </span>
+                    <span class="area info" title="Current Area">
+                        @meta.OfficeCode
+                    </span>
+                    <span class="office info" title="Office Name">
+                        @meta.OfficeName
+                    </span>
+                </div>
+
+                <div class="right">
+                    <div class="inline blocks">
+                        <div class="item">
+                            <select class="ui search inverted fluid dropdown" id="PriceTypeSelect"></select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+
+            <div class="category list">
+                <div class="cat filter" style="display: none;">
+                    Clear
+                    <i class="delete icon"></i>
+                </div>
+            </div>
+            <div class="search panel">
+                <input type="search" placeholder="Search ..." />
+
+            </div>
+            <div class="item list" id="POSItemList">
+            </div>
+        </div>
+        <div class="five wide column">
+            <div class="tender info">
+                <div id="SummaryItems" class="two summary items">
+                    <div class="amount item">
+                        <div class="description">Amount</div>
+                        <div class="money">
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="store item">
+                        <div class="description">Store</div>
+                        <div class="control">
+                            <select id="StoreSelect"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="one summary items">
+                    <div class="supplier item">
+                        <div class="description">Supplier</div>
+                        <div class="control">
+                            <select id="SupplierSelect"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="two summary items">
+                    <div class="value date item">
+                        <div class="description">Value Date</div>
+                        <div class="control">
+                            <input type="text" class="date" id="ValueDateInputDate" />
+                        </div>
+                    </div>
+                    <div class="book date item">
+                        <div class="description">Book Date</div>
+                        <div class="control">
+                            <input type="text" class="date" id="BookDateInputDate" />
+                        </div>
+                    </div>
+                </div>
+                <div class="two summary items">
+                    <div class="cost center item">
+                        <div class="description">Cost Center</div>
+                        <div class="control">
+                            <select id="CostCenterSelect"></select>
+                        </div>
+                    </div>
+                    <div class="shipping company item">
+                        <div class="description">Shipper</div>
+                        <div class="control">
+                            <select id="ShipperSelect"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="two summary items">
+                    <div class="reference number item">
+                        <div class="description">Ref#</div>
+                        <div class="control">
+                            <input type="text" id="ReferenceNumberInputText" />
+                        </div>
+                    </div>
+                    <div class="memo item">
+                        <div class="description">Memo</div>
+                        <div class="control">
+                            <input type="text" id="MemoInputText" />
+                        </div>
+                    </div>
+                </div>
+                <div class="ui one column padded grid">
+                    <div class="column">
+                        <button id="CheckoutButton" class="ui green icon big button">
+                            <i class="cart icon"></i>
+                            CHECKOUT
+                        </button>
+                        <button id="ClearScreenButton" class="ui red icon big button">
+                            <i class="delete icon"></i>
+                            CLS
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="PurchaseItems" class="purchase items">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#PurchaseItems .item")
+        .on("contextmenu",
+            function (e) {
+                e.preventDefault();
+                var el = $(this);
+                var defaultMenu = el.find(".info.block, .number.block");
+                var contextMenu = el.find(".context.menu");
+
+                defaultMenu.toggle();
+                contextMenu.toggle();
+            });
+</script>
+
+<script>
+    var itemTemplate = `<div class="item" id="pos-{ItemId}" data-cost-price="{CostPrice}" data-photo="{Photo}" data-unit-id="{UnitId}" data-valid-units="{ValidUnits}" data-brand="{BrandName}" data-item-group="{ItemGroupName}" data-item-name="{ItemName}" data-item-code="{ItemCode}" data-item-id="{ItemId}" data-price="{Price}">
+	<div class="photo block">
+		<img src="{Photo}">
+	</div>
+	<div class="info block">
+		<div class="header">{ItemName}</div>
+		<div class="price info">
+			<span class="rate">{CostPrice}</span>
+			<span>&nbsp; x&nbsp; </span>
+			<span class="quantity">1</span>
+			<span>&nbsp; =&nbsp; </span>
+			<span class="amount"></span>
+		</div>
+		<div class="discount info" style="display:none;">
+			<span>Less&nbsp; </span>
+			<span class="discount rate"></span>
+			<span>&nbsp; =&nbsp; </span>
+			<span class="discounted amount"></span>
+		</div>
+		<div>
+			<select class="unit inverted" data-item-id="{ItemId}">
+			</select>
+		</div>
+	</div>
+	<div class="number block">
+		<input type="text" class="price" title="Edit Price" value="{CostPrice}">
+		<input type="text" class="quantity" title="Enter Quantity" value="1">
+		<input type="text" class="discount" title="Enter Discount" value="">
+		<button class="ui red fluid button" onclick="removeItem(this);" style="display:none;">Delete</button>
+	</div>
+</div>`
+</script>
+
+<script>
+    var products = [];
+    var metaUnits = [];
+
+    function fetchUnits() {
+        function request() {
+            var url = "/api/forms/inventory/units/all";
+            return window.getAjaxRequest(url);
+        };
+
+        var ajax = request();
+
+        ajax.success(function (response) {
+            window.metaUnits = response;
+        });
+    };
+
+    function fetchProducts() {
+        function request() {
+            var url = "/dashboard/purchase/tasks/items";
+            return window.getAjaxRequest(url);
+        };
+
+        var ajax = request();
+
+        ajax.success(function (response) {
+            window.products = response;
+            $(document).trigger("itemFetched");
+        });
+    };
+
+    $(".search.panel input").keyup(function () {
+        var el = $(this);
+        var term = el.val();
+
+        var categoryEl = $(".category.list .selected.category");
+        var category = "";
+
+        if (categoryEl.length) {
+            category = categoryEl.text();
+        };
+
+        displayProducts(category, term);
+
+        initializeClickAndAction();
+    });
+
+    $(".search.panel input").keydown(function (e) {
+        if (e.keyCode === 13) {
+            var item = $(".item.list .item:first");
+
+            if (item.length) {
+                item.trigger("click");
+            };
+        };
+    });
+
+    window.fetchUnits();
+    window.fetchProducts();
+
+    setTimeout(function () {
+        window.fetchProducts();
+    }, 120000);
+
+    function removeItem(el) {
+        var confirmed = confirm("Are you sure?");
+
+        if (!confirmed) {
+            return;
+        };
+
+        el = $(el);
+        var container = el.parent().parent();
+        container.remove();
+        window.updateTotal();
+    };
+
+    $(document).on("itemFetched", function () {
+        $("#POSDimmer").removeClass("active");
+        displayProducts();
+        displayCategories();
+        initializeClickAndAction();
+    });
+
+
+    function initializeClickAndAction() {
+        $("#POSItemList .item").unbind("click").bind("click", function () {
+            var el = $(this);
+            var costPrice = el.attr("data-cost-price");
+            var photo = el.attr("data-photo");
+
+            var barCode = el.attr("data-barcode");
+            var brand = el.attr("data-brand");
+            var unitId = el.attr("data-unit-id");
+            var validUnits = el.attr("data-valid-units");
+            var itemGroup = el.attr("data-item-group");
+            var itemName = el.attr("data-item-name");
+            var itemCode = el.attr("data-item-code");
+            var itemId = el.attr("data-item-id");
+            var price = parseFloat(costPrice || 0);
+
+            if (!price) {
+                alert("Cannot add item because the price is zero.");
+                return;
+            };
+
+
+
+            var targetEl = $("#PurchaseItems");
+            var selector = "pos-" + itemId;
+            var existingEl = $("#" + selector);
+
+            if (existingEl.length) {
+                var existingQuantitySpan = existingEl.find("span.quantity");
+                var existingQuantityInput = existingEl.find("input.quantity");
+
+                var quantity = parseInt(existingQuantitySpan.text() || 0);
+                quantity++;
+
+                existingQuantitySpan.text(quantity);
+                existingQuantityInput.val(quantity).trigger("keyup");
+
+                window.updateTotal();
+                return;
+            };
+
+            var template = itemTemplate;
+
+            template = template.replace(/{ItemId}/g, itemId);
+            template = template.replace(/{CostPrice}/g, costPrice);
+            template = template.replace(/{Photo}/g, photo);
+            template = template.replace(/{BarCode}/g, barCode);
+            template = template.replace(/{BrandName}/g, brand);
+            template = template.replace(/{ItemGroupName}/g, itemGroup);
+            template = template.replace(/{ItemName}/g, itemName);
+            template = template.replace(/{ItemCode}/g, itemCode);
+            template = template.replace(/{Price}/g, price);
+            template = template.replace(/{UnitId}/g, unitId);
+            template = template.replace(/{ValidUnits}/g, validUnits);
+
+            var item = $(template);
+            var quantityInput = item.find("input.quantity");
+            var priceInput = item.find("input.price");
+            var discountInput = item.find("input.discount");
+            var unitSelect = item.find("select.unit");
+
+            function loadUnits(el, defaultUnitId, validUnits) {
+                el.html("");
+
+                var units = window.Enumerable.From(window.metaUnits)
+                    .Where(function (x) {
+                        return validUnits.indexOf(x.unit_id.toString()) > -1;
+                    }).ToArray();
+
+                $.each(units, function () {
+                    var unit = this;
+
+                    var option = $("<option/ >");
+                    option.attr("value", unit.unit_id);
+                    option.html(unit.unit_name);
+
+                    if (defaultUnitId === unit.unit_id) {
+                        option.attr("selected", "");
+                    };
+
+                    option.appendTo(el);
+                });
+
+            };
+
+            loadUnits(unitSelect, unitId, validUnits.split(','));
+
+            function updateItemTotal(el) {
+                var quantityEl = el.find("input.quantity");
+                var discountEl = el.find("input.discount");
+
+                var quantity = parseInt(quantityEl.val() || 0);
+                var discountRate = parseFloat(discountEl.val().replace("%", ""));
+                var price = parseFloat(el.find("input.price").val());
+                //var price = parseFloat(el.attr("data-price") || 0);
+
+                var amount = (price * quantity).toFixed(2);
+                var discountedAmount = ((price * quantity) * ((100 - discountRate) / 100)).toFixed(2);
+
+                el.find("span.rate:not(.discount)").html(price);
+                el.find("span.quantity").html(quantity);
+                el.find("span.amount").html(amount);
+                el.find("span.discount.rate").html("");
+                el.find("span.discounted.amount").html("");
+
+                if (discountRate) {
+                    el.find(".discount.info").show();
+                    el.find("span.discount.rate").html(discountEl.val().replace("%", "") + "%");
+                    el.find("span.discounted.amount").html(discountedAmount);
+                } else {
+                    el.find(".discount.info").hide();
+                }
+
+                window.updateTotal();
+
+            };
+
+            quantityInput.on("keyup", function () {
+                var el = $(this);
+                var parentInfo = el.parent().parent();
+                updateItemTotal(parentInfo);
+            });
+
+            discountInput.on("keyup", function () {
+                var el = $(this);
+
+                var rate = parseFloat(el.val());
+                if (rate > 100) {
+                    el.val("100");
+                    return;
+                };
+
+                var parentInfo = el.parent().parent();
+                updateItemTotal(parentInfo);
+            });
+
+            priceInput.on("keyup", function () {
+                var el = $(this);
+                var parentInfo = el.parent().parent();
+                updateItemTotal(parentInfo);
+            });
+
+            discountInput.on("blur", function () {
+                var el = $(this);
+                var value = el.val();
+
+                if (!value) {
+                    return;
+                };
+
+                if (value.substr(value.length - 1) === "%") {
+                    return;
+                };
+
+                el.val(el.val() + "%");
+                var parentInfo = el.parent().parent();
+                updateItemTotal(parentInfo);
+            });
+
+            function getPrice(el) {
+                function request(itemId, supplierId, unitId) {
+                    var url = "/dashboard/purchase/tasks/cost-price/{itemId}/{supplierId}/{unitId}";
+                    url = url.replace("{itemId}", itemId);
+                    url = url.replace("{supplierId}", supplierId);
+                    url = url.replace("{unitId}", unitId);
+
+                    return window.getAjaxRequest(url);
+                };
+
+                var itemId = el.attr("data-item-id");
+                var supplierId = parseInt($("#SupplierSelect").val() || 0);
+                var unitId = el.val();
+
+                $(".pos.purchase.segment").addClass("loading");
+                var ajax = request(itemId, supplierId, unitId);
+
+                ajax.success(function (response) {
+                    $(".pos.purchase.segment").removeClass("loading");
+                    var priceInput = el.parent().parent().parent().find("input.price");
+                    priceInput.val(response).trigger("keyup");
+                });
+
+                ajax.fail(function (xr) {
+                    $(".pos.purchase.segment").removeClass("loading");
+                    console.log(window.getAjaxErrorMessage(xhr));
+                });
+            };
+
+            unitSelect.on("change", function () {
+                getPrice($(this));
+            });
+
+            item.on("contextmenu", function (e) {
+                e.preventDefault();
+                var el = $(this);
+                var inputEl = el.find(".number.block input");
+                var buttonEl = el.find(".number.block button");
+
+                inputEl.toggle();
+                buttonEl.toggle();
+            });
+
+            item.appendTo(targetEl);
+            quantityInput.trigger("keyup");
+            window.updateTotal();
+        });
+    };
+
+    $("#SummaryItems div.discount .money input, " +
+        "#ReceiptSummary div.tender .money input").keyup(function () {
+            window.updateTotal();
+        });
+
+    function updateTotal() {
+        var candidates = $("#PurchaseItems div.item");
+        var amountEl = $("#SummaryItems div.amount .money");
+
+        var totalPrice = 0;
+        //var totalQuantity = 0;
+
+        $.each(candidates, function () {
+            var el = $(this);
+            var quantityEl = el.find("input.quantity");
+            var discountEl = el.find("input.discount");
+
+            var quantity = parseInt(quantityEl.val() || 0);
+            var discountRate = parseFloat(discountEl.val().replace("%", ""));
+            var price = parseFloat(el.find("input.price").val());
+            //var price = parseFloat(el.attr("data-price") || 0);
+
+            var amount = price * quantity;
+            var discountedAmount = amount * ((100 - discountRate) / 100);
+
+            totalPrice += (discountedAmount || amount);
+            //totalQuantity += quantity;
+        });
+
+        totalPrice = parseFloat(totalPrice.toFixed(2));
+
+        amountEl.html(totalPrice);
+    };
+
+    function displayCategories() {
+        var categories = window.Enumerable.From(products).Distinct(function (x) { return x.ItemGroupName }).Select(function (x) { return x.ItemGroupName }).ToArray();
+        var targetEl = $(".cat.filter");
+        $(".category.list").find(".category").remove();
+
+        targetEl.unbind("click").bind("click", function () {
+            displayProducts();
+            $(".category").removeClass("selected");
+            targetEl.hide();
+            initializeClickAndAction();
+        });
+
+        $.each(categories, function () {
+            var category = $("<div class='category' />");
+            category.html(this);
+
+            category.unbind("click").bind("click", function () {
+                $(".search.panel input").val("");
+                var el = $(this);
+                var name = el.text();
+
+                if (name) {
+                    displayProducts(name);
+                    $(".category").removeClass("selected");
+                    el.addClass("selected");
+
+                    targetEl.show();
+                } else {
+                    targetEl.hide();
+                };
+
+                initializeClickAndAction();
+            });
+
+            targetEl.before(category);
+        });
+    };
+
+    function displayProducts(category, searchQuery) {
+        var target = $("#POSItemList");
+
+        var groupItems;
+
+        if (!category && !searchQuery) {
+            groupItems = products;
+        } else {
+            if (category && searchQuery) {
+                groupItems = window.Enumerable
+                    .From(products)
+                    .Where(function (x) {
+                        return x.ItemGroupName.toLowerCase() === category.toString().toLowerCase()
+                            && x.ItemName.toLowerCase().indexOf(searchQuery.toLowerCase()) > -1;
+                    }).ToArray();
+            } else if (!category && searchQuery) {
+                groupItems = window.Enumerable
+                    .From(products)
+                    .Where(function (x) {
+                        return x.ItemName.toLowerCase().indexOf(searchQuery.toLowerCase()) > -1;
+                    }).ToArray();
+            } else {
+                groupItems = window.Enumerable
+                    .From(products)
+                    .Where(function (x) {
+                        return x.ItemGroupName.toLowerCase() === category.toString().toLowerCase();
+                    }).ToArray();
+            };
+        };
+
+        target.html("").hide();
+
+        $.each(groupItems, function () {
+            var product = this;
+
+            var item = $("<div class='item' />");
+            item.attr("data-item-id", product.ItemId);
+            item.attr("data-item-code", product.ItemCode);
+            item.attr("data-item-name", product.ItemName);
+            item.attr("data-item-group", product.ItemGroupName);
+            item.attr("data-brand", product.BrandName);
+            item.attr("data-unit-id", product.UnitId);
+            item.attr("data-valid-units", product.ValidUnits);
+            item.attr("data-barcode", product.Barcode);
+            item.attr("data-photo", product.Photo);
+            item.attr("data-cost-price", product.CostPrice);
+
+            if (product.HotItem) {
+                item.addClass("hot");
+            };
+
+            var info = $("<div class='info' />");
+
+            var price = $("<div class='price' />");
+            price.html(product.CostPrice);
+
+            price.appendTo(info);
+
+
+            var photo = $("<div class='photo' />");
+            var img = $("<img />");
+            img.attr("src", product.Photo + "?Height=200&Width=200");
+
+            img.appendTo(photo);
+            photo.appendTo(info);
+
+            var name = $("<div class='name' />");
+            name.html(product.ItemName);
+
+            name.appendTo(info);
+
+            info.appendTo(item);
+            item.appendTo(target);
+        });
+
+        if (searchQuery) {
+            target.show();
+            return;
+        };
+
+        target.fadeIn(500);
+    };
+
+</script>
+<script>
+    $("#CheckoutButton").unbind("click").bind("click", function () {
+
+        function request(model) {
+            var url = "/dashboard/purchase/tasks/purchase-entry/new";
+            var data = JSON.stringify(model);
+            return window.getAjaxRequest(url, "POST", data);
+        };
+
+        function getModel() {
+            function getDetails() {
+                var items = $("#PurchaseItems .item");
+                var model = [];
+
+                $.each(items, function () {
+                    var el = $(this);
+                    var itemId = parseInt(el.attr("data-item-id"));
+                    var quantity = parseInt(el.find("input.quantity").val());
+                    var unitId = parseInt(el.find("select.unit").val());
+                    var price = parseFloat(el.find("input.price").val() || 0);
+                    var discount = parseFloat(el.find("input.discount").val() || 0);
+
+                    model.push({
+                        StoreId: $("#StoreSelect").val(),
+                        ItemId: itemId,
+                        Quantity: quantity,
+                        UnitId: unitId,
+                        Price: price,
+                        Discount: discount
+                    });
+                });
+
+                return model;
+            };
+
+            var valueDate = $("#ValueDateInputDate").datepicker("getDate");
+            var bookDate = $("#BookDateInputDate").datepicker("getDate");
+            var costCenterId = $("#CostCenterSelect").val();
+            var referenceNumber = $("#ReferenceNumberInputText").val();
+            var statementReference = $("#StatementReferenceInputText").val();
+            var supplierId = $("#SupplierSelect").val();
+            var priceTypeId = $("#PriceTypeSelect").val();
+            var shipperId = $("#ShipperSelect").val();
+            var storeId = $("#StoreSelect").val();
+            var details = getDetails();
+
+            return {
+                ValueDate: valueDate,
+                BookDate: bookDate,
+                CostCenterId: costCenterId,
+                ReferenceNumber: referenceNumber,
+                StatementReference: statementReference,
+                SupplierId: supplierId,
+                PriceTypeId: priceTypeId,
+                ShipperId: shipperId,
+                StoreId: storeId,
+                Details: details
+            };
+        };
+
+        var model = getModel();
+
+        if (!model.Details.length) {
+            alert("Please select an item.");
+            return;
+        };
+
+        var confirmed = confirm("Are you sure");
+
+        if (!confirmed) {
+            return;
+        };
+
+
+        $("#CheckoutButton").addClass("loading");
+
+        var ajax = request(model);
+
+        ajax.success(function (response) {
+            var id = response;
+            document.location = "/dashboard/purchase/tasks/purchase/checklist/" + id;
+        });
+
+        ajax.fail(function (xhr) {
+            $("#CheckoutButton").removeClass("loading");
+            alert(JSON.stringify(xhr));
+        });
+    });
+</script>
+
+<script>
+    $("#ClearScreenButton")
+        .unbind("click")
+        .bind("click",
+            function () {
+                clearScreen();
+            });
+
+    function clearScreen() {
+        $("#PurchaseItems").html("");
+        window.updateTotal();
+    };
+</script>
+
+<script>
+    function displayFieldBinder(el, url) {
+        function request() {
+            return window.getAjaxRequest(url);
+        };
+
+        var ajax = request();
+
+        ajax.success(function (response) {
+            var options = "";
+
+            $.each(response, function () {
+                var option = "<option value='{key}'>{value}</option>";
+                option = option.replace("{key}", this.Key);
+                option = option.replace("{value}", this.Value);
+
+                options += option;
+            });
+
+            el.html(options);
+        });
+    };
+
+    function loadStores() {
+        displayFieldBinder($("#StoreSelect"), "/api/forms/inventory/stores/display-fields");
+    };
+
+    function loadShippers() {
+        displayFieldBinder($("#ShipperSelect"), "/api/forms/inventory/shippers/display-fields");
+    };
+
+    function loadCostCenters() {
+        displayFieldBinder($("#CostCenterSelect"), "/api/forms/finance/cost-centers/display-fields");
+    };
+
+    function loadPriceTypes() {
+        displayFieldBinder($("#PriceTypeSelect"), "/api/forms/purchase/price-types/display-fields");
+    };
+
+    function loadSuppliers() {
+        displayFieldBinder($("#SupplierSelect"), "/api/forms/inventory/suppliers/display-fields");
+    };
+
+    loadStores();
+    loadPriceTypes();
+    loadSuppliers();
+    loadCostCenters();
+    loadShippers();
+</script>
+
+<script>
+    setTimeout(function () {
+        $(".decimal").number(true, window.currencyDecimalPlaces, ".", "");
+    }, 100);
+
+
+    window.overridePath = "/dashboard/purchase/tasks/purchase-entry";
+</script>

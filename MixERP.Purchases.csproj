@@ -43,6 +43,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Frapid.ApplicationState, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\bin\Frapid.ApplicationState.dll</HintPath>
+    </Reference>
     <Reference Include="Frapid.Areas, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\bin\Frapid.Areas.dll</HintPath>
@@ -88,6 +92,17 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="MixERP.Finance">
+      <HintPath>..\..\bin\MixERP.Finance.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>packages\Npgsql.2.2.6\lib\net45\Mono.Security.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Npgsql, Version=2.2.6.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>packages\Npgsql.2.2.6\lib\net45\Npgsql.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -130,16 +145,37 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AreaRegistration.cs" />
+    <Compile Include="Controllers\Backend\Tasks\ItemController.cs" />
+    <Compile Include="Controllers\Backend\Tasks\JournalVerificationController.cs" />
+    <Compile Include="DAL\Backend\Service\Items.cs" />
+    <Compile Include="Controllers\Backend\Setup\CostPriceController.cs" />
+    <Compile Include="Controllers\Backend\Setup\PriceTypeController.cs" />
+    <Compile Include="Controllers\Backend\Setup\SupplierController.cs" />
+    <Compile Include="Controllers\Backend\Tasks\PurchaseEntryController.cs" />
+    <Compile Include="Controllers\PurchaseDashboardController.cs" />
+    <Compile Include="DAL\Backend\Tasks\Purchases.cs" />
+    <Compile Include="DTO\ItemView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\Purchase.cs" />
+    <Compile Include="ViewModels\PurchaseDetailType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Styles\purchase.css" />
     <Content Include="Views\web.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="web.config" />
+    <Content Include="Views\Layout.cshtml" />
+    <Content Include="Views\Tasks\PurchaseEntry\Index.cshtml" />
+    <Content Include="Views\Setup\CostPrices.cshtml" />
+    <Content Include="Views\Setup\Suppliers.cshtml" />
+    <Content Include="Views\Setup\PriceTypes.cshtml" />
+    <Content Include="Views\Tasks\PurchaseEntry\New.cshtml" />
+    <Content Include="Views\Tasks\PurchaseEntry\Checklist.cshtml" />
+    <Content Include="Views\Tasks\JournalVerification\Index.cshtml" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -148,11 +184,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="DAL\" />
-    <Folder Include="DTO\" />
+    <Folder Include="Controllers\Backend\Reports\" />
     <Folder Include="Models\" />
-    <Folder Include="ViewModels\" />
+    <Folder Include="Views\Reports\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

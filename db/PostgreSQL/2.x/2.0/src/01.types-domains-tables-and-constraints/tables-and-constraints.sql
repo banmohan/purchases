@@ -18,7 +18,6 @@ CREATE TABLE purchase.item_cost_prices
 (   
     item_cost_price_id                      BIGSERIAL PRIMARY KEY,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
-    entry_ts                                TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT(NOW()),
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     supplier_id                             integer REFERENCES inventory.suppliers,
     lead_time_in_days                       integer NOT NULL DEFAULT(0),
@@ -37,7 +36,8 @@ CREATE TABLE purchase.purchases
 (
     purchase_id                             BIGSERIAL PRIMARY KEY,
     checkout_id                             bigint NOT NULL REFERENCES inventory.checkouts,
-    supplier_id                             integer NOT NULL REFERENCES inventory.suppliers   
+    supplier_id                             integer NOT NULL REFERENCES inventory.suppliers,
+	price_type_id							integer NOT NULL REFERENCES purchase.price_types
 );
 
 
@@ -114,5 +114,17 @@ CREATE TABLE purchase.order_details
     quantity                                public.integer_strict2 NOT NULL,
     base_unit_id                            integer NOT NULL REFERENCES inventory.units,
     base_quantity                           numeric NOT NULL
+);
+
+CREATE TYPE purchase.purchase_detail_type
+AS
+(
+    store_id            integer,
+    item_id           	integer,
+    quantity            public.integer_strict,
+    unit_id           	integer,
+    price               public.money_strict,
+    discount            public.money_strict2,
+    shipping_charge     public.money_strict2
 );
 
