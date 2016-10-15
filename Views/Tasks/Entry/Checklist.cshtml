@@ -1,0 +1,35 @@
+﻿@model long
+
+@{
+    ViewBag.Title = "Checklist";
+    Layout = ViewBag.PurchaseLayoutPath;
+}
+<style>
+    iframe {
+        display: block;
+        margin-top: 1em;
+        width: 800px;
+        height: 800px;
+        border: 1px solid #ccc;
+    }
+</style>
+<script src="/Scripts/frapid/utilities/form.js"></script>
+<div class="ui attached page segment" style="min-height: 100%; padding: 3em;">
+    <div class="ui huge header">Purchase Entry</div>
+    <div class="ui divider"></div>
+
+    <div class="ui positive message">The transaction was posted successfully.</div>
+
+    <a href="/dashboard/purchase/tasks/entry" class="ui green button">
+        View Purchases
+    </a>
+    <a href="/dashboard/purchase/tasks/entry/new" class="ui red button">
+        Add a New Purchase Entry
+    </a>
+    <iframe src="/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Invoice.xml?transaction_master_id=@Model"></iframe>
+</div>
+
+
+<script>
+    window.overridePath = "/dashboard/purchase/tasks/entry";
+</script>

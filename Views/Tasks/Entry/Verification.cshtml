@@ -16,7 +16,7 @@
     <div class="ui huge header">Purchase Verification</div>
     <div class="ui divider"></div>
     <div class="ui basic buttons">
-        <a id="AddNewButton" class="ui basic button" style="" href="/dashboard/purchase/tasks/purchase/entry/new">
+        <a id="AddNewButton" class="ui basic button" style="" href="/dashboard/purchase/tasks/entry/entry/new">
             Add New
         </a>
         <a class="ui basic button" id="VerificationApproveButton">Approve</a>
@@ -49,10 +49,10 @@
     <div class="ui stackable form segment" id="Annotation" style="">
         <div class="eight fields">
             <div class="field">
-                <input class="date" placeholder="From" id="FromInputDate" title="From" type="date" value="1/1/2000">
+                <input class="text" placeholder="From" id="FromInputText" title="From" type="text">
             </div>
             <div class="field">
-                <input class="date" placeholder="To" id="ToInputDate" title="To" type="date" value="1/1/2050">
+                <input class="text" placeholder="To" id="ToInputText" title="To" type="text">
             </div>
             <div class="field">
                 <input placeholder="TranId" id="TranIdInputText" title="TranId" type="text">
@@ -161,7 +161,7 @@
             var cell = $("<td />");
 
             var checklistAnchor = $("<a title='Checklist Window'><i class='list icon'></i></a>");
-            checklistAnchor.attr("href", "/dashboard/purchase/tasks/purchase/checklist/" + tranId);
+            checklistAnchor.attr("href", "/dashboard/purchase/tasks/entry/checklist/" + tranId);
 
             var journalAdviceAnchor = $("<a title='View Journal Advice'><i class='print icon'></i></a>");
             journalAdviceAnchor.attr("href", "javascript:void(0);");
@@ -341,7 +341,7 @@
         };
 
         function request(model, type) {
-            var url = "/dashboard/purchase/tasks/verification/" + type;
+            var url = "/dashboard/purchase/tasks/entry/verification/" + type;
             var data = JSON.stringify(model);
 
             return window.getAjaxRequest(url, "POST", data);

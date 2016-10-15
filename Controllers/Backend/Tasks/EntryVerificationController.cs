@@ -9,16 +9,16 @@ using MixERP.Finance.ViewModels;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
-    public class JournalVerificationController : PurchaseDashboardController
+    public class EntryVerificationController : PurchaseDashboardController
     {
-        [Route("dashboard/purchase/tasks/verification")]
+        [Route("dashboard/purchase/tasks/entry/verification")]
         [MenuPolicy]
         public ActionResult Index()
         {
-            return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/JournalVerification/Index.cshtml", this.Tenant));
+            return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Entry/Verification.cshtml", this.Tenant));
         }
 
-        [Route("dashboard/purchase/tasks/verification/approve")]
+        [Route("dashboard/purchase/tasks/entry/verification/approve")]
         [HttpPost]
         public async Task<ActionResult> ApproveAsync(Verification model)
         {
@@ -40,7 +40,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
             }
         }
 
-        [Route("dashboard/purchase/tasks/verification/reject")]
+        [Route("dashboard/purchase/tasks/entry/verification/reject")]
         [HttpPost]
         public async Task<ActionResult> RejectAsync(Verification model)
         {

@@ -121,6 +121,7 @@ CREATE TYPE purchase.purchase_detail_type
 AS
 (
     store_id            integer,
+	transaction_type	national character varying(2),
     item_id           	integer,
     quantity            public.integer_strict,
     unit_id           	integer,
@@ -234,7 +235,6 @@ DROP FUNCTION IF EXISTS purchase.post_purchase
     _supplier_id                            integer,
     _price_type_id                          integer,
     _shipper_id                             integer,
-    _store_id                               integer,
     _details                                purchase.purchase_detail_type[]
 );
 
@@ -252,7 +252,6 @@ CREATE FUNCTION purchase.post_purchase
     _supplier_id                            integer,
     _price_type_id                          integer,
     _shipper_id                             integer,
-    _store_id                               integer,
     _details                                purchase.purchase_detail_type[]
 )
 RETURNS bigint
@@ -392,14 +391,14 @@ BEGIN
     ORDER BY tran_type DESC;
 
 
-    INSERT INTO inventory.checkouts(value_date, book_date, checkout_id, transaction_master_id, transaction_type, transaction_book, posted_by, shipper_id, store_id, office_id)
-    SELECT _value_date, _book_date, _checkout_id, _transaction_master_id, 'IN', 'Purchase', _user_id, _shipper_id, _store_id, _office_id;
+    INSERT INTO inventory.checkouts(value_date, book_date, checkout_id, transaction_master_id, transaction_type, transaction_book, posted_by, shipper_id, office_id)
+    SELECT _value_date, _book_date, _checkout_id, _transaction_master_id, 'IN', 'Purchase', _user_id, _shipper_id, _office_id;
 
     INSERT INTO purchase.purchases(checkout_id, supplier_id, price_type_id)
     SELECT _checkout_id, _supplier_id, _price_type_id;
 
-    INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
-    SELECT _checkout_id, _value_date, _book_date, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
+    INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
+    SELECT _checkout_id, _value_date, _book_date, store_id, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
     FROM temp_checkout_details;
     
     PERFORM finance.auto_verify(_transaction_master_id, _office_id);
@@ -410,12 +409,12 @@ LANGUAGE plpgsql;
 
 
 
--- SELECT * FROM purchase.post_purchase(1, 1, 1, '2/2/2015', '2/2/2015', 1, '', '', 1, 1, NULL, 1, 
-      -- ARRAY[
-                 -- ROW(1, 1, 1, 1,180000, 0, 200)::purchase.purchase_detail_type,
-                 -- ROW(1, 2, 1, 7,130000, 300, 30)::purchase.purchase_detail_type,
-                 -- ROW(1, 3, 1, 1,110000, 5000, 50)::purchase.purchase_detail_type]);
-
+-- SELECT * FROM purchase.post_purchase(1, 1, 1, '2/2/2015', '2/2/2015', 1, '', '', 1, 1, NULL,
+-- ARRAY[
+-- ROW(1, 1, 1, 1,180000, 0, 200)::purchase.purchase_detail_type,
+-- ROW(1, 2, 1, 7,130000, 300, 30)::purchase.purchase_detail_type,
+-- ROW(1, 3, 1, 1,110000, 5000, 50)::purchase.purchase_detail_type]);
+-- 
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/03.menus/menus.sql --<--<--

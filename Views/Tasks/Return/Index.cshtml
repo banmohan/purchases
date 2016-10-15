@@ -1,7 +1,7 @@
 ﻿@model dynamic
 
 @{
-    ViewBag.Title = "Purchase Entries";
+    ViewBag.Title = "Purchase Returns";
     Layout = ViewBag.PurchaseLayoutPath;
 }
 <style>
@@ -13,12 +13,9 @@
 </style>
 <script src="/Scripts/frapid/utilities/form.js"></script>
 <div class="ui attached page segment" style="min-height: 100%; padding: 3em;">
-    <div class="ui huge header">Purchase Entries</div>
+    <div class="ui huge header">Purchase Returns</div>
     <div class="ui divider"></div>
     <div class="ui basic buttons">
-        <a id="AddNewButton" class="ui basic button" style="" href="/dashboard/purchase/tasks/purchase-entry/new">
-            Add New
-        </a>
         @*<a class="ui basic button" id="Import" href="ImportTransaction.mix">Import</a>*@
         <div class="ui icon top left pointing dropdown basic button" id="ExportDropDown" tabindex="0">
             <span>
@@ -95,7 +92,7 @@
 
     </div>
 
-    <table id="JournalView" class="ui table segment">
+    <table id="PurchaseView" class="ui table segment">
         <thead>
             <tr>
                 <th>Actions</th>
@@ -136,7 +133,7 @@
             var cell = $("<td />");
 
             var checklistAnchor = $("<a title='Checklist Window'><i class='list icon'></i></a>");
-            checklistAnchor.attr("href", "/dashboard/purchase/tasks/purchase/checklist/" + tranId);
+            checklistAnchor.attr("href", "/dashboard/purchase/tasks/return/checklist/" + tranId);
 
             var journalAdviceAnchor = $("<a title='View Journal Advice'><i class='print icon'></i></a>");
             journalAdviceAnchor.attr("href", "javascript:void(0);");
@@ -144,7 +141,7 @@
 
             var inventoryAdviceAnchor = $("<a title='View Purchase Invoice'><i class='zoom icon'></i></a>");
             inventoryAdviceAnchor.attr("href", "javascript:void(0);");
-            inventoryAdviceAnchor.attr("onclick", "showPuchaseInvoice(" + tranId + ");");
+            inventoryAdviceAnchor.attr("onclick", "showReturn(" + tranId + ");");
 
 
             cell.append(checklistAnchor);
@@ -178,7 +175,7 @@
     function processQuery() {
         function getModel() {
             var model = window.serializeForm($("#Annotation"));
-            model.Book = "Purchase";
+            model.Book = "Purchase Return";
             return model;
         };
 
@@ -203,7 +200,7 @@
             });
         };
 
-        var view = $("#JournalView").addClass("loading");
+        var view = $("#PurchaseView").addClass("loading");
 
         displayGrid(view);
     };
@@ -216,8 +213,8 @@
     processQuery();
 
     
-    function showPuchaseInvoice(tranId) {
-        $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Invoice.xml?transaction_master_id=" + tranId);
+    function showReturn(tranId) {
+        $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_master_id=" + tranId);
 
         setTimeout(function () {
             $(".advice.modal")

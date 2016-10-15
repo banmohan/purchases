@@ -17,10 +17,11 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
             string connectionString = FrapidDbServer.GetConnectionString(tenant);
 
             string sql = @"SELECT * FROM purchase.post_purchase
-                                (
+                            (
                                 @OfficeId, @UserId, @LoginId, @ValueDate, @BookDate, 
                                 @CostCenterId, @ReferenceNumber, @StatementReference, 
-                                @SupplierId, @PriceTypeId, @ShipperId, @StoreId, ARRAY[{0}]);";
+                                @SupplierId, @PriceTypeId, @ShipperId, ARRAY[{0}]
+                            );";
 
             sql = string.Format(sql, GetParametersForDetails(model.Details));
 
@@ -39,12 +40,11 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
                     command.Parameters.AddWithValue("@SupplierId", model.SupplierId);
                     command.Parameters.AddWithValue("@PriceTypeId", model.PriceTypeId);
                     command.Parameters.AddWithValue("@ShipperId", model.ShipperId);
-                    command.Parameters.AddWithValue("@StoreId", model.StoreId);
 
                     command.Parameters.AddRange(AddParametersForDetails(model.Details).ToArray());
 
                     connection.Open();
-                    var awaiter = await command.ExecuteScalarAsync();
+                    var awaiter = await command.ExecuteScalarAsync().ConfigureAwait(false);
                     return awaiter.To<long>();
                 }
             }
@@ -61,7 +61,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
             for (int i = 0; i < details.Count; i++)
             {
                 items.Add(string.Format(CultureInfo.InvariantCulture,
-                    "ROW(@StoreId{0}, @ItemId{0}, @Quantity{0}, @UnitId{0},@Price{0}, @Discount{0}, @ShippingCharge{0})::purchase.purchase_detail_type",
+                    "ROW(@StoreId{0}, @TransactionType{0}, @ItemId{0}, @Quantity{0}, @UnitId{0},@Price{0}, @Discount{0}, @ShippingCharge{0})::purchase.purchase_detail_type",
                     i.ToString(CultureInfo.InvariantCulture)));
             }
 
@@ -77,6 +77,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
                 for (int i = 0; i < details.Count; i++)
                 {
                     parameters.Add(new NpgsqlParameter("@StoreId" + i, details[i].StoreId));
+                    parameters.Add(new NpgsqlParameter("@TransactionType" + i, "Dr"));//Inventory is increased
                     parameters.Add(new NpgsqlParameter("@ItemId" + i, details[i].ItemId));
                     parameters.Add(new NpgsqlParameter("@Quantity" + i, details[i].Quantity));
                     parameters.Add(new NpgsqlParameter("@UnitId" + i, details[i].UnitId));

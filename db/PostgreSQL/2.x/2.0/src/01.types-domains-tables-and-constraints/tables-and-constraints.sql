@@ -120,6 +120,7 @@ CREATE TYPE purchase.purchase_detail_type
 AS
 (
     store_id            integer,
+	transaction_type	national character varying(2),
     item_id           	integer,
     quantity            public.integer_strict,
     unit_id           	integer,

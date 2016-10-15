@@ -642,7 +642,7 @@
     $("#CheckoutButton").unbind("click").bind("click", function () {
 
         function request(model) {
-            var url = "/dashboard/purchase/tasks/purchase-entry/new";
+            var url = "/dashboard/purchase/tasks/entry/new";
             var data = JSON.stringify(model);
             return window.getAjaxRequest(url, "POST", data);
         };
@@ -718,7 +718,7 @@
 
         ajax.success(function (response) {
             var id = response;
-            document.location = "/dashboard/purchase/tasks/purchase/checklist/" + id;
+            document.location = "/dashboard/purchase/tasks/entry/checklist/" + id;
         });
 
         ajax.fail(function (xhr) {
@@ -798,5 +798,5 @@
     }, 100);
 
 
-    window.overridePath = "/dashboard/purchase/tasks/purchase-entry";
+    window.overridePath = "/dashboard/purchase/tasks/entry";
 </script>

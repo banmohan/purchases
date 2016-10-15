@@ -1,0 +1,427 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "Purchase Verification";
+    Layout = ViewBag.PurchaseLayoutPath;
+}
+<style>
+    .modal iframe {
+        width: 100%;
+        border: none;
+        height: 700px;
+    }
+</style>
+<script src="/Scripts/frapid/utilities/form.js"></script>
+<div class="ui attached page segment" style="min-height: 100%; padding: 3em;">
+    <div class="ui huge header">Purchase Verification</div>
+    <div class="ui divider"></div>
+    <div class="ui basic buttons">
+        <a class="ui basic button" id="VerificationApproveButton">Approve</a>
+        <a class="ui basic button" id="VerificationRejectButton">Reject</a>
+
+        <div class="ui icon top left pointing dropdown basic button" id="ExportDropDown" tabindex="0">
+            <span>
+                Export
+            </span>
+            <div class="menu" tabindex="-1">
+                <div class="header">
+                    Export This Document
+                </div>
+                <a class="item" href="javascript:void(0);" onclick="createDoc();">
+                    <i class="file word outline blue icon"></i> Export to Doc
+                </a>
+                <a class="item" href="javascript:void(0);" onclick="createXls();">
+                    <i class="file excel outline green icon"></i> Export to Excel
+                </a>
+                <a class="item" href="javascript:void(0);" onclick="createPDF();">
+                    <i class="file pdf outline red icon"></i> Export to PDF
+                </a>
+            </div>
+        </div>
+        <a id="PrintButton" href="javascript:void(0);" onclick="print()" class="ui basic button">
+            Print
+        </a>
+    </div>
+
+    <div class="ui stackable form segment" id="Annotation" style="">
+        <div class="eight fields">
+            <div class="field">
+                <input class="text" placeholder="From" id="FromInputText" title="From" type="text">
+            </div>
+            <div class="field">
+                <input class="text" placeholder="To" id="ToInputText" title="To" type="text">
+            </div>
+            <div class="field">
+                <input placeholder="TranId" id="TranIdInputText" title="TranId" type="text">
+            </div>
+            <div class="field">
+                <input placeholder="TranCode" id="TranCodeInputText" title="TranCode" type="text">
+            </div>
+            <div class="field">
+                <input placeholder="ReferenceNumber" id="ReferenceNumberInputText" title="ReferenceNumber" type="text">
+            </div>
+            <div class="field">
+                <input placeholder="StatementReference" id="StatementReferenceInputText" title="StatementReference" type="text">
+            </div>
+            <div class="field">
+                <input placeholder="PostedBy" id="PostedByInputText" title="PostedBy" type="text">
+            </div>
+        </div>
+        <div class="eight fields">
+            <div class="field">
+                <input placeholder="Office" id="OfficeInputText" title="Office" type="text">
+            </div>
+            <div class="field">
+                <input placeholder="Status" id="StatusInputText" title="Status" type="text" value="Unverified">
+            </div>
+            <div class="field">
+                <input placeholder="VerifiedBy" id="VerifiedByInputText" title="VerifiedBy" type="text">
+            </div>
+            <div class="field">
+                <input placeholder="Reason" id="ReasonInputText" title="Reason" type="text">
+            </div>
+            <div class="field hidden">
+                <input placeholder="UserId" id="UserIdInputText" title="UserId" type="text">
+            </div>
+            <div class="field hidden">
+                <input placeholder="OfficeId" id="OfficeIdInputText" title="OfficeId" type="text">
+            </div>
+            <div class="field">
+                <div class="ui green button" id="ShowButton">Show</div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <table id="JournalView" class="ui table segment">
+        <thead>
+            <tr>
+                <th>Actions</th>
+                <th>Select</th>
+                <th>TranId</th>
+                <th>TranCode</th>
+                <th>Book</th>
+                <th>Value Date</th>
+                <th>Book Date</th>
+                <th>Ref#</th>
+                <th>Statement Reference</th>
+                <th>Posted By</th>
+                <th>Office</th>
+                <th>Status</th>
+                <th>Verified By</th>
+                <th>Verified On</th>
+                <th>Reason</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div id="ActionModal" class="ui modal">
+    <div class="ui massive red header"></div>
+    <div class="ui inverted red content">
+        <div class="ui form">
+            <div class="ui blue large dividing header"></div>
+            <div class="field">
+                <label for="ReasonTextArea">Verification Reason</label>
+                <textarea id="ReasonTextArea"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui buttons">
+            <input type="button" class="ui red cancel button" value="Cancel"/>
+            <input type="button" id="VerifyButton" class="ui green ok button" value="Verify" title="CTRL + RETURN"/>
+        </div>
+    </div>
+</div>
+
+<div class="ui large advice modal">
+    <i class="close icon"></i>
+    <iframe></iframe>
+</div>
+
+<script>
+    function displayTable(target, model) {
+        target.find("tbody").html("");
+
+        function getCell(text) {
+            var cell = $("<td />");
+
+            cell.text(text || "");
+
+            return cell;
+        };
+
+        function getActionCell(tranId) {
+            var cell = $("<td />");
+
+            var checklistAnchor = $("<a title='Checklist Window'><i class='list icon'></i></a>");
+            checklistAnchor.attr("href", "/dashboard/purchase/tasks/return/checklist/" + tranId);
+
+            var journalAdviceAnchor = $("<a title='View Journal Advice'><i class='print icon'></i></a>");
+            journalAdviceAnchor.attr("href", "javascript:void(0);");
+            journalAdviceAnchor.attr("onclick", "showJournalAdvice(" + tranId + ");");
+
+            var inventoryAdviceAnchor = $("<a title='View Purchase Invoice'><i class='zoom icon'></i></a>");
+            inventoryAdviceAnchor.attr("href", "javascript:void(0);");
+            inventoryAdviceAnchor.attr("onclick", "showPuchaseInvoice(" + tranId + ");");
+
+
+            cell.append(checklistAnchor);
+            cell.append(journalAdviceAnchor);
+            cell.append(inventoryAdviceAnchor);
+            return cell;
+        };
+
+        function getSelectionCell() {
+            var cell = $("<td />");
+            var checkbox = $("<div class='ui toggle checkbox'/>");
+            var input = $("<input type='checkbox' />");
+            var label = $("<label />");
+
+            checkbox.append(input);
+            checkbox.append(label);
+
+            cell.append(checkbox);
+
+            return cell;
+        };
+
+        $.each(model,
+            function() {
+                var item = this;
+
+                var row = $("<tr />");
+
+                row.append(getActionCell(item.TransactionMasterId));
+                row.append(getSelectionCell());
+                row.append(getCell(item.TransactionMasterId));
+                row.append(getCell(item.TransactionCode));
+                row.append(getCell(item.Book));
+                row.append(getCell(item.ValueDate));
+                row.append(getCell(item.BookDate));
+                row.append(getCell(item.ReferenceNumber));
+                row.append(getCell(item.StatementReference));
+                row.append(getCell(item.PostedBy));
+                row.append(getCell(item.Office));
+                row.append(getCell(item.Status));
+                row.append(getCell(item.VerifiedBy));
+                row.append(getCell(item.VerifiedOn));
+                row.append(getCell(item.Reason));
+
+                target.find("tbody").append(row);
+            });
+    };
+
+    function processQuery() {
+        function getModel() {
+            var model = window.serializeForm($("#Annotation"));
+            model.Book = "Purchase";
+
+            return model;
+        };
+
+        function displayGrid(target) {
+            function request(model) {
+                var url = "/dashboard/finance/tasks/journal/view";
+                var data = JSON.stringify(model);
+                return window.getAjaxRequest(url, "POST", data);
+            };
+
+            var model = getModel();
+
+            var ajax = request(model);
+
+            ajax.success(function(response) {
+                displayTable(target, response);
+                target.removeClass("loading");
+            });
+
+            ajax.fail(function(xhr) {
+                alert(JSON.stringify(xhr));
+            });
+        };
+
+        var view = $("#JournalView").addClass("loading");
+
+        displayGrid(view);
+    };
+
+    $("#ShowButton")
+        .unbind("click")
+        .bind("click",
+            function() {
+                processQuery();
+            });
+
+    processQuery();
+</script>
+
+<script>
+    var reasonTextArea = $("#ReasonTextArea");
+    var journalView = $("#JournalView");
+    var modal = $("#ActionModal");
+    var verifyButton = $("#VerifyButton");
+    var tranId;
+    var approve;
+
+    function getSelectedItem() {
+        var selected = journalView.find("input:checked").first();
+        
+        if (selected.length) {
+            var row = selected.parent().parent().parent();
+            var id = row.find("td:nth-child(3)").html();
+            return parseInt(id);
+        };
+
+        return 0;
+    };
+
+    function showModal() {
+        var header = modal.find(".ui.massive.header");
+        var subheader = modal.find(".ui.dividing.header");
+
+        header.html("Reject Transaction");
+        subheader.html(window.stringFormat("TranId: #{0}", tranId));
+        header.removeClass("green").addClass("red");
+
+        if (approve) {
+            header.html("Approve Transaction");
+            header.removeClass("red").addClass("green");
+        };
+
+        modal.modal('setting', 'closable', false).modal('show');
+    };
+
+    $("#VerificationApproveButton").click(function () {
+        tranId = getSelectedItem();
+
+        if (tranId) {
+            approve = true;
+            showModal();
+        };
+    });
+
+    $("#VerificationRejectButton").click(function () {
+        tranId = getSelectedItem();
+
+        if (tranId) {
+            approve = false;
+            showModal();
+        };
+    });
+
+    function removeRow(index, callback) {
+        journalView.find("tr").eq(index + 1).addClass("negative").fadeOut(500, function () {
+            $(this).remove();
+
+            if (typeof (callback) === "function") {
+                callback();
+            };
+        });
+    };
+
+    function hideModal() {
+        modal.modal("hide");
+    };
+
+    verifyButton.click(function () {
+        function getModel() {
+            var reason = reasonTextArea.val();
+
+            return {
+                TranId: tranId,
+                Reason: reason
+            };
+        };
+
+        function request(model, type) {
+            var url = "/dashboard/purchase/tasks/return/verification/" + type;
+            var data = JSON.stringify(model);
+
+            return window.getAjaxRequest(url, "POST", data);
+        }
+
+        var model = getModel();
+        var type = approve ? "approve" : "reject";
+
+        var ajax = request(model, type);
+
+        ajax.success(function (response) {
+            var cascadingTranId = parseFloat(response);
+
+            if (cascadingTranId) {
+                journalView.find("tr td:nth-child(3)").each(function (i) {
+                    var tranId = parseFloat($(this).text() || 0);
+
+                    if (cascadingTranId === tranId) {
+                        removeRow(i);
+                    };
+                });
+            };
+
+            journalView.find("input:checked").first().parent().parent().parent().remove();
+            hideModal();
+        });
+
+        ajax.fail(function (xhr) {
+            window.logAjaxErrorMessage(xhr);
+        });
+
+        return false;
+    });
+
+    $(document).keyup(function (e) {
+        if (e.ctrlKey) {
+            var rowNumber = e.keyCode - 47;
+
+            if (rowNumber < 10) {
+                journalView.find("tr").eq(rowNumber).find("input").trigger('click');
+            };
+        };
+    });
+
+    shortcut.add("CTRL+K", function () {
+        $("#ApproveButton").trigger("click");
+    });
+
+    shortcut.add("CTRL+RETURN", function () {
+        if (modal.is(":visible")) {
+            verifyButton.trigger("click");
+        };
+    });
+
+    shortcut.add("CTRL+SHIFT+K", function () {
+        $("#VerificationRejectButton").trigger("click");
+    });
+
+    function showPuchaseInvoice(tranId) {
+        $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Invoice.xml?transaction_master_id=" + tranId);
+
+        setTimeout(function () {
+            $(".advice.modal")
+                .modal('setting', 'transition', 'horizontal flip')
+                .modal({
+                    blurring: true
+                })
+                .modal("show");
+
+        }, 300);
+    };
+    function showJournalAdvice(tranId) {
+        $(".modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Finance/Reports/JournalEntry.xml?transaction_master_id=" + tranId);
+
+        setTimeout(function () {
+            $(".advice.modal")
+                .modal('setting', 'transition', 'horizontal flip')
+                .modal({
+                    blurring: true
+                })
+                .modal("show");
+
+        }, 300);
+    };
+
+</script>

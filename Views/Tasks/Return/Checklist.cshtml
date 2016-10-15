@@ -20,16 +20,16 @@
 
     <div class="ui positive message">The transaction was posted successfully.</div>
 
-    <a href="/dashboard/purchase/tasks/purchase-entry" class="ui green button">
-        View Transactions
+    <a href="/dashboard/purchase/tasks/return" class="ui green button">
+        View Returns
     </a>
-    <a href="/dashboard/purchase/tasks/purchase-entry/new" class="ui red button">
-        Add a New Transaction
+    <a href="/dashboard/purchase/tasks/return/new" class="ui red button">
+        Add a New Return Entry
     </a>
-    <iframe src="/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Invoice.xml?transaction_master_id=@Model"></iframe>
+    <iframe src="/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_master_id=@Model"></iframe>
 </div>
 
 
 <script>
-    window.overridePath = "/dashboard/purchase/tasks/purchase-entry";
+    window.overridePath = "/dashboard/purchase/tasks/return";
 </script>
