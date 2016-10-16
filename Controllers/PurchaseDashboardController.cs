@@ -6,7 +6,7 @@ namespace MixERP.Purchases.Controllers
     {
         public PurchaseDashboardController()
         {
-            ViewBag.PurchaseLayoutPath = this.GetLayoutPath();
+            this.ViewBag.PurchaseLayoutPath = this.GetLayoutPath();
         }
 
         private string GetLayoutPath()
