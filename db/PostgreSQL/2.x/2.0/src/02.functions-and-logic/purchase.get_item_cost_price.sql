@@ -22,7 +22,8 @@ BEGIN
     FROM purchase.item_cost_prices
     WHERE purchase.item_cost_prices.item_id=_item_id
     AND purchase.item_cost_prices.supplier_id =_supplier_id
-    AND purchase.item_cost_prices.unit_id = _unit_id;
+    AND purchase.item_cost_prices.unit_id = _unit_id
+    AND NOT purchase.item_cost_prices.deleted;
 
 
     IF(_costing_unit_id IS NULL) THEN
@@ -36,7 +37,8 @@ BEGIN
             _costing_unit_id
         FROM purchase.item_cost_prices
         WHERE purchase.item_cost_prices.item_id=_item_id
-        AND purchase.item_cost_prices.supplier_id =_supplier_id;
+        AND purchase.item_cost_prices.supplier_id =_supplier_id
+	AND NOT purchase.item_cost_prices.deleted;
     END IF;
 
     
@@ -50,7 +52,8 @@ BEGIN
             _price, 
             _costing_unit_id
         FROM inventory.items
-        WHERE inventory.items.item_id = _item_id;
+        WHERE inventory.items.item_id = _item_id
+	AND NOT inventory.items.deleted;
     END IF;
 
         --Get the unitary conversion factor if the requested unit does not match with the price defition.
