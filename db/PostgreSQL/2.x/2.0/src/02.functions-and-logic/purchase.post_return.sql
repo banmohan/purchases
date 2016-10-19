@@ -102,12 +102,14 @@ BEGIN
         USING ERRCODE='P3271';
     END IF;
     
-    SELECT checkout_id INTO _sm_id FROM inventory.checkouts 
-    WHERE transaction_master_id = _transaction_master_id;
+	SELECT checkout_id INTO _sm_id 
+	FROM inventory.checkouts 
+	WHERE inventory.checkouts.transaction_master_id = _transaction_master_id
+	AND NOT inventory.checkouts.deleted;
 
     INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, shipping_charge)
-    SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, shipping_charge
-    FROM explode_array(_details);
+	SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, shipping_charge
+	FROM explode_array(_details);
 
     UPDATE temp_checkout_details 
     SET

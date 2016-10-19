@@ -13,6 +13,8 @@ BEGIN
             inventory.suppliers
         WHERE 
             inventory.suppliers.supplier_code=$1
+	AND NOT
+	    inventory.suppliers.deleted
     );
 END
 $$
