@@ -9,7 +9,7 @@ CREATE TABLE purchase.price_types
     price_type_code                         national character varying(24) NOT NULL,
     price_type_name                         national character varying(500) NOT NULL,
     audit_user_id                           integer REFERENCES account.users,
-    audit_ts                                TIMESTAMP WITH TIME ZONE NULL DEFAULT(NOW()),
+    audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
 );
 
@@ -26,7 +26,7 @@ CREATE TABLE purchase.item_cost_prices
                                             DEFAULT(false),
     price                                   public.money_strict NOT NULL,
     audit_user_id                           integer REFERENCES account.users,
-    audit_ts                                TIMESTAMP WITH TIME ZONE NULL DEFAULT(NOW()),
+    audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
 );
 
@@ -63,7 +63,7 @@ CREATE TABLE purchase.quotations
     memo                                    national character varying(500),
     internal_memo                           national character varying(500),
     audit_user_id                           integer REFERENCES account.users,
-    audit_ts                                TIMESTAMP WITH TIME ZONE NULL DEFAULT(NOW()),
+    audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
 );
 
@@ -97,7 +97,7 @@ CREATE TABLE purchase.orders
     memo                                    national character varying(500),
     internal_memo                           national character varying(500),
     audit_user_id                           integer REFERENCES account.users,
-    audit_ts                                TIMESTAMP WITH TIME ZONE NULL DEFAULT(NOW()),
+    audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
 );
 

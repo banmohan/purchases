@@ -9,7 +9,7 @@ namespace MixERP.Purchases.ViewModels
         [Required]
         public int ItemId { get; set; }
         [Required]
-        public int Quantity { get; set; }
+        public decimal Quantity { get; set; }
         [Required]
         public int UnitId { get; set; }
         [Required]
