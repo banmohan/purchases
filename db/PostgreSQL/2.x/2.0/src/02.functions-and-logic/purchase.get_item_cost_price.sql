@@ -53,7 +53,7 @@ BEGIN
             _costing_unit_id
         FROM inventory.items
         WHERE inventory.items.item_id = _item_id
-	AND NOT inventory.items.deleted;
+		AND NOT inventory.items.deleted;
     END IF;
 
         --Get the unitary conversion factor if the requested unit does not match with the price defition.

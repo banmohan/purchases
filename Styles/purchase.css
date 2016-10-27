@@ -99,9 +99,9 @@ input.invoice.number.for.reprint {
         display: inline-flex;
         background-color: #333;
         margin: 4px;
-        height: 310px;
+        height: 280px;
         padding: 0.5em;
-        width: 242px;
+        width: 200px;
         cursor: pointer;
     }
 
@@ -117,10 +117,9 @@ input.invoice.number.for.reprint {
             position: relative;
             top: -16px;
             left: -2px;
-            width: 212px;
-            height: 300px;
+            width: 180px;
+            height: 270px;
         }
-
 
         .item.list .item:hover img {
             filter: grayscale(0%) !important;
@@ -255,7 +254,7 @@ input.invoice.number.for.reprint {
             font-weight: 100;
         }
 
-    .purchase.items .item input{
+    .purchase.items .item input {
         font-size: 1.3em;
         margin: 0 0 0.3em 0;
         background-color: #333;
