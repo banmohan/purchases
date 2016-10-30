@@ -274,7 +274,12 @@ $$
     DECLARE _tran_counter                   integer;
     DECLARE _transaction_code               text;
     DECLARE _shipping_charge                public.money_strict2;
+    DECLARE _book_name                      national character varying(100) = 'Purchase';
 BEGIN
+    IF NOT finance.can_post_transaction(_login_id, _user_id, _office_id, _book_name, _value_date) THEN
+        RETURN 0;
+    END IF;
+
     IF(_supplier_id IS NULL) THEN
         RAISE EXCEPTION '%', 'Invalid supplier';
     END IF;
@@ -383,7 +388,7 @@ BEGIN
     UPDATE temp_checkout_details           SET checkout_id         = _checkout_id;
     
     INSERT INTO finance.transaction_master(transaction_master_id, transaction_counter, transaction_code, book, value_date, book_date, user_id, login_id, office_id, cost_center_id, reference_number, statement_reference) 
-    SELECT _transaction_master_id, _tran_counter, _transaction_code, 'Purchase', _value_date, _book_date, _user_id, _login_id, _office_id, _cost_center_id, _reference_number, _statement_reference;
+    SELECT _transaction_master_id, _tran_counter, _transaction_code, _book_name, _value_date, _book_date, _user_id, _login_id, _office_id, _cost_center_id, _reference_number, _statement_reference;
 
     
     INSERT INTO finance.transaction_details(value_date, book_date, office_id, transaction_master_id, tran_type, account_id, statement_reference, currency_code, amount_in_currency, local_currency_code, er, amount_in_local_currency)
@@ -393,7 +398,7 @@ BEGIN
 
 
     INSERT INTO inventory.checkouts(value_date, book_date, checkout_id, transaction_master_id, transaction_book, posted_by, shipper_id, office_id)
-    SELECT _value_date, _book_date, _checkout_id, _transaction_master_id, 'Purchase', _user_id, _shipper_id, _office_id;
+    SELECT _value_date, _book_date, _checkout_id, _transaction_master_id, _book_name, _user_id, _shipper_id, _office_id;
 
     INSERT INTO purchase.purchases(checkout_id, supplier_id, price_type_id)
     SELECT _checkout_id, _supplier_id, _price_type_id;
@@ -472,6 +477,10 @@ $$
     DECLARE _book_name                      text='Purchase Return';
     DECLARE _receivable                     public.money_strict;
 BEGIN    
+    IF NOT finance.can_post_transaction(_login_id, _user_id, _office_id, _book_name, _value_date) THEN
+        RETURN 0;
+    END IF;
+
     CREATE TEMPORARY TABLE temp_checkout_details
     (
         id                                  SERIAL PRIMARY KEY,
@@ -784,6 +793,25 @@ BEGIN
     END IF;
 
     FOR this IN 
+    SELECT oid::regclass::text as mat_view
+    FROM   pg_class
+    WHERE  relkind = 'm'
+    LOOP
+        EXECUTE 'ALTER TABLE '|| this.mat_view ||' OWNER TO frapid_db_user;';
+    END LOOP;
+END
+$$
+LANGUAGE plpgsql;
+
+DO
+$$
+    DECLARE this record;
+BEGIN
+    IF(CURRENT_USER = 'frapid_db_user') THEN
+        RETURN;
+    END IF;
+
+    FOR this IN 
     SELECT 'ALTER '
         || CASE WHEN p.proisagg THEN 'AGGREGATE ' ELSE 'FUNCTION ' END
         || quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' 
@@ -945,3 +973,5 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
+
+

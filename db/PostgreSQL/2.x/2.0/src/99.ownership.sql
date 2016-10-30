@@ -1,4 +1,4 @@
-DO
+﻿DO
 $$
     DECLARE this record;
 BEGIN
@@ -12,6 +12,25 @@ BEGIN
     AND tableowner <> 'frapid_db_user'
     LOOP
         EXECUTE 'ALTER TABLE '|| this.schemaname || '.' || this.tablename ||' OWNER TO frapid_db_user;';
+    END LOOP;
+END
+$$
+LANGUAGE plpgsql;
+
+DO
+$$
+    DECLARE this record;
+BEGIN
+    IF(CURRENT_USER = 'frapid_db_user') THEN
+        RETURN;
+    END IF;
+
+    FOR this IN 
+    SELECT oid::regclass::text as mat_view
+    FROM   pg_class
+    WHERE  relkind = 'm'
+    LOOP
+        EXECUTE 'ALTER TABLE '|| this.mat_view ||' OWNER TO frapid_db_user;';
     END LOOP;
 END
 $$
@@ -187,3 +206,4 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
+

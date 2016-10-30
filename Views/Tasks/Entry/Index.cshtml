@@ -232,7 +232,6 @@
     });
 
     loadDatepicker();
-    processQuery();
 
     
     function showPuchaseInvoice(tranId) {
@@ -284,4 +283,7 @@
 
         window.displayMessage("Please select an item from the grid.");
     });
+    setTimeout(function () {
+        processQuery();
+    }, 1000);
 </script>
