@@ -201,6 +201,36 @@ LANGUAGE plpgsql;
 --SELECT * FROM purchase.get_item_cost_price(6, 1, 7);
 
 
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/02.functions-and-logic/purchase.get_price_type_id_by_price_type_code.sql --<--<--
+DROP FUNCTION IF EXISTS purchase.get_price_type_id_by_price_type_code(_price_type_code national character varying(24));
+
+CREATE FUNCTION purchase.get_price_type_id_by_price_type_code(_price_type_code national character varying(24))
+RETURNS integer
+AS
+$$
+BEGIN
+    RETURN purchase.price_types.price_type_id
+    FROM purchase.price_types
+    WHERE purchase.price_types.price_type_code = _price_type_code;
+END
+$$
+LANGUAGE plpgsql;
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/02.functions-and-logic/purchase.get_price_type_id_by_price_type_name.sql --<--<--
+DROP FUNCTION IF EXISTS purchase.get_price_type_id_by_price_type_name(_price_type_name national character varying(24));
+
+CREATE FUNCTION purchase.get_price_type_id_by_price_type_name(_price_type_name national character varying(24))
+RETURNS integer
+AS
+$$
+BEGIN
+    RETURN purchase.price_types.price_type_id
+    FROM purchase.price_types
+    WHERE purchase.price_types.price_type_name = _price_type_name;
+END
+$$
+LANGUAGE plpgsql;
+
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/02.functions-and-logic/purchase.get_supplier_id_by_supplier_code.sql --<--<--
 DROP FUNCTION IF EXISTS purchase.get_supplier_id_by_supplier_code(text);
 
