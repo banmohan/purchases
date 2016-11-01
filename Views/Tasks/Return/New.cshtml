@@ -584,6 +584,8 @@
             };
         };
 
+        groupItems = window.Enumerable.From(groupItems).OrderBy(function (x) { return x.ItemId }).ToArray();
+
         target.html("").hide();
 
         $.each(groupItems, function () {
