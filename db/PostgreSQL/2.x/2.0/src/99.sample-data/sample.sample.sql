@@ -1,7 +1,7 @@
 DO
 $$
     DECLARE _office_id              integer = core.get_office_id_by_office_name('Default');
-    DECLARE _user_id                integer = account.get_user_id_by_email('nepalbinod@yahoo.com');
+    DECLARE _user_id                integer;
     DECLARE _login_id               bigint;
     DECLARE _value_date             date = finance.get_value_date(_office_id);
     DECLARE _book_date              date = finance.get_value_date(_office_id);
@@ -14,6 +14,11 @@ $$
     DECLARE _details                purchase.purchase_detail_type[];
     DECLARE _store_id               integer = inventory.get_store_id_by_store_name('Store 1');
 BEGIN
+	SELECT account.users.user_id INTO _user_id
+	FROM account.users
+	WHERE account.users.role_id = 9999
+	LIMIT 1;
+
     INSERT INTO account.logins(user_id, office_id, browser, ip_address, culture)
     SELECT _user_id, _office_id, '', '', '';
 
