@@ -728,9 +728,6 @@ SELECT 'RET',   'Retail' UNION ALL
 SELECT 'WHO',   'Wholesale';
 
 
--->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.reports/cinesys.sales_by_cashier_view.sql --<--<--
-
-
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.scrud-views/purchase.item_cost_price_scrud_view.sql --<--<--
 DROP VIEW IF EXISTS purchase.item_cost_price_scrud_view;
 
@@ -780,6 +777,7 @@ SELECT
     inventory.units.unit_name,
     inventory.items.hot_item,
     inventory.items.cost_price,
+    inventory.items.cost_price_includes_tax,
     inventory.items.photo
 FROM inventory.items
 INNER JOIN inventory.item_groups
