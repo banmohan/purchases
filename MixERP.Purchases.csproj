@@ -157,6 +157,61 @@
     <Compile Include="ViewModels\Purchase.cs" />
     <Compile Include="ViewModels\PurchaseDetailType.cs" />
     <Compile Include="ViewModels\PurchaseReturn.cs" />
+    <Compile Include="Views\Setup\CostPrices.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CostPrices.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\PriceTypes.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PriceTypes.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\Suppliers.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Suppliers.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Tasks\Entry\Checklist.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Checklist.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Tasks\Entry\Index.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Index.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Tasks\Entry\New.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>New.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Tasks\Entry\Verification.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Verification.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Tasks\Return\Checklist.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Checklist.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Tasks\Return\Index.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Index.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Tasks\Return\New.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>New.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Tasks\Return\Verification.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Verification.cshtml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -168,17 +223,50 @@
   <ItemGroup>
     <Content Include="web.config" />
     <Content Include="Views\Layout.cshtml" />
-    <Content Include="Views\Tasks\Entry\Index.cshtml" />
-    <Content Include="Views\Setup\CostPrices.cshtml" />
-    <Content Include="Views\Setup\Suppliers.cshtml" />
-    <Content Include="Views\Setup\PriceTypes.cshtml" />
-    <Content Include="Views\Tasks\Entry\New.cshtml" />
-    <Content Include="Views\Tasks\Entry\Checklist.cshtml" />
-    <Content Include="Views\Tasks\Entry\Verification.cshtml" />
-    <Content Include="Views\Tasks\Return\Checklist.cshtml" />
-    <Content Include="Views\Tasks\Return\Index.cshtml" />
-    <Content Include="Views\Tasks\Return\New.cshtml" />
-    <Content Include="Views\Tasks\Return\Verification.cshtml" />
+    <Content Include="Views\Tasks\Entry\Index.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>Index.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Setup\CostPrices.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>CostPrices.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Setup\Suppliers.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>Suppliers.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Setup\PriceTypes.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>PriceTypes.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Tasks\Entry\New.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>New.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Tasks\Entry\Checklist.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>Checklist.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Tasks\Entry\Verification.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>Verification.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Tasks\Return\Checklist.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>Checklist.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Tasks\Return\Index.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>Index.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Tasks\Return\New.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>New.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Tasks\Return\Verification.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>Verification.generated.cs</LastGenOutput>
+    </Content>
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
