@@ -2,27 +2,27 @@
 @model dynamic
 
 @{
-    ViewBag.Title = "Purchase Entry Verification";
+    ViewBag.Title = "Purchase Orders";
     Layout = ViewBag.PurchaseLayoutPath;
 }
 
 
-@Html.FinancePartialView("Shared/Verification.cshtml", TenantConvention.GetTenant())
+@Html.FinancePartialView("Shared/JournalView.cshtml", TenantConvention.GetTenant())
 
 <script>
-    window.prepareVerification({
-        Title: "Purchase Entry Verification",
+    window.prepareView({
+        Title: "Purchase Orders",
         AddNewText: "Add New",
-        AddNewUrl: "/dashboard/purchase/tasks/entry/new",
+        AddNewUrl: "/dashboard/purchase/tasks/order/new",
         ReturnText: "Return",
         ReturnUrl: "javascript:void(0);",
-        Book: "Purchase",
-        ChecklistUrl: "/dashboard/purchase/tasks/entry/checklist/{tranId}",
+        Book: "Purchase Order",
+        ChecklistUrl: "/dashboard/purchase/tasks/order/checklist/{tranId}",
         AdviceButtons: [
             {
-                Title: "View Purchase Invoice",
+                Title: "View Purchase Order",
                 Href: "javascript:void(0);",
-                OnClick: "showInvoice({tranId});"
+                OnClick: "showQuotation({tranId});"
             }
         ]
     });
@@ -50,8 +50,8 @@
         window.displayMessage("Please select an item from the grid.");
     });
 
-    function showInvoice(tranId) {
-        $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Invoice.xml?transaction_master_id=" + tranId);
+    function showOrder(tranId) {
+        $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?transaction_master_id=" + tranId);
 
         setTimeout(function () {
             $(".advice.modal")

@@ -8,13 +8,12 @@
 
 @Html.PartialView("Shared/ItemList.cshtml", TenantConvention.GetTenant())
 
-
 <script>
-    $(".page.title").html("Purchase Return");
-    $("#CheckoutButton").unbind("click").bind("click", function () {
+    $(".page.title").html("Purchase Quotation");
+    $("#CheckoutButton").unbind("click").bind("click", function() {
 
         function request(model) {
-            const url = "/dashboard/purchase/tasks/return/new";
+            const url = "/dashboard/purchase/tasks/entry/new";
             const data = JSON.stringify(model);
             return window.getAjaxRequest(url, "POST", data);
         };
@@ -24,13 +23,14 @@
                 const items = $("#PurchaseItems .item");
                 var model = [];
 
-                $.each(items, function () {
+                $.each(items, function() {
                     const el = $(this);
                     const itemId = parseInt(el.attr("data-item-id"));
                     const quantity = parseInt(el.find("input.quantity").val());
                     const unitId = parseInt(el.find("select.unit").val());
                     const price = parseFloat(el.find("input.price").val() || 0);
                     const discount = parseFloat(el.find("input.discount").val() || 0);
+
                     model.push({
                         StoreId: $("#StoreSelect").val(),
                         ItemId: itemId,
@@ -44,7 +44,6 @@
                 return model;
             };
 
-            const transactionMasterId = parseInt(window.getQueryStringByName("TransactionMasterId") || 0);
             const valueDate = $("#ValueDateInputDate").datepicker("getDate");
             const bookDate = $("#BookDateInputDate").datepicker("getDate");
             const costCenterId = $("#CostCenterSelect").val();
@@ -57,7 +56,6 @@
             const details = getDetails();
 
             return {
-                TransactionMasterId: transactionMasterId,
                 ValueDate: valueDate,
                 BookDate: bookDate,
                 CostCenterId: costCenterId,
@@ -73,14 +71,8 @@
 
         const model = getModel();
 
-        if (!model.TransactionMasterId) {
-            alert("Access is denied.");
-            document.location = "/dashboard/purchase/tasks/entry";
-            return;
-        };
-
         if (!model.Details.length) {
-            window.displayMessage("Please select an item.");
+            alert("Please select an item.");
             return;
         };
 
@@ -90,19 +82,19 @@
             return;
         };
 
+        alert("todo");
+        //$("#CheckoutButton").addClass("loading");
 
-        $("#CheckoutButton").addClass("loading");
+        //const ajax = request(model);
 
-        const ajax = request(model);
+        //ajax.success(function(response) {
+        //    const id = response;
+        //    document.location = `/dashboard/purchase/tasks/entry/checklist/${id}`;
+        //});
 
-        ajax.success(function (response) {
-            const id = response;
-            document.location = "/dashboard/purchase/tasks/return/checklist/" + id;
-        });
-
-        ajax.fail(function (xhr) {
-            $("#CheckoutButton").removeClass("loading");
-            alert(JSON.stringify(xhr));
-        });
+        //ajax.fail(function(xhr) {
+        //    $("#CheckoutButton").removeClass("loading");
+        //    alert(JSON.stringify(xhr));
+        //});
     });
 </script>

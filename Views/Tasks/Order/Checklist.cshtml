@@ -1,0 +1,22 @@
+﻿@using MixERP.Purchases.Extensions
+@model long
+
+@{
+    ViewBag.Title = "Checklist";
+    Layout = ViewBag.PurchaseLayoutPath;
+}
+
+@Html.FinancePartialView("Shared/Checklist.cshtml", TenantConvention.GetTenant())
+
+<script>
+    window.overridePath = "/dashboard/purchase/tasks/entry";
+
+    window.prepareChecklist({
+        Title: "Purchase Order Checklist #@Model",
+        ViewText: "View Purchase Orders",
+        ViewUrl: "/dashboard/purchase/tasks/order",
+        AddNewText: "Add New Purchase Order Entry",
+        AddNewUrl: "/dashboard/purchase/tasks/order/new",
+        ReportPath: "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?transaction_master_id=@Model"
+    });
+</script>

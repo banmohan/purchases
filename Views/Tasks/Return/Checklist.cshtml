@@ -1,35 +1,20 @@
-﻿@model long
+﻿@using MixERP.Purchases.Extensions
+@model long
 
 @{
     ViewBag.Title = "Checklist";
     Layout = ViewBag.PurchaseLayoutPath;
 }
-<style>
-    iframe {
-        display: block;
-        margin-top: 1em;
-        width: 800px;
-        height: 800px;
-        border: 1px solid #ccc;
-    }
-</style>
-<script src="/Scripts/frapid/utilities/form.js"></script>
-<div class="ui attached page segment" style="min-height: 100%; padding: 3em;">
-    <div class="ui huge header">Purchase Entry</div>
-    <div class="ui divider"></div>
 
-    <div class="ui positive message">The transaction was posted successfully.</div>
-
-    <a href="/dashboard/purchase/tasks/return" class="ui green button">
-        View Returns
-    </a>
-    <a href="/dashboard/purchase/tasks/return/new" class="ui red button">
-        Add a New Return Entry
-    </a>
-    <iframe src="/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_master_id=@Model"></iframe>
-</div>
-
+@Html.FinancePartialView("Shared/Checklist.cshtml", TenantConvention.GetTenant())
 
 <script>
     window.overridePath = "/dashboard/purchase/tasks/return";
+
+    window.prepareChecklist({
+        Title: "Purchase Return Checklist #@Model",
+        ViewText: "View Purchase Returns",
+        ViewUrl: "/dashboard/purchase/tasks/return",
+        ReportPath: "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_master_id=@Model"
+    });
 </script>

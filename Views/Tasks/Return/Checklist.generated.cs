@@ -37,6 +37,12 @@ namespace ASP
     using Frapid.WebsiteBuilder;
     using MixERP.Purchases;
     
+    #line 1 "..\..\Views\Tasks\Return\Checklist.cshtml"
+    using MixERP.Purchases.Extensions;
+    
+    #line default
+    #line hidden
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
     [System.Web.WebPages.PageVirtualPathAttribute("~/Views/Tasks/Return/Checklist.cshtml")]
     public partial class _Views_Tasks_Return_Checklist_cshtml : System.Web.Mvc.WebViewPage<long>
@@ -47,7 +53,7 @@ namespace ASP
         public override void Execute()
         {
             
-            #line 3 "..\..\Views\Tasks\Return\Checklist.cshtml"
+            #line 4 "..\..\Views\Tasks\Return\Checklist.cshtml"
   
     ViewBag.Title = "Checklist";
     Layout = ViewBag.PurchaseLayoutPath;
@@ -55,58 +61,37 @@ namespace ASP
             
             #line default
             #line hidden
-WriteLiteral("\r\n<style>\r\n    iframe {\r\n        display: block;\r\n        margin-top: 1em;\r\n     " +
-"   width: 800px;\r\n        height: 800px;\r\n        border: 1px solid #ccc;\r\n    }" +
-"\r\n</style>\r\n<script");
+WriteLiteral("\r\n\r\n");
 
-WriteLiteral(" src=\"/Scripts/frapid/utilities/form.js\"");
-
-WriteLiteral("></script>\r\n<div");
-
-WriteLiteral(" class=\"ui attached page segment\"");
-
-WriteLiteral(" style=\"min-height: 100%; padding: 3em;\"");
-
-WriteLiteral(">\r\n    <div");
-
-WriteLiteral(" class=\"ui huge header\"");
-
-WriteLiteral(">Purchase Entry</div>\r\n    <div");
-
-WriteLiteral(" class=\"ui divider\"");
-
-WriteLiteral("></div>\r\n\r\n    <div");
-
-WriteLiteral(" class=\"ui positive message\"");
-
-WriteLiteral(">The transaction was posted successfully.</div>\r\n\r\n    <a");
-
-WriteLiteral(" href=\"/dashboard/purchase/tasks/return\"");
-
-WriteLiteral(" class=\"ui green button\"");
-
-WriteLiteral(">\r\n        View Returns\r\n    </a>\r\n    <a");
-
-WriteLiteral(" href=\"/dashboard/purchase/tasks/return/new\"");
-
-WriteLiteral(" class=\"ui red button\"");
-
-WriteLiteral(">\r\n        Add a New Return Entry\r\n    </a>\r\n    <iframe");
-
-WriteAttribute("src", Tuple.Create(" src=\"", 820), Tuple.Create("\"", 922)
-, Tuple.Create(Tuple.Create("", 826), Tuple.Create("/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_m" +
-"aster_id=", 826), true)
             
-            #line 29 "..\..\Views\Tasks\Return\Checklist.cshtml"
-                            , Tuple.Create(Tuple.Create("", 916), Tuple.Create<System.Object, System.Int32>(Model
+            #line 9 "..\..\Views\Tasks\Return\Checklist.cshtml"
+Write(Html.FinancePartialView("Shared/Checklist.cshtml", TenantConvention.GetTenant()));
+
             
             #line default
             #line hidden
-, 916), false)
-);
+WriteLiteral("\r\n\r\n<script>\r\n    window.overridePath = \"/dashboard/purchase/tasks/return\";\r\n\r\n  " +
+"  window.prepareChecklist({\r\n        Title: \"Purchase Return Checklist #");
 
-WriteLiteral("></iframe>\r\n</div>\r\n\r\n\r\n<script>\r\n    window.overridePath = \"/dashboard/purchase/" +
-"tasks/return\";\r\n</script>");
+            
+            #line 15 "..\..\Views\Tasks\Return\Checklist.cshtml"
+                                      Write(Model);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\",\r\n        ViewText: \"View Purchase Returns\",\r\n        ViewUrl: \"/dashboard/purc" +
+"hase/tasks/return\",\r\n        ReportPath: \"/dashboard/reports/source/Areas/MixERP" +
+".Purchases/Reports/Return.xml?transaction_master_id=");
+
+            
+            #line 18 "..\..\Views\Tasks\Return\Checklist.cshtml"
+                                                                                                          Write(Model);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n    });\r\n</script>\r\n");
 
         }
     }

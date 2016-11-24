@@ -37,23 +37,23 @@ namespace ASP
     using Frapid.WebsiteBuilder;
     using MixERP.Purchases;
     
-    #line 1 "..\..\Views\Tasks\Entry\Checklist.cshtml"
+    #line 1 "..\..\Views\Tasks\Order\Checklist.cshtml"
     using MixERP.Purchases.Extensions;
     
     #line default
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    [System.Web.WebPages.PageVirtualPathAttribute("~/Views/Tasks/Entry/Checklist.cshtml")]
-    public partial class _Views_Tasks_Entry_Checklist_cshtml : System.Web.Mvc.WebViewPage<long>
+    [System.Web.WebPages.PageVirtualPathAttribute("~/Views/Tasks/Order/Checklist.cshtml")]
+    public partial class _Views_Tasks_Order_Checklist_cshtml : System.Web.Mvc.WebViewPage<long>
     {
-        public _Views_Tasks_Entry_Checklist_cshtml()
+        public _Views_Tasks_Order_Checklist_cshtml()
         {
         }
         public override void Execute()
         {
             
-            #line 4 "..\..\Views\Tasks\Entry\Checklist.cshtml"
+            #line 4 "..\..\Views\Tasks\Order\Checklist.cshtml"
   
     ViewBag.Title = "Checklist";
     Layout = ViewBag.PurchaseLayoutPath;
@@ -64,32 +64,32 @@ namespace ASP
 WriteLiteral("\r\n\r\n");
 
             
-            #line 9 "..\..\Views\Tasks\Entry\Checklist.cshtml"
+            #line 9 "..\..\Views\Tasks\Order\Checklist.cshtml"
 Write(Html.FinancePartialView("Shared/Checklist.cshtml", TenantConvention.GetTenant()));
 
             
             #line default
             #line hidden
 WriteLiteral("\r\n\r\n<script>\r\n    window.overridePath = \"/dashboard/purchase/tasks/entry\";\r\n\r\n   " +
-" window.prepareChecklist({\r\n        Title: \"Purchase Checklist #");
+" window.prepareChecklist({\r\n        Title: \"Purchase Order Checklist #");
 
             
-            #line 15 "..\..\Views\Tasks\Entry\Checklist.cshtml"
-                               Write(Model);
+            #line 15 "..\..\Views\Tasks\Order\Checklist.cshtml"
+                                     Write(Model);
 
             
             #line default
             #line hidden
 WriteLiteral(@""",
-        ViewText: ""View Purchases"",
-        ViewUrl: ""/dashboard/purchase/tasks/entry"",
-        AddNewText: ""Add New Purchase Entry"",
-        AddNewUrl: ""/dashboard/purchase/tasks/entry/new"",
-        ReportPath: ""/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Invoice.xml?transaction_master_id=");
+        ViewText: ""View Purchase Orders"",
+        ViewUrl: ""/dashboard/purchase/tasks/order"",
+        AddNewText: ""Add New Purchase Order Entry"",
+        AddNewUrl: ""/dashboard/purchase/tasks/order/new"",
+        ReportPath: ""/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?transaction_master_id=");
 
             
-            #line 20 "..\..\Views\Tasks\Entry\Checklist.cshtml"
-                                                                                                           Write(Model);
+            #line 20 "..\..\Views\Tasks\Order\Checklist.cshtml"
+                                                                                                         Write(Model);
 
             
             #line default

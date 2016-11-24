@@ -6,37 +6,37 @@ using MixERP.Purchases.ViewModels;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
-    public class EntryController : PurchaseDashboardController
+    public class OrderController : PurchaseDashboardController
     {
-        [Route("dashboard/purchase/tasks/entry/checklist/{tranId}")]
-        [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/entry")]
+        [Route("dashboard/purchase/tasks/order/checklist/{tranId}")]
+        [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/order")]
         public ActionResult CheckList(long tranId)
         {
-            return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Entry/CheckList.cshtml", this.Tenant), tranId);
+            return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Order/CheckList.cshtml", this.Tenant), tranId);
         }
 
-        [Route("dashboard/purchase/tasks/entry")]
+        [Route("dashboard/purchase/tasks/order")]
         [MenuPolicy]
         public ActionResult Index()
         {
-            return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Entry/Index.cshtml", this.Tenant));
+            return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Order/Index.cshtml", this.Tenant));
         }
 
-        [Route("dashboard/purchase/tasks/entry/verification")]
+        [Route("dashboard/purchase/tasks/order/verification")]
         [MenuPolicy]
         public ActionResult Verification()
         {
-            return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Entry/Verification.cshtml", this.Tenant));
+            return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Order/Verification.cshtml", this.Tenant));
         }
 
-        [Route("dashboard/purchase/tasks/entry/new")]
-        [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/entry")]
+        [Route("dashboard/purchase/tasks/order/new")]
+        [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/order")]
         public ActionResult New()
         {
-            return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Entry/New.cshtml", this.Tenant));
+            return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Order/New.cshtml", this.Tenant));
         }
 
-        [Route("dashboard/purchase/tasks/entry/new")]
+        [Route("dashboard/purchase/tasks/order/new")]
         [HttpPost]
         public async Task<ActionResult> PostAsync(Purchase model)
         {

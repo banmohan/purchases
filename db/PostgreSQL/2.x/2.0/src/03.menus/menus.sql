@@ -22,8 +22,9 @@ SELECT * FROM core.create_menu('Purchase', 'Tasks', '', 'lightning', '');
 SELECT * FROM core.create_menu('Purchase', 'Purchase Entry', '/dashboard/purchase/tasks/entry', 'write', 'Tasks');
 SELECT * FROM core.create_menu('Purchase', 'Purchase Returns', '/dashboard/purchase/tasks/return', 'minus', 'Tasks');
 SELECT * FROM core.create_menu('Purchase', 'Purchase Quotation', '/dashboard/purchase/tasks/quotation', 'newspaper', 'Tasks');
-SELECT * FROM core.create_menu('Purchase', 'Purchase Orders', '/dashboard/purchase/tasks/orders', 'file text outline', 'Tasks');
+SELECT * FROM core.create_menu('Purchase', 'Purchase Orders', '/dashboard/purchase/tasks/order', 'file text outline', 'Tasks');
 SELECT * FROM core.create_menu('Purchase', 'Purchase Verification', '/dashboard/purchase/tasks/entry/verification', 'checkmark', 'Tasks');
+SELECT * FROM core.create_menu('Purchase', 'Purchase Return Verification', '/dashboard/purchase/tasks/return/verification', 'minus', 'Tasks');
 
 SELECT * FROM core.create_menu('Purchase', 'Setup', 'square outline', 'configure', '');
 SELECT * FROM core.create_menu('Purchase', 'Suppliers', '/dashboard/purchase/setup/suppliers', 'users', 'Setup');

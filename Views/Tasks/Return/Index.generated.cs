@@ -37,6 +37,12 @@ namespace ASP
     using Frapid.WebsiteBuilder;
     using MixERP.Purchases;
     
+    #line 1 "..\..\Views\Tasks\Return\Index.cshtml"
+    using MixERP.Purchases.Extensions;
+    
+    #line default
+    #line hidden
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
     [System.Web.WebPages.PageVirtualPathAttribute("~/Views/Tasks/Return/Index.cshtml")]
     public partial class _Views_Tasks_Return_Index_cshtml : System.Web.Mvc.WebViewPage<dynamic>
@@ -47,7 +53,7 @@ namespace ASP
         public override void Execute()
         {
             
-            #line 3 "..\..\Views\Tasks\Return\Index.cshtml"
+            #line 4 "..\..\Views\Tasks\Return\Index.cshtml"
   
     ViewBag.Title = "Purchase Returns";
     Layout = ViewBag.PurchaseLayoutPath;
@@ -55,404 +61,42 @@ namespace ASP
             
             #line default
             #line hidden
-WriteLiteral("\r\n<style>\r\n    .modal iframe {\r\n        width: 100%;\r\n        border: none;\r\n    " +
-"    height: 700px;\r\n    }\r\n</style>\r\n<script");
-
-WriteLiteral(" src=\"/Scripts/frapid/utilities/form.js\"");
-
-WriteLiteral("></script>\r\n<div");
-
-WriteLiteral(" class=\"ui attached page segment\"");
-
-WriteLiteral(" style=\"min-height: 100%; padding: 3em;\"");
-
-WriteLiteral(">\r\n    <div");
-
-WriteLiteral(" class=\"ui huge header\"");
-
-WriteLiteral(">Purchase Returns</div>\r\n    <div");
-
-WriteLiteral(" class=\"ui divider\"");
-
-WriteLiteral("></div>\r\n    <div");
-
-WriteLiteral(" class=\"ui basic buttons\"");
-
-WriteLiteral(">\r\n        ");
-
-WriteLiteral("\r\n        <div");
-
-WriteLiteral(" class=\"ui icon top left pointing dropdown basic button\"");
-
-WriteLiteral(" id=\"ExportDropDown\"");
-
-WriteLiteral(" tabindex=\"0\"");
-
-WriteLiteral(">\r\n            <span>\r\n                Export\r\n            </span>\r\n            <" +
-"div");
-
-WriteLiteral(" class=\"menu\"");
-
-WriteLiteral(" tabindex=\"-1\"");
-
-WriteLiteral(">\r\n                <div");
-
-WriteLiteral(" class=\"header\"");
-
-WriteLiteral(">\r\n                    Export This Document\r\n                </div>\r\n            " +
-"    <a");
-
-WriteLiteral(" class=\"item\"");
-
-WriteLiteral(" href=\"javascript:void(0);\"");
-
-WriteLiteral(" onclick=\"createDoc();\"");
-
-WriteLiteral(">\r\n                    <i");
-
-WriteLiteral(" class=\"file word outline blue icon\"");
-
-WriteLiteral("></i> Export to Doc\r\n                </a>\r\n                <a");
-
-WriteLiteral(" class=\"item\"");
-
-WriteLiteral(" href=\"javascript:void(0);\"");
-
-WriteLiteral(" onclick=\"createXls();\"");
-
-WriteLiteral(">\r\n                    <i");
-
-WriteLiteral(" class=\"file excel outline green icon\"");
-
-WriteLiteral("></i> Export to Excel\r\n                </a>\r\n                <a");
-
-WriteLiteral(" class=\"item\"");
-
-WriteLiteral(" href=\"javascript:void(0);\"");
-
-WriteLiteral(" onclick=\"createPDF();\"");
-
-WriteLiteral(">\r\n                    <i");
-
-WriteLiteral(" class=\"file pdf outline red icon\"");
-
-WriteLiteral("></i> Export to PDF\r\n                </a>\r\n            </div>\r\n        </div>\r\n  " +
-"      <a");
-
-WriteLiteral(" id=\"PrintButton\"");
-
-WriteLiteral(" href=\"javascript:void(0);\"");
-
-WriteLiteral(" onclick=\"print()\"");
-
-WriteLiteral(" class=\"ui basic button\"");
-
-WriteLiteral(">\r\n            Print\r\n        </a>\r\n    </div>\r\n\r\n    <div");
-
-WriteLiteral(" class=\"ui stackable form segment\"");
-
-WriteLiteral(" id=\"Annotation\"");
-
-WriteLiteral(" style=\"\"");
-
-WriteLiteral(">\r\n        <div");
-
-WriteLiteral(" class=\"eight fields\"");
-
-WriteLiteral(">\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" class=\"date\"");
-
-WriteLiteral(" data-persist");
-
-WriteLiteral(" placeholder=\"From\"");
-
-WriteLiteral(" id=\"FromInputDate\"");
-
-WriteLiteral(" title=\"From\"");
-
-WriteLiteral(" type=\"date\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" class=\"date\"");
-
-WriteLiteral(" data-persist");
-
-WriteLiteral(" placeholder=\"To\"");
-
-WriteLiteral(" id=\"ToInputDate\"");
-
-WriteLiteral(" title=\"To\"");
-
-WriteLiteral(" type=\"date\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" placeholder=\"TranId\"");
-
-WriteLiteral(" id=\"TranIdInputText\"");
-
-WriteLiteral(" title=\"TranId\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" placeholder=\"TranCode\"");
-
-WriteLiteral(" id=\"TranCodeInputText\"");
-
-WriteLiteral(" title=\"TranCode\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" placeholder=\"ReferenceNumber\"");
-
-WriteLiteral(" id=\"ReferenceNumberInputText\"");
-
-WriteLiteral(" title=\"ReferenceNumber\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" placeholder=\"StatementReference\"");
-
-WriteLiteral(" id=\"StatementReferenceInputText\"");
-
-WriteLiteral(" title=\"StatementReference\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" placeholder=\"PostedBy\"");
-
-WriteLiteral(" id=\"PostedByInputText\"");
-
-WriteLiteral(" title=\"PostedBy\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteLiteral(">\r\n            </div>\r\n        </div>\r\n        <div");
-
-WriteLiteral(" class=\"eight fields\"");
-
-WriteLiteral(">\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" placeholder=\"Office\"");
-
-WriteLiteral(" id=\"OfficeInputText\"");
-
-WriteLiteral(" title=\"Office\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" placeholder=\"Status\"");
-
-WriteLiteral(" id=\"StatusInputText\"");
-
-WriteLiteral(" title=\"Status\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" placeholder=\"VerifiedBy\"");
-
-WriteLiteral(" id=\"VerifiedByInputText\"");
-
-WriteLiteral(" title=\"VerifiedBy\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" placeholder=\"Reason\"");
-
-WriteLiteral(" id=\"ReasonInputText\"");
-
-WriteLiteral(" title=\"Reason\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field hidden\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" placeholder=\"UserId\"");
-
-WriteLiteral(" id=\"UserIdInputText\"");
-
-WriteLiteral(" title=\"UserId\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field hidden\"");
-
-WriteLiteral(">\r\n                <input");
-
-WriteLiteral(" placeholder=\"OfficeId\"");
-
-WriteLiteral(" id=\"OfficeIdInputText\"");
-
-WriteLiteral(" title=\"OfficeId\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteLiteral(">\r\n            </div>\r\n            <div");
-
-WriteLiteral(" class=\"field\"");
-
-WriteLiteral(">\r\n                <div");
-
-WriteLiteral(" class=\"ui green button\"");
-
-WriteLiteral(" id=\"ShowButton\"");
-
-WriteLiteral(">Show</div>\r\n            </div>\r\n        </div>\r\n\r\n\r\n    </div>\r\n\r\n    <table");
-
-WriteLiteral(" id=\"PurchaseView\"");
-
-WriteLiteral(" class=\"ui table segment\"");
-
-WriteLiteral(@">
-        <thead>
-            <tr>
-                <th>Actions</th>
-                <th>TranId</th>
-                <th>TranCode</th>
-                <th>Value Date</th>
-                <th>Book Date</th>
-                <th>Ref#</th>
-                <th>Statement Reference</th>
-                <th>Posted By</th>
-                <th>Office</th>
-                <th>Status</th>
-                <th>Verified By</th>
-                <th>Verified On</th>
-                <th>Reason</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
-
-<div");
-
-WriteLiteral(" class=\"ui large advice modal\"");
-
-WriteLiteral(">\r\n    <i");
-
-WriteLiteral(" class=\"close icon\"");
-
-WriteLiteral("></i>\r\n    <iframe></iframe>\r\n</div>\r\n<script>\r\n    function displayTable(target," +
-" model) {\r\n        target.find(\"tbody\").html(\"\");\r\n        function getCell(text" +
-") {\r\n            var cell = $(\"<td />\");\r\n\r\n            cell.text(text || \"\");\r\n" +
-"\r\n            return cell;\r\n        };\r\n\r\n        function getActionCell(tranId)" +
-" {\r\n            var cell = $(\"<td />\");\r\n\r\n            var checklistAnchor = $(\"" +
-"<a title=\'Checklist Window\'><i class=\'list icon\'></i></a>\");\r\n            checkl" +
-"istAnchor.attr(\"href\", \"/dashboard/purchase/tasks/return/checklist/\" + tranId);\r" +
-"\n\r\n            var journalAdviceAnchor = $(\"<a title=\'View Journal Advice\'><i cl" +
-"ass=\'print icon\'></i></a>\");\r\n            journalAdviceAnchor.attr(\"href\", \"java" +
-"script:void(0);\");\r\n            journalAdviceAnchor.attr(\"onclick\", \"showJournal" +
-"Advice(\" + tranId + \");\");\r\n\r\n            var inventoryAdviceAnchor = $(\"<a titl" +
-"e=\'View Purchase Invoice\'><i class=\'zoom icon\'></i></a>\");\r\n            inventor" +
-"yAdviceAnchor.attr(\"href\", \"javascript:void(0);\");\r\n            inventoryAdviceA" +
-"nchor.attr(\"onclick\", \"showReturn(\" + tranId + \");\");\r\n\r\n\r\n            cell.appe" +
-"nd(checklistAnchor);\r\n            cell.append(journalAdviceAnchor);\r\n           " +
-" cell.append(inventoryAdviceAnchor);\r\n            return cell;\r\n        };\r\n\r\n  " +
-"      $.each(model, function () {\r\n            var item = this;\r\n\r\n            v" +
-"ar row = $(\"<tr />\");\r\n\r\n            row.append(getActionCell(item.TransactionMa" +
-"sterId));\r\n            row.append(getCell(item.TransactionMasterId));\r\n         " +
-"   row.append(getCell(item.TransactionCode));\r\n            row.append(getCell(it" +
-"em.ValueDate));\r\n            row.append(getCell(item.BookDate));\r\n            ro" +
-"w.append(getCell(item.ReferenceNumber));\r\n            row.append(getCell(item.St" +
-"atementReference));\r\n            row.append(getCell(item.PostedBy));\r\n          " +
-"  row.append(getCell(item.Office));\r\n            row.append(getCell(item.Status)" +
-");\r\n            row.append(getCell(item.VerifiedBy));\r\n            row.append(ge" +
-"tCell(item.VerifiedOn));\r\n            row.append(getCell(item.Reason));\r\n\r\n     " +
-"       target.find(\"tbody\").append(row);\r\n        });\r\n    };\r\n    function proc" +
-"essQuery() {\r\n        function getModel() {\r\n            var model = window.seri" +
-"alizeForm($(\"#Annotation\"));\r\n            model.Book = \"Purchase Return\";\r\n     " +
-"       return model;\r\n        };\r\n\r\n        function displayGrid(target) {\r\n    " +
-"        function request(model) {\r\n                var url = \"/dashboard/finance" +
-"/tasks/journal/view\";\r\n                var data = JSON.stringify(model);\r\n      " +
-"          return window.getAjaxRequest(url, \"POST\", data);\r\n            };\r\n\r\n  " +
-"          var model = getModel();\r\n\r\n            var ajax = request(model);\r\n\r\n " +
-"           ajax.success(function (response) {\r\n                displayTable(targ" +
-"et, response);\r\n                target.removeClass(\"loading\");\r\n            });\r" +
-"\n\r\n            ajax.fail(function (xhr) {\r\n                alert(JSON.stringify(" +
-"xhr));\r\n            });\r\n        };\r\n\r\n        var view = $(\"#PurchaseView\").add" +
-"Class(\"loading\");\r\n\r\n        displayGrid(view);\r\n    };\r\n\r\n    $(\"#ShowButton\")." +
-"unbind(\"click\").bind(\"click\", function () {\r\n        processQuery();\r\n    });\r\n\r" +
-"\n    loadDatepicker();\r\n\r\n\r\n    \r\n    function showReturn(tranId) {\r\n        $(\"" +
-".advice.modal iframe\").attr(\"src\", \"/dashboard/reports/source/Areas/MixERP.Purch" +
-"ases/Reports/Return.xml?transaction_master_id=\" + tranId);\r\n\r\n        setTimeout" +
-"(function () {\r\n            $(\".advice.modal\")\r\n                .modal(\'setting\'" +
-", \'transition\', \'horizontal flip\')\r\n                .modal({\r\n                  " +
-"  blurring: true\r\n                })\r\n                .modal(\"show\");\r\n\r\n       " +
-" }, 300);\r\n    };\r\n    function showJournalAdvice(tranId) {\r\n        $(\".modal i" +
-"frame\").attr(\"src\", \"/dashboard/reports/source/Areas/MixERP.Finance/Reports/Jour" +
-"nalEntry.xml?transaction_master_id=\" + tranId);\r\n\r\n        setTimeout(function (" +
-") {\r\n            $(\".advice.modal\")\r\n                .modal(\'setting\', \'transiti" +
-"on\', \'horizontal flip\')\r\n                .modal({\r\n                    blurring:" +
-" true\r\n                })\r\n                .modal(\"show\");\r\n\r\n        }, 300);\r\n" +
-"    };\r\n\r\n    setTimeout(function () {\r\n        processQuery();\r\n    }, 1000);\r\n" +
-"</script>");
+WriteLiteral("\r\n\r\n");
+
+            
+            #line 9 "..\..\Views\Tasks\Return\Index.cshtml"
+Write(Html.FinancePartialView("Shared/JournalView.cshtml", TenantConvention.GetTenant()));
+
+            
+            #line default
+            #line hidden
+WriteLiteral(@"
+
+<script>
+    window.prepareView({
+        Title: ""Purchase Returns"",
+        Book: ""Purchase Return"",
+        ChecklistUrl: ""/dashboard/purchase/tasks/return/checklist/{tranId}"",
+        AdviceButtons: [
+            {
+                Title: ""View Purchase Return"",
+                Href: ""javascript:void(0);"",
+                OnClick: ""showReturn({tranId});""
+            }
+        ]
+    });
+
+    function showReturn(tranId) {
+        $("".advice.modal iframe"").attr(""src"", ""/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_master_id="" + tranId);
+
+        setTimeout(function () {
+            $("".advice.modal"")
+                .modal('setting', 'transition', 'horizontal flip')
+                .modal(""show"");
+
+        }, 300);
+    };
+</script>");
 
         }
     }
