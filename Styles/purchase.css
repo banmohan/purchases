@@ -375,6 +375,7 @@ input.customer.address {
     }
 
 .summary.items input,
+.summary.items textarea,
 .summary.items select {
     background-color: #555 !important;
     color: #eee !important;

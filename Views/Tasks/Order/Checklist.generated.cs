@@ -83,18 +83,18 @@ WriteLiteral("\r\n\r\n<script>\r\n    window.overridePath = \"/dashboard/purchas
 WriteLiteral(@""",
         ViewText: ""View Purchase Orders"",
         ViewUrl: ""/dashboard/purchase/tasks/order"",
-        AddNewText: ""Add New Purchase Order Entry"",
+        AddNewText: ""Add New Purchase Order"",
         AddNewUrl: ""/dashboard/purchase/tasks/order/new"",
-        ReportPath: ""/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?transaction_master_id=");
+        ReportPath: ""/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?order_id=");
 
             
             #line 20 "..\..\Views\Tasks\Order\Checklist.cshtml"
-                                                                                                         Write(Model);
+                                                                                            Write(Model);
 
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n    });\r\n</script>");
+WriteLiteral("\"\r\n    });\r\n\r\n    $(\".withdraw.button\").remove();\r\n</script>");
 
         }
     }

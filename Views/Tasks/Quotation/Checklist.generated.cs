@@ -71,30 +71,30 @@ Write(Html.FinancePartialView("Shared/Checklist.cshtml", TenantConvention.GetTen
             #line default
             #line hidden
 WriteLiteral("\r\n\r\n<script>\r\n    window.overridePath = \"/dashboard/purchase/tasks/entry\";\r\n\r\n   " +
-" window.prepareChecklist({\r\n        Title: \"Purchase Order Checklist #");
+" window.prepareChecklist({\r\n        Title: \"Purchase Quotation Checklist #");
 
             
             #line 15 "..\..\Views\Tasks\Quotation\Checklist.cshtml"
-                                     Write(Model);
+                                         Write(Model);
 
             
             #line default
             #line hidden
 WriteLiteral(@""",
-        ViewText: ""View Purchase Orders"",
-        ViewUrl: ""/dashboard/purchase/tasks/order"",
-        AddNewText: ""Add New Purchase Order Entry"",
-        AddNewUrl: ""/dashboard/purchase/tasks/order/new"",
-        ReportPath: ""/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?transaction_master_id=");
+        ViewText: ""View Purchase Quotations"",
+        ViewUrl: ""/dashboard/purchase/tasks/quotation"",
+        AddNewText: ""Add New Purchase Quotation"",
+        AddNewUrl: ""/dashboard/purchase/tasks/quotation/new"",
+        ReportPath: ""/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Quotation.xml?quotation_id=");
 
             
             #line 20 "..\..\Views\Tasks\Quotation\Checklist.cshtml"
-                                                                                                         Write(Model);
+                                                                                                    Write(Model);
 
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n    });\r\n</script>");
+WriteLiteral("\"\r\n    });\r\n\r\n    $(\".withdraw.button\").remove();\r\n</script>");
 
         }
     }

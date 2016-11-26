@@ -37,12 +37,6 @@ namespace ASP
     using Frapid.WebsiteBuilder;
     using MixERP.Purchases;
     
-    #line 1 "..\..\Views\Tasks\Order\Index.cshtml"
-    using MixERP.Purchases.Extensions;
-    
-    #line default
-    #line hidden
-    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
     [System.Web.WebPages.PageVirtualPathAttribute("~/Views/Tasks/Order/Index.cshtml")]
     public partial class _Views_Tasks_Order_Index_cshtml : System.Web.Mvc.WebViewPage<dynamic>
@@ -53,7 +47,7 @@ namespace ASP
         public override void Execute()
         {
             
-            #line 4 "..\..\Views\Tasks\Order\Index.cshtml"
+            #line 3 "..\..\Views\Tasks\Order\Index.cshtml"
   
     ViewBag.Title = "Purchase Orders";
     Layout = ViewBag.PurchaseLayoutPath;
@@ -61,37 +55,399 @@ namespace ASP
             
             #line default
             #line hidden
-WriteLiteral("\r\n\r\n\r\n");
+WriteLiteral("\r\n<style>\r\n    .modal iframe {\r\n        width: 100%;\r\n        border: none;\r\n    " +
+"    height: 700px;\r\n    }\r\n</style>\r\n\r\n<div");
 
-            
-            #line 10 "..\..\Views\Tasks\Order\Index.cshtml"
-Write(Html.FinancePartialView("Shared/JournalView.cshtml", TenantConvention.GetTenant()));
+WriteLiteral(" class=\"ui attached page segment\"");
 
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n\r\n<script>\r\n    window.prepareView({\r\n        Title: \"Purchase Orders\",\r\n      " +
-"  AddNewText: \"Add New\",\r\n        AddNewUrl: \"/dashboard/purchase/tasks/order/ne" +
-"w\",\r\n        ReturnText: \"Return\",\r\n        ReturnUrl: \"javascript:void(0);\",\r\n " +
-"       Book: \"Purchase Order\",\r\n        ChecklistUrl: \"/dashboard/purchase/tasks" +
-"/order/checklist/{tranId}\",\r\n        AdviceButtons: [\r\n            {\r\n          " +
-"      Title: \"View Purchase Order\",\r\n                Href: \"javascript:void(0);\"" +
-",\r\n                OnClick: \"showQuotation({tranId});\"\r\n            }\r\n        ]" +
-"\r\n    });\r\n\r\n    $(\"#ReturnButton\").click(function () {\r\n        function getSel" +
-"ectedItem() {\r\n            const selected = $(\"#JournalView\").find(\"input:checke" +
-"d\").first();\r\n\r\n            if (selected.length) {\r\n                const row = " +
-"selected.parent().parent().parent();\r\n                const id = row.find(\"td:nt" +
-"h-child(3)\").html();\r\n                return parseInt(id);\r\n            };\r\n\r\n  " +
-"          return 0;\r\n        };\r\n\r\n        const selected = getSelectedItem();\r\n" +
-"        if (selected) {\r\n            const url = \"/dashboard/purchase/tasks/retu" +
-"rn/new?TransactionMasterId=\" + selected;\r\n            document.location = url;\r\n" +
-"            return;\r\n        };\r\n\r\n        window.displayMessage(\"Please select " +
-"an item from the grid.\");\r\n    });\r\n\r\n    function showOrder(tranId) {\r\n        " +
-"$(\".advice.modal iframe\").attr(\"src\", \"/dashboard/reports/source/Areas/MixERP.Pu" +
-"rchases/Reports/Order.xml?transaction_master_id=\" + tranId);\r\n\r\n        setTimeo" +
-"ut(function () {\r\n            $(\".advice.modal\")\r\n                .modal(\'settin" +
-"g\', \'transition\', \'horizontal flip\')\r\n                .modal(\"show\");\r\n\r\n       " +
-" }, 300);\r\n    };\r\n</script>");
+WriteLiteral(" style=\"min-height: 100%; padding: 3em;\"");
+
+WriteLiteral(">\r\n    <div");
+
+WriteLiteral(" class=\"ui huge title header\"");
+
+WriteLiteral(">Purchase Orders</div>\r\n    <div");
+
+WriteLiteral(" class=\"ui divider\"");
+
+WriteLiteral("></div>\r\n    <div");
+
+WriteLiteral(" class=\"ui basic buttons\"");
+
+WriteLiteral(">\r\n        <a");
+
+WriteLiteral(" id=\"AddNewButton\"");
+
+WriteLiteral(" href=\"/dashboard/purchase/tasks/order/new\"");
+
+WriteLiteral(" class=\"ui basic add new button\"");
+
+WriteLiteral(">Add a New Purchase Order</a>\r\n        <div");
+
+WriteLiteral(" class=\"ui icon top left pointing dropdown basic button\"");
+
+WriteLiteral(" id=\"ExportDropDown\"");
+
+WriteLiteral(" tabindex=\"0\"");
+
+WriteLiteral(">\r\n            <span>\r\n                Export\r\n            </span>\r\n            <" +
+"div");
+
+WriteLiteral(" class=\"menu\"");
+
+WriteLiteral(" tabindex=\"-1\"");
+
+WriteLiteral(">\r\n                <div");
+
+WriteLiteral(" class=\"header\"");
+
+WriteLiteral(">\r\n                    Export This Document\r\n                </div>\r\n            " +
+"    <a");
+
+WriteLiteral(" class=\"item\"");
+
+WriteLiteral(" href=\"javascript:void(0);\"");
+
+WriteLiteral(" onclick=\"createDoc();\"");
+
+WriteLiteral(">\r\n                    <i");
+
+WriteLiteral(" class=\"file word outline blue icon\"");
+
+WriteLiteral("></i> Export to Doc\r\n                </a>\r\n                <a");
+
+WriteLiteral(" class=\"item\"");
+
+WriteLiteral(" href=\"javascript:void(0);\"");
+
+WriteLiteral(" onclick=\"createXls();\"");
+
+WriteLiteral(">\r\n                    <i");
+
+WriteLiteral(" class=\"file excel outline green icon\"");
+
+WriteLiteral("></i> Export to Excel\r\n                </a>\r\n                <a");
+
+WriteLiteral(" class=\"item\"");
+
+WriteLiteral(" href=\"javascript:void(0);\"");
+
+WriteLiteral(" onclick=\"createPDF();\"");
+
+WriteLiteral(">\r\n                    <i");
+
+WriteLiteral(" class=\"file pdf outline red icon\"");
+
+WriteLiteral("></i> Export to PDF\r\n                </a>\r\n            </div>\r\n        </div>\r\n  " +
+"      <a");
+
+WriteLiteral(" id=\"PrintButton\"");
+
+WriteLiteral(" href=\"javascript:void(0);\"");
+
+WriteLiteral(" onclick=\"print()\"");
+
+WriteLiteral(" class=\"ui basic button\"");
+
+WriteLiteral(">\r\n            Print\r\n        </a>\r\n    </div>\r\n\r\n    <div");
+
+WriteLiteral(" class=\"ui stackable form segment\"");
+
+WriteLiteral(" id=\"Annotation\"");
+
+WriteLiteral(" style=\"\"");
+
+WriteLiteral(">\r\n        <div");
+
+WriteLiteral(" class=\"six fields\"");
+
+WriteLiteral(">\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" class=\"date\"");
+
+WriteLiteral(" data-persist");
+
+WriteLiteral(" placeholder=\"From\"");
+
+WriteLiteral(" id=\"FromInputDate\"");
+
+WriteLiteral(" title=\"From\"");
+
+WriteLiteral(" type=\"date\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" class=\"date\"");
+
+WriteLiteral(" data-persist");
+
+WriteLiteral(" placeholder=\"To\"");
+
+WriteLiteral(" id=\"ToInputDate\"");
+
+WriteLiteral(" title=\"To\"");
+
+WriteLiteral(" type=\"date\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" class=\"date\"");
+
+WriteLiteral(" data-persist");
+
+WriteLiteral(" placeholder=\"Expected From\"");
+
+WriteLiteral(" id=\"ExpectedFromInputDate\"");
+
+WriteLiteral(" title=\"Expected From\"");
+
+WriteLiteral(" type=\"date\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" class=\"date\"");
+
+WriteLiteral(" data-persist");
+
+WriteLiteral(" placeholder=\"Expected To\"");
+
+WriteLiteral(" id=\"ExpectedToInputDate\"");
+
+WriteLiteral(" title=\"Expected To\"");
+
+WriteLiteral(" type=\"date\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" placeholder=\"Id\"");
+
+WriteLiteral(" id=\"IdInputText\"");
+
+WriteLiteral(" title=\"Id\"");
+
+WriteLiteral(" type=\"text\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" placeholder=\"ReferenceNumber\"");
+
+WriteLiteral(" id=\"ReferenceNumberInputText\"");
+
+WriteLiteral(" title=\"ReferenceNumber\"");
+
+WriteLiteral(" type=\"text\"");
+
+WriteLiteral(">\r\n            </div>\r\n        </div>\r\n        <div");
+
+WriteLiteral(" class=\"six fields\"");
+
+WriteLiteral(">\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" placeholder=\"Supplier\"");
+
+WriteLiteral(" id=\"SupplierInputText\"");
+
+WriteLiteral(" title=\"Supplier\"");
+
+WriteLiteral(" type=\"text\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" placeholder=\"Terms & Conditions\"");
+
+WriteLiteral(" id=\"TermsInputText\"");
+
+WriteLiteral(" title=\"Internal Memo\"");
+
+WriteLiteral(" type=\"text\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" placeholder=\"InternalMemo\"");
+
+WriteLiteral(" id=\"InternalMemoInputText\"");
+
+WriteLiteral(" title=\"Internal Memo\"");
+
+WriteLiteral(" type=\"text\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" placeholder=\"PostedBy\"");
+
+WriteLiteral(" id=\"PostedByInputText\"");
+
+WriteLiteral(" title=\"PostedBy\"");
+
+WriteLiteral(" type=\"text\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" placeholder=\"Office\"");
+
+WriteLiteral(" id=\"OfficeInputText\"");
+
+WriteLiteral(" title=\"Office\"");
+
+WriteLiteral(" type=\"text\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field hidden\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" placeholder=\"UserId\"");
+
+WriteLiteral(" id=\"UserIdInputText\"");
+
+WriteLiteral(" title=\"UserId\"");
+
+WriteLiteral(" type=\"text\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field hidden\"");
+
+WriteLiteral(">\r\n                <input");
+
+WriteLiteral(" placeholder=\"OfficeId\"");
+
+WriteLiteral(" id=\"OfficeIdInputText\"");
+
+WriteLiteral(" title=\"OfficeId\"");
+
+WriteLiteral(" type=\"text\"");
+
+WriteLiteral(">\r\n            </div>\r\n            <div");
+
+WriteLiteral(" class=\"field\"");
+
+WriteLiteral(">\r\n                <div");
+
+WriteLiteral(" class=\"ui green button\"");
+
+WriteLiteral(" id=\"ShowButton\"");
+
+WriteLiteral(">Show</div>\r\n            </div>\r\n        </div>\r\n\r\n\r\n    </div>\r\n\r\n    <table");
+
+WriteLiteral(" id=\"JournalView\"");
+
+WriteLiteral(" class=\"ui table segment\"");
+
+WriteLiteral(@">
+        <thead>
+        <tr>
+            <th>Actions</th>
+            <th>Id</th>
+            <th>Supplier</th>
+            <th>Value Date</th>
+            <th>Expected Date</th>
+            <th>Ref#</th>
+            <th>Terms</th>
+            <th>Internal Memo</th>
+            <th>Posted By</th>
+            <th>Office</th>
+            <th>Posted On</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div");
+
+WriteLiteral(" class=\"ui large advice modal\"");
+
+WriteLiteral(">\r\n    <i");
+
+WriteLiteral(" class=\"close icon\"");
+
+WriteLiteral("></i>\r\n    <iframe></iframe>\r\n</div>\r\n<script>\r\n    function displayTable(target," +
+" data) {\r\n        target.find(\"tbody\").html(\"\");\r\n\r\n        function getCell(tex" +
+"t) {\r\n            const cell = $(\"<td />\");\r\n\r\n            cell.text(text || \"\")" +
+";\r\n\r\n            return cell;\r\n        };\r\n\r\n        function getActionCell(id) " +
+"{\r\n            const cell = $(\"<td />\");\r\n\r\n            const checklistAnchor = " +
+"$(\"<a title=\'Checklist Window\'><i class=\'list icon\'></i></a>\");\r\n            con" +
+"st checklistUrl = \"/dashboard/purchase/tasks/order/checklist/{id}\";\r\n           " +
+" checklistAnchor.attr(\"href\", checklistUrl.replace(\"{id}\", id));\r\n\r\n\r\n          " +
+"  const journalAdviceAnchor = $(\"<a title=\'View Order\'><i class=\'print icon\'></i" +
+"></a>\");\r\n            journalAdviceAnchor.attr(\"href\", \"javascript:void(0);\");\r\n" +
+"            journalAdviceAnchor.attr(\"onclick\", \"showOrder(\" + id + \");\");\r\n\r\n  " +
+"          cell.append(checklistAnchor);\r\n            cell.append(journalAdviceAn" +
+"chor);\r\n\r\n            return cell;\r\n        };\r\n\r\n\r\n        $.each(data, functio" +
+"n() {\r\n            const item = this;\r\n\r\n            const row = $(\"<tr />\");\r\n\r" +
+"\n            row.append(getActionCell(item.Id));\r\n            row.append(getCell" +
+"(item.Id));\r\n            row.append(getCell(item.Supplier));\r\n            row.ap" +
+"pend(getCell(item.ValueDate));\r\n            row.append(getCell(item.ExpectedDate" +
+"));\r\n            row.append(getCell(item.ReferenceNumber));\r\n            row.app" +
+"end(getCell(item.Terms));\r\n            row.append(getCell(item.InternalMemo));\r\n" +
+"            row.append(getCell(item.PostedBy));\r\n            row.append(getCell(" +
+"item.Office));\r\n            row.append(getCell(item.TransactionTs));\r\n\r\n        " +
+"    target.find(\"tbody\").append(row);\r\n        });\r\n    };\r\n\r\n    function proce" +
+"ssQuery() {\r\n        function getModel() {\r\n            const form = window.seri" +
+"alizeForm($(\"#Annotation\"));\r\n            return form;\r\n        };\r\n\r\n        fu" +
+"nction displayGrid(target) {\r\n            function request(query) {\r\n           " +
+"     const url = \"/dashboard/purchase/tasks/order/view\";\r\n                const " +
+"data = JSON.stringify(query);\r\n                return window.getAjaxRequest(url," +
+" \"POST\", data);\r\n            };\r\n\r\n            const query = getModel();\r\n\r\n    " +
+"        const ajax = request(query);\r\n\r\n            ajax.success(function(respon" +
+"se) {\r\n                displayTable(target, response);\r\n                target.r" +
+"emoveClass(\"loading\");\r\n            });\r\n\r\n            ajax.fail(function(xhr) {" +
+"\r\n                alert(JSON.stringify(xhr));\r\n            });\r\n        };\r\n\r\n  " +
+"      const view = $(\"#JournalView\").addClass(\"loading\");\r\n\r\n        displayGrid" +
+"(view);\r\n    };\r\n\r\n    $(\"#ShowButton\").unbind(\"click\").bind(\"click\", function()" +
+" {\r\n        processQuery();\r\n    });\r\n\r\n    function showOrder(id) {\r\n        $(" +
+"\".modal iframe\").attr(\"src\", \"/dashboard/reports/source/Areas/MixERP.Purchases/R" +
+"eports/Order.xml?order_id=\" + id);\r\n\r\n        setTimeout(function () {\r\n        " +
+"    $(\".advice.modal\")\r\n                .modal(\'setting\', \'transition\', \'horizon" +
+"tal flip\')\r\n                .modal(\"show\");\r\n\r\n        }, 300);\r\n    };\r\n\r\n    w" +
+"indow.loadDatepicker();\r\n\r\n    setTimeout(function() {\r\n        processQuery();\r" +
+"\n    }, 1000);\r\n</script>");
 
         }
     }

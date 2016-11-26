@@ -12,11 +12,13 @@
     window.overridePath = "/dashboard/purchase/tasks/entry";
 
     window.prepareChecklist({
-        Title: "Purchase Order Checklist #@Model",
-        ViewText: "View Purchase Orders",
-        ViewUrl: "/dashboard/purchase/tasks/order",
-        AddNewText: "Add New Purchase Order Entry",
-        AddNewUrl: "/dashboard/purchase/tasks/order/new",
-        ReportPath: "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?transaction_master_id=@Model"
+        Title: "Purchase Quotation Checklist #@Model",
+        ViewText: "View Purchase Quotations",
+        ViewUrl: "/dashboard/purchase/tasks/quotation",
+        AddNewText: "Add New Purchase Quotation",
+        AddNewUrl: "/dashboard/purchase/tasks/quotation/new",
+        ReportPath: "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Quotation.xml?quotation_id=@Model"
     });
+
+    $(".withdraw.button").remove();
 </script>

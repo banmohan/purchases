@@ -140,7 +140,6 @@
         inventory.checkout_details.price,
         inventory.checkout_details.price * inventory.checkout_details.quantity AS amount,
         inventory.checkout_details.discount,
-        (inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount AS sub_total,
         (inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount AS total
         FROM inventory.checkout_details
         INNER JOIN inventory.items

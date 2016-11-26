@@ -114,8 +114,8 @@ WriteLiteral("\r\n\r\n\r\n<script>\r\n    $(\".page.title\").html(\"Purchase Ret
 "x.success(function (response) {\r\n            const id = response;\r\n            d" +
 "ocument.location = \"/dashboard/purchase/tasks/return/checklist/\" + id;\r\n        " +
 "});\r\n\r\n        ajax.fail(function (xhr) {\r\n            $(\"#CheckoutButton\").remo" +
-"veClass(\"loading\");\r\n            alert(JSON.stringify(xhr));\r\n        });\r\n    }" +
-");\r\n</script>\r\n");
+"veClass(\"loading\");\r\n            window.logAjaxErrorMessage(xhr);\r\n        });\r\n" +
+"    });\r\n</script>\r\n");
 
         }
     }

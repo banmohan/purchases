@@ -102,7 +102,7 @@
 
         ajax.fail(function (xhr) {
             $("#CheckoutButton").removeClass("loading");
-            alert(JSON.stringify(xhr));
+            window.logAjaxErrorMessage(xhr);
         });
     });
 </script>

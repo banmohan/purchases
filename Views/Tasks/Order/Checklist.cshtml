@@ -15,8 +15,10 @@
         Title: "Purchase Order Checklist #@Model",
         ViewText: "View Purchase Orders",
         ViewUrl: "/dashboard/purchase/tasks/order",
-        AddNewText: "Add New Purchase Order Entry",
+        AddNewText: "Add New Purchase Order",
         AddNewUrl: "/dashboard/purchase/tasks/order/new",
-        ReportPath: "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?transaction_master_id=@Model"
+        ReportPath: "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?order_id=@Model"
     });
+
+    $(".withdraw.button").remove();
 </script>

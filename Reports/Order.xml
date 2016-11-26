@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FrapidReport>
+  <Header />
+  <Title>Purchase Order</Title>
+  <TopSection>
+    <table class="table horizontal">
+      <tr>
+        <td>{Resources.Titles.OrderId}</td>
+        <td>
+          {DataSource[0].order_id}
+        </td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.TransactionDate}</td>
+        <td>{DataSource[0].transaction_timestamp}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.ValueDate}</td>
+        <td>{DataSource[0].value_date}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.EnteredBy}</td>
+        <td> {DataSource[0].entered_by}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.Office}</td>
+        <td>{DataSource[0].office_name}</td>
+      </tr>
+      <tr>
+        <td>{Resources.Titles.SupplierName}</td>
+        <td>{DataSource[0].supplier_name}</td>
+      </tr>
+    </table>
+    <br />
+  </TopSection>
+  <Body>
+    <Content>
+      <h2>{Resources.Titles.OrderItems}</h2>
+    </Content>
+    <GridViews>
+      <GridView>
+        <GridViewDataSource Index="1">
+        </GridViewDataSource>
+      </GridView>
+    </GridViews>
+  </Body>
+  <BottomSection>
+    <h3>{Resources.Titles.OtherDetails}</h3>
+    <p>
+      <table class="table horizontal">
+        <tr>
+          <td>{Resources.Titles.Terms}</td>
+          <td>{DataSource[0].terms}</td>
+        </tr>
+        <tr>
+          <td>{Resources.Titles.InternalMemo}</td>
+          <td>{DataSource[0].internal_memo}</td>
+        </tr>
+      </table>
+    </p>
+  </BottomSection>
+  <DataSources>
+    <DataSource>
+      <Query>
+		SELECT
+			purchase.orders.order_id,
+			purchase.orders.transaction_timestamp,
+			purchase.orders.value_date,
+			account.get_name_by_user_id(purchase.orders.user_id) AS entered_by,
+			core.get_office_name_by_office_id(purchase.orders.office_id) AS office_name,
+			purchase.orders.terms,
+			purchase.orders.internal_memo,
+			inventory.get_supplier_name_by_supplier_id(purchase.orders.supplier_id) AS supplier_name    
+		FROM purchase.orders
+		WHERE purchase.orders.order_id = @order_id;
+      </Query>
+      <Parameters>
+        <Parameter Name="@order_id" Type="Number" />
+      </Parameters>
+    </DataSource>
+    <DataSource>
+      <Query>
+		SELECT
+			purchase.order_details.item_id,
+			inventory.items.item_code,
+			inventory.items.item_name,
+			purchase.order_details.quantity,
+			inventory.get_unit_name_by_unit_id(purchase.order_details.unit_id) AS unit,
+			purchase.order_details.price,
+			purchase.order_details.price * purchase.order_details.quantity AS amount,
+			purchase.order_details.discount_rate,
+			ROUND((purchase.order_details.price * purchase.order_details.quantity) * ((100 - purchase.order_details.discount_rate)/100), 4) AS total
+		FROM purchase.order_details
+		INNER JOIN inventory.items
+		ON inventory.items.item_id = purchase.order_details.item_id
+		WHERE purchase.order_details.order_id = @order_id
+		ORDER BY purchase.order_details.order_detail_id;
+      </Query>
+      <Parameters>
+        <Parameter Name="@order_id" Type="Number" />
+      </Parameters>
+      <RunningTotalTextColumnIndex>3</RunningTotalTextColumnIndex>
+      <RunningTotalFieldIndices>5,6,7,8,9</RunningTotalFieldIndices>
+    </DataSource>
+  </DataSources>
+</FrapidReport>

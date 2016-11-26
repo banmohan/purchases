@@ -70,48 +70,67 @@ Write(Html.PartialView("Shared/ItemList.cshtml", TenantConvention.GetTenant()));
             
             #line default
             #line hidden
-WriteLiteral("\r\n\r\n<script>\r\n    $(\".page.title\").html(\"Purchase Quotation\");\r\n    $(\"#CheckoutB" +
-"utton\").unbind(\"click\").bind(\"click\", function() {\r\n\r\n        function request(m" +
-"odel) {\r\n            const url = \"/dashboard/purchase/tasks/entry/new\";\r\n       " +
-"     const data = JSON.stringify(model);\r\n            return window.getAjaxReque" +
-"st(url, \"POST\", data);\r\n        };\r\n\r\n        function getModel() {\r\n           " +
-" function getDetails() {\r\n                const items = $(\"#PurchaseItems .item\"" +
-");\r\n                var model = [];\r\n\r\n                $.each(items, function() " +
-"{\r\n                    const el = $(this);\r\n                    const itemId = p" +
-"arseInt(el.attr(\"data-item-id\"));\r\n                    const quantity = parseInt" +
-"(el.find(\"input.quantity\").val());\r\n                    const unitId = parseInt(" +
-"el.find(\"select.unit\").val());\r\n                    const price = parseFloat(el." +
-"find(\"input.price\").val() || 0);\r\n                    const discount = parseFloa" +
-"t(el.find(\"input.discount\").val() || 0);\r\n\r\n                    model.push({\r\n  " +
-"                      StoreId: $(\"#StoreSelect\").val(),\r\n                       " +
-" ItemId: itemId,\r\n                        Quantity: quantity,\r\n                 " +
-"       UnitId: unitId,\r\n                        Price: price,\r\n                 " +
-"       Discount: discount\r\n                    });\r\n                });\r\n\r\n     " +
-"           return model;\r\n            };\r\n\r\n            const valueDate = $(\"#Va" +
-"lueDateInputDate\").datepicker(\"getDate\");\r\n            const bookDate = $(\"#Book" +
-"DateInputDate\").datepicker(\"getDate\");\r\n            const costCenterId = $(\"#Cos" +
-"tCenterSelect\").val();\r\n            const referenceNumber = $(\"#ReferenceNumberI" +
-"nputText\").val();\r\n            const statementReference = $(\"#StatementReference" +
-"InputText\").val();\r\n            const supplierId = $(\"#SupplierSelect\").val();\r\n" +
-"            const priceTypeId = $(\"#PriceTypeSelect\").val();\r\n            const " +
-"shipperId = $(\"#ShipperSelect\").val();\r\n            const storeId = $(\"#StoreSel" +
-"ect\").val();\r\n            const details = getDetails();\r\n\r\n            return {\r" +
-"\n                ValueDate: valueDate,\r\n                BookDate: bookDate,\r\n   " +
-"             CostCenterId: costCenterId,\r\n                ReferenceNumber: refer" +
-"enceNumber,\r\n                StatementReference: statementReference,\r\n          " +
-"      SupplierId: supplierId,\r\n                PriceTypeId: priceTypeId,\r\n      " +
-"          ShipperId: shipperId,\r\n                StoreId: storeId,\r\n            " +
-"    Details: details\r\n            };\r\n        };\r\n\r\n        const model = getMod" +
-"el();\r\n\r\n        if (!model.Details.length) {\r\n            alert(\"Please select " +
-"an item.\");\r\n            return;\r\n        };\r\n\r\n        const confirmed = confir" +
-"m(\"Are you sure\");\r\n\r\n        if (!confirmed) {\r\n            return;\r\n        };" +
-"\r\n\r\n        alert(\"todo\");\r\n        //$(\"#CheckoutButton\").addClass(\"loading\");\r" +
-"\n\r\n        //const ajax = request(model);\r\n\r\n        //ajax.success(function(res" +
-"ponse) {\r\n        //    const id = response;\r\n        //    document.location = " +
-"`/dashboard/purchase/tasks/entry/checklist/${id}`;\r\n        //});\r\n\r\n        //a" +
-"jax.fail(function(xhr) {\r\n        //    $(\"#CheckoutButton\").removeClass(\"loadin" +
-"g\");\r\n        //    alert(JSON.stringify(xhr));\r\n        //});\r\n    });\r\n</scrip" +
-"t>");
+WriteLiteral("\r\n\r\n\r\n<script>\r\n    function initializeUI() {\r\n        const template = `<div cla" +
+"ss=\"one summary items\">\r\n                            <div class=\"terms item\">\r\n " +
+"                               <div class=\"description\">Terms & Conditions</div>" +
+"\r\n                                <div class=\"control\">\r\n                       " +
+"             <textarea id=\"TermsTextArea\" type=\"text\"></textarea>\r\n             " +
+"                   </div>\r\n                            </div>\r\n                 " +
+"       </div>\r\n                        <div class=\"one summary items\">\r\n        " +
+"                    <div class=\"terms item\">\r\n                                <d" +
+"iv class=\"description\">Internal Memo</div>\r\n                                <div" +
+" class=\"control\">\r\n                                    <textarea id=\"InternalMem" +
+"oTextArea\" type=\"text\"></textarea>\r\n                                </div>\r\n    " +
+"                        </div>\r\n                        </div>`;\r\n\r\n        $(\"." +
+"page.title\").html(\"Purchase Quotation\");\r\n\r\n        const expectedDeliveryDate =" +
+"\r\n            $(\"<input type=\'text\' class=\'date\' value=\'7d\' id=\'ExpectedDelivery" +
+"DateInputText\' />\");\r\n        $(\"#BookDateInputDate\").after(expectedDeliveryDate" +
+").remove();\r\n        expectedDeliveryDate.parent().parent().find(\".description\")" +
+".html(\"Expected Delivery Date\");\r\n\r\n        $(\"#StatementReferenceInputText\").cl" +
+"osest(\".two.summary.items\").attr(\"class\", \"one summary items\")\r\n            .aft" +
+"er(template);\r\n\r\n        $(\".memo.item\").remove();\r\n        $(\"#CostCenterSelect" +
+"\").closest(\".two.summary.items\").attr(\"class\", \"one summary items\");\r\n        $(" +
+"\".cost.center.item\").remove();\r\n        $(\".store.item\").remove();\r\n\r\n        //" +
+"window.loadDatepicker();\r\n    };\r\n\r\n    initializeUI();\r\n\r\n    $(\"#CheckoutButto" +
+"n\").unbind(\"click\").bind(\"click\", function() {\r\n        function request(model) " +
+"{\r\n            const url = \"/dashboard/purchase/tasks/quotation/new\";\r\n         " +
+"   const data = JSON.stringify(model);\r\n            return window.getAjaxRequest" +
+"(url, \"POST\", data);\r\n        };\r\n\r\n        function getModel() {\r\n            f" +
+"unction getDetails() {\r\n                const items = $(\"#PurchaseItems .item\");" +
+"\r\n                var model = [];\r\n\r\n                $.each(items, function() {\r" +
+"\n                    const el = $(this);\r\n                    const itemId = par" +
+"seInt(el.attr(\"data-item-id\"));\r\n                    const quantity = parseInt(e" +
+"l.find(\"input.quantity\").val());\r\n                    const unitId = parseInt(el" +
+".find(\"select.unit\").val());\r\n                    const price = parseFloat(el.fi" +
+"nd(\"input.price\").val() || 0);\r\n                    const discount = parseFloat(" +
+"el.find(\"input.discount\").val() || 0);\r\n\r\n                    model.push({\r\n    " +
+"                    ValueDate: $(\"#ValueDateInputDate\").datepicker(\"getDate\"),\r\n" +
+"                        ItemId: itemId,\r\n                        Quantity: quant" +
+"ity,\r\n                        UnitId: unitId,\r\n                        Price: pr" +
+"ice,\r\n                        DiscountRate: discount\r\n                    });\r\n " +
+"               });\r\n\r\n                return model;\r\n            };\r\n\r\n         " +
+"   const valueDate = $(\"#ValueDateInputDate\").datepicker(\"getDate\");\r\n          " +
+"  const expectedDeliveryDate = $(\"#ExpectedDeliveryDateInputText\").datepicker(\"g" +
+"etDate\");\r\n            const referenceNumber = $(\"#ReferenceNumberInputText\").va" +
+"l();\r\n            const terms = $(\"#TermsTextArea\").val();\r\n            const in" +
+"ternalMemo = $(\"#InternalMemoTextArea\").val();\r\n            const supplierId = $" +
+"(\"#SupplierSelect\").val();\r\n            const priceTypeId = $(\"#PriceTypeSelect\"" +
+").val();\r\n            const shipperId = $(\"#ShipperSelect\").val();\r\n            " +
+"const details = getDetails();\r\n\r\n            return {\r\n                ValueDate" +
+": valueDate,\r\n                ExpectedDeliveryDate: expectedDeliveryDate,\r\n     " +
+"           ReferenceNumber: referenceNumber,\r\n                Terms: terms,\r\n   " +
+"             InternalMemo: internalMemo,\r\n                SupplierId: supplierId" +
+",\r\n                PriceTypeId: priceTypeId,\r\n                ShipperId: shipper" +
+"Id,\r\n                Details: details\r\n            };\r\n        };\r\n\r\n        con" +
+"st model = getModel();\r\n\r\n        if (!model.Details.length) {\r\n            aler" +
+"t(\"Please select an item.\");\r\n            return;\r\n        };\r\n\r\n        const c" +
+"onfirmed = confirm(\"Are you sure\");\r\n\r\n        if (!confirmed) {\r\n            re" +
+"turn;\r\n        };\r\n\r\n\r\n        $(\"#CheckoutButton\").addClass(\"loading\");\r\n\r\n    " +
+"    const ajax = request(model);\r\n\r\n        ajax.success(function(response) {\r\n " +
+"           const id = response;\r\n            document.location = `/dashboard/pur" +
+"chase/tasks/quotation/checklist/${id}`;\r\n        });\r\n\r\n        ajax.fail(functi" +
+"on(xhr) {\r\n            $(\"#CheckoutButton\").removeClass(\"loading\");\r\n           " +
+" window.logAjaxErrorMessage(xhr);\r\n        });\r\n    });\r\n</script>\r\n");
 
         }
     }

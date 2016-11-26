@@ -109,7 +109,7 @@ WriteLiteral("\r\n\r\n<script>\r\n    $(\"#CheckoutButton\").unbind(\"click\").b
 "esponse) {\r\n            const id = response;\r\n            document.location = `/" +
 "dashboard/purchase/tasks/entry/checklist/${id}`;\r\n        });\r\n\r\n        ajax.fa" +
 "il(function(xhr) {\r\n            $(\"#CheckoutButton\").removeClass(\"loading\");\r\n  " +
-"          alert(JSON.stringify(xhr));\r\n        });\r\n    });\r\n</script>");
+"          window.logAjaxErrorMessage(xhr);\r\n        });\r\n    });\r\n</script>");
 
         }
     }

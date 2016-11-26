@@ -77,7 +77,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
                 for (int i = 0; i < details.Count; i++)
                 {
                     parameters.Add(new NpgsqlParameter("@StoreId" + i, details[i].StoreId));
-                    parameters.Add(new NpgsqlParameter("@TransactionType" + i, "Dr"));//Inventory is increased
+                    parameters.Add(new NpgsqlParameter("@TransactionType" + i, "Dr")); //Inventory is increased
                     parameters.Add(new NpgsqlParameter("@ItemId" + i, details[i].ItemId));
                     parameters.Add(new NpgsqlParameter("@Quantity" + i, details[i].Quantity));
                     parameters.Add(new NpgsqlParameter("@UnitId" + i, details[i].UnitId));

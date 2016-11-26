@@ -8,12 +8,49 @@
 
 @Html.PartialView("Shared/ItemList.cshtml", TenantConvention.GetTenant())
 
-<script>
-    $(".page.title").html("Purchase Quotation");
-    $("#CheckoutButton").unbind("click").bind("click", function() {
 
+<script>
+    function initializeUI() {
+        const template = `<div class="one summary items">
+                            <div class="terms item">
+                                <div class="description">Terms & Conditions</div>
+                                <div class="control">
+                                    <textarea id="TermsTextArea" type="text"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="one summary items">
+                            <div class="terms item">
+                                <div class="description">Internal Memo</div>
+                                <div class="control">
+                                    <textarea id="InternalMemoTextArea" type="text"></textarea>
+                                </div>
+                            </div>
+                        </div>`;
+
+        $(".page.title").html("Purchase Quotation");
+
+        const expectedDeliveryDate =
+            $("<input type='text' class='date' value='7d' id='ExpectedDeliveryDateInputText' />");
+        $("#BookDateInputDate").after(expectedDeliveryDate).remove();
+        expectedDeliveryDate.parent().parent().find(".description").html("Expected Delivery Date");
+
+        $("#StatementReferenceInputText").closest(".two.summary.items").attr("class", "one summary items")
+            .after(template);
+
+        $(".memo.item").remove();
+        $("#CostCenterSelect").closest(".two.summary.items").attr("class", "one summary items");
+        $(".cost.center.item").remove();
+        $(".store.item").remove();
+
+        //window.loadDatepicker();
+    };
+
+    initializeUI();
+
+    $("#CheckoutButton").unbind("click").bind("click", function() {
         function request(model) {
-            const url = "/dashboard/purchase/tasks/entry/new";
+            const url = "/dashboard/purchase/tasks/quotation/new";
             const data = JSON.stringify(model);
             return window.getAjaxRequest(url, "POST", data);
         };
@@ -32,12 +69,12 @@
                     const discount = parseFloat(el.find("input.discount").val() || 0);
 
                     model.push({
-                        StoreId: $("#StoreSelect").val(),
+                        ValueDate: $("#ValueDateInputDate").datepicker("getDate"),
                         ItemId: itemId,
                         Quantity: quantity,
                         UnitId: unitId,
                         Price: price,
-                        Discount: discount
+                        DiscountRate: discount
                     });
                 });
 
@@ -45,26 +82,24 @@
             };
 
             const valueDate = $("#ValueDateInputDate").datepicker("getDate");
-            const bookDate = $("#BookDateInputDate").datepicker("getDate");
-            const costCenterId = $("#CostCenterSelect").val();
+            const expectedDeliveryDate = $("#ExpectedDeliveryDateInputText").datepicker("getDate");
             const referenceNumber = $("#ReferenceNumberInputText").val();
-            const statementReference = $("#StatementReferenceInputText").val();
+            const terms = $("#TermsTextArea").val();
+            const internalMemo = $("#InternalMemoTextArea").val();
             const supplierId = $("#SupplierSelect").val();
             const priceTypeId = $("#PriceTypeSelect").val();
             const shipperId = $("#ShipperSelect").val();
-            const storeId = $("#StoreSelect").val();
             const details = getDetails();
 
             return {
                 ValueDate: valueDate,
-                BookDate: bookDate,
-                CostCenterId: costCenterId,
+                ExpectedDeliveryDate: expectedDeliveryDate,
                 ReferenceNumber: referenceNumber,
-                StatementReference: statementReference,
+                Terms: terms,
+                InternalMemo: internalMemo,
                 SupplierId: supplierId,
                 PriceTypeId: priceTypeId,
                 ShipperId: shipperId,
-                StoreId: storeId,
                 Details: details
             };
         };
@@ -82,19 +117,19 @@
             return;
         };
 
-        alert("todo");
-        //$("#CheckoutButton").addClass("loading");
 
-        //const ajax = request(model);
+        $("#CheckoutButton").addClass("loading");
 
-        //ajax.success(function(response) {
-        //    const id = response;
-        //    document.location = `/dashboard/purchase/tasks/entry/checklist/${id}`;
-        //});
+        const ajax = request(model);
 
-        //ajax.fail(function(xhr) {
-        //    $("#CheckoutButton").removeClass("loading");
-        //    alert(JSON.stringify(xhr));
-        //});
+        ajax.success(function(response) {
+            const id = response;
+            document.location = `/dashboard/purchase/tasks/quotation/checklist/${id}`;
+        });
+
+        ajax.fail(function(xhr) {
+            $("#CheckoutButton").removeClass("loading");
+            window.logAjaxErrorMessage(xhr);
+        });
     });
 </script>

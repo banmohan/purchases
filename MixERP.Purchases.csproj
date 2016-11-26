@@ -86,6 +86,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\bin\Frapid.WebsiteBuilder.dll</HintPath>
     </Reference>
+    <Reference Include="Mapster, Version=2.1.0.0, Culture=neutral, PublicKeyToken=2f39883af23c29a8, processorArchitecture=MSIL">
+      <HintPath>packages\Mapster.2.3.0\lib\net45\Mapster.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
@@ -102,6 +106,7 @@
       <HintPath>packages\Npgsql.2.2.6\lib\net45\Npgsql.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -154,11 +159,21 @@
     <Compile Include="Controllers\Backend\Setup\SupplierController.cs" />
     <Compile Include="Controllers\Backend\Tasks\EntryController.cs" />
     <Compile Include="Controllers\PurchaseDashboardController.cs" />
+    <Compile Include="DAL\Backend\Tasks\Orders.cs" />
     <Compile Include="DAL\Backend\Tasks\PurchaseReturns.cs" />
     <Compile Include="DAL\Backend\Tasks\Purchases.cs" />
+    <Compile Include="DAL\Backend\Tasks\Quotations.cs" />
     <Compile Include="DTO\ItemView.cs" />
+    <Compile Include="DTO\Order.cs" />
+    <Compile Include="DTO\OrderDetail.cs" />
+    <Compile Include="DTO\OrderResultview.cs" />
+    <Compile Include="DTO\Quotation.cs" />
+    <Compile Include="DTO\QuotationDetail.cs" />
+    <Compile Include="DTO\QuotationResultview.cs" />
     <Compile Include="Extensions\PartialViewExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueryModels\OrderQueryModel.cs" />
+    <Compile Include="QueryModels\QuotationQueryModel.cs" />
     <Compile Include="ViewModels\Purchase.cs" />
     <Compile Include="ViewModels\PurchaseDetailType.cs" />
     <Compile Include="ViewModels\PurchaseReturn.cs" />
@@ -182,21 +197,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Views\Tasks\Quotation\Checklist.generated.cs">
-      <DependentUpon>Checklist.cshtml</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Views\Tasks\Quotation\Index.generated.cs">
-      <DependentUpon>Index.cshtml</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Views\Tasks\Quotation\New.generated.cs">
-      <DependentUpon>New.cshtml</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Views\Tasks\Order\Checklist.generated.cs">
       <DependentUpon>Checklist.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -208,6 +208,21 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Views\Tasks\Order\New.generated.cs">
+      <DependentUpon>New.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Views\Tasks\Quotation\Checklist.generated.cs">
+      <DependentUpon>Checklist.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Views\Tasks\Quotation\Index.generated.cs">
+      <DependentUpon>Index.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Views\Tasks\Quotation\New.generated.cs">
       <DependentUpon>New.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -311,18 +326,6 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>ItemList.generated.cs</LastGenOutput>
     </Content>
-    <Content Include="Views\Tasks\Order\Checklist.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Checklist.generated.cs</LastGenOutput>
-    </Content>
-    <Content Include="Views\Tasks\Order\Index.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Index.generated.cs</LastGenOutput>
-    </Content>
-    <Content Include="Views\Tasks\Order\New.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>New.generated.cs</LastGenOutput>
-    </Content>
     <Content Include="Views\Tasks\Quotation\Checklist.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Checklist.generated.cs</LastGenOutput>
@@ -332,6 +335,18 @@
       <LastGenOutput>Index.generated.cs</LastGenOutput>
     </Content>
     <Content Include="Views\Tasks\Quotation\New.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>New.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Tasks\Order\Checklist.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>Checklist.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Tasks\Order\Index.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>Index.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Tasks\Order\New.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>New.generated.cs</LastGenOutput>
     </Content>

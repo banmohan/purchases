@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Mapster</name>
+    </assembly>
+    <members>
+        <member name="T:Mapster.IRegister">
+            <summary>
+            Implement to allow mappings to be found when scanning assemblies.
+            Place mappings in the Register method.
+            Call TypeAdapterConfig.ScanAssemblies to perform scanning <see cref="T:Mapster.TypeAdapterConfig"/>
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Mapster.MapContext" -->
+        <member name="M:Mapster.TypeAdapter.Adapt``1(System.Object)">
+            <summary>
+            Adapt the source object to the destination type.
+            </summary>
+            <typeparam name="TDestination">Destination type.</typeparam>
+            <param name="source">Source object to adapt.</param>
+            <returns>Adapted destination type.</returns>
+        </member>
+        <member name="M:Mapster.TypeAdapter.Adapt``1(System.Object,Mapster.TypeAdapterConfig)">
+            <summary>
+            Adapt the source object to the destination type.
+            </summary>
+            <typeparam name="TDestination">Destination type.</typeparam>
+            <param name="source">Source object to adapt.</param>
+            <param name="config">Configuration</param>
+            <returns>Adapted destination type.</returns>
+        </member>
+        <member name="M:Mapster.TypeAdapter.Adapt``2(``0)">
+            <summary>
+            Adapt the source object to the destination type.
+            </summary>
+            <typeparam name="TSource">Source type.</typeparam>
+            <typeparam name="TDestination">Destination type.</typeparam>
+            <param name="source">Source object to adapt.</param>
+            <returns>Adapted destination type.</returns>
+        </member>
+        <member name="M:Mapster.TypeAdapter.Adapt``2(``0,Mapster.TypeAdapterConfig)">
+            <summary>
+            Adapt the source object to the destination type.
+            </summary>
+            <typeparam name="TSource">Source type.</typeparam>
+            <typeparam name="TDestination">Destination type.</typeparam>
+            <param name="source">Source object to adapt.</param>
+            <param name="config">Configuration</param>
+            <returns>Adapted destination type.</returns>
+        </member>
+        <member name="M:Mapster.TypeAdapter.Adapt``2(``0,``1)">
+            <summary>
+            Adapt the source object to the existing destination object.
+            </summary>
+            <typeparam name="TSource">Source type.</typeparam>
+            <typeparam name="TDestination">Destination type.</typeparam>
+            <param name="source">Source object to adapt.</param>
+            <param name="destination">The destination object to populate.</param>
+            <returns>Adapted destination type.</returns>
+        </member>
+        <member name="M:Mapster.TypeAdapter.Adapt``2(``0,``1,Mapster.TypeAdapterConfig)">
+            <summary>
+            Adapt the source object to the existing destination object.
+            </summary>
+            <typeparam name="TSource">Source type.</typeparam>
+            <typeparam name="TDestination">Destination type.</typeparam>
+            <param name="source">Source object to adapt.</param>
+            <param name="destination">The destination object to populate.</param>
+            <param name="config">Configuration</param>
+            <returns>Adapted destination type.</returns>
+        </member>
+        <member name="M:Mapster.TypeAdapter.Adapt(System.Object,System.Type,System.Type)">
+            <summary>
+            Adapt the source object to the destination type.
+            </summary>
+            <param name="source">Source object to adapt.</param>
+            <param name="sourceType">The type of the source object.</param>
+            <param name="destinationType">The type of the destination object.</param>
+            <returns>Adapted destination type.</returns>
+        </member>
+        <member name="M:Mapster.TypeAdapter.Adapt(System.Object,System.Type,System.Type,Mapster.TypeAdapterConfig)">
+            <summary>
+            Adapt the source object to the destination type.
+            </summary>
+            <param name="source">Source object to adapt.</param>
+            <param name="sourceType">The type of the source object.</param>
+            <param name="destinationType">The type of the destination object.</param>
+            <param name="config">Configuration</param>
+            <returns>Adapted destination type.</returns>
+        </member>
+        <member name="M:Mapster.TypeAdapter.Adapt(System.Object,System.Object,System.Type,System.Type)">
+            <summary>
+            Adapt the source object to an existing destination object.
+            </summary>
+            <param name="source">Source object to adapt.</param>
+            <param name="destination">Destination object to populate.</param>
+            <param name="sourceType">The type of the source object.</param>
+            <param name="destinationType">The type of the destination object.</param>
+            <returns>Adapted destination type.</returns>
+        </member>
+        <member name="M:Mapster.TypeAdapter.Adapt(System.Object,System.Object,System.Type,System.Type,Mapster.TypeAdapterConfig)">
+            <summary>
+            Adapt the source object to an existing destination object.
+            </summary>
+            <param name="source">Source object to adapt.</param>
+            <param name="destination">Destination object to populate.</param>
+            <param name="sourceType">The type of the source object.</param>
+            <param name="destinationType">The type of the destination object.</param>
+            <param name="config">Configuration</param>
+            <returns>Adapted destination type.</returns>
+        </member>
+        <member name="M:Mapster.TypeAdapter.GetInstance(Mapster.TypeAdapterConfig)">
+            <summary>
+            Returns an instance representation of the adapter, mainly for DI/IOC situations.
+            </summary>
+            <param name="config">Configuration</param>
+            <returns>Instance of the adapter.</returns>
+        </member>
+        <member name="T:Mapster.Adapters.ClassAdapter">
+            <summary>
+            Maps one class to another.
+            </summary>
+            <remarks>The operations in this class must be extremely fast.  Make sure to benchmark before making **any** changes in here.  
+            The core Adapt method is critically important to performance.
+            </remarks>
+        </member>
+        <member name="M:Mapster.Utils.Enum`1.ToString(`0)">
+            <summary>
+            Converts enum to string using dictionary to avoid reflection perf hit.
+            </summary>
+            <param name="val">Enum to evaluate</param>
+            <returns></returns>
+        </member>
+        <member name="M:Mapster.Utils.Enum`1.Parse(System.String)">
+            <summary>
+            Converts string to Enum using case insensitive comparison
+            </summary>
+            <param name="val">String to evaluate</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

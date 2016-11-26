@@ -11,7 +11,7 @@
 
 <div class="ui attached inverted pos purchase segment">
     <div class="ui active inverted dimmer" id="POSDimmer">
-        <div class="ui large text loader">Doing something ...</div>
+        <div class="ui large text loader">Loading items ...</div>
     </div>
     <div class="ui grid">
         <div class="eleven wide column">
@@ -60,6 +60,8 @@
             </div>
         </div>
         <div class="five wide column">
+            <div id="PurchaseItems" class="purchase items">
+            </div>
             <div class="tender info">
                 <div class="page title">Purchase</div>
                 <div id="SummaryItems" class="two summary items">
@@ -138,8 +140,6 @@
                         </button>
                     </div>
                 </div>
-            </div>
-            <div id="PurchaseItems" class="purchase items">
             </div>
         </div>
     </div>
@@ -460,9 +460,9 @@
                     priceInput.val(response).trigger("keyup");
                 });
 
-                ajax.fail(function (xr) {
+                ajax.fail(function (xhr) {
                     $(".pos.purchase.segment").removeClass("loading");
-                    console.log(window.getAjaxErrorMessage(xhr));
+                    window.logAjaxErrorMessage(xhr);
                 });
             };
 
@@ -621,7 +621,10 @@
 
             const photo = $("<div class='photo' />");
             const img = $("<img />");
-            img.attr("src", product.Photo + "?Height=200&Width=200");
+
+            if (product.Photo) {
+                img.attr("src", product.Photo + "?Height=200&Width=200");
+            };
 
             img.appendTo(photo);
             photo.appendTo(info);
@@ -713,7 +716,4 @@
     setTimeout(function () {
         $(".decimal").number(true, window.currencyDecimalPlaces, ".", "");
     }, 100);
-
-
-    window.overridePath = "/dashboard/purchase/tasks/entry";
 </script>
