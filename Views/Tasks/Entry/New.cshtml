@@ -9,7 +9,9 @@
 @Html.PartialView("Shared/ItemList.cshtml", TenantConvention.GetTenant())
 
 <script>
-    $("#CheckoutButton").unbind("click").bind("click", function() {
+    window.overrideUrl = "/dashboard/purchase/tasks/entry";
+
+    $("#CheckoutButton").unbind("click").bind("click", function () {
 
         function request(model) {
             const url = "/dashboard/purchase/tasks/entry/new";
@@ -96,4 +98,5 @@
             window.logAjaxErrorMessage(xhr);
         });
     });
+
 </script>

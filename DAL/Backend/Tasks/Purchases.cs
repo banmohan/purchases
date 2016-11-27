@@ -18,7 +18,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
 
             string sql = @"SELECT * FROM purchase.post_purchase
                             (
-                                @OfficeId, @UserId, @LoginId, @ValueDate, @BookDate, 
+                                @OfficeId, @UserId, @LoginId, @ValueDate::date, @BookDate::date, 
                                 @CostCenterId, @ReferenceNumber, @StatementReference, 
                                 @SupplierId, @PriceTypeId, @ShipperId, ARRAY[{0}]
                             );";
@@ -35,8 +35,8 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
                     command.Parameters.AddWithValue("@ValueDate", model.ValueDate);
                     command.Parameters.AddWithValue("@BookDate", model.BookDate);
                     command.Parameters.AddWithValue("@CostCenterId", model.CostCenterId);
-                    command.Parameters.AddWithValue("@ReferenceNumber", model.ReferenceNumber);
-                    command.Parameters.AddWithValue("@StatementReference", model.StatementReference);
+                    command.Parameters.AddWithValue("@ReferenceNumber", model.ReferenceNumber.Or(""));
+                    command.Parameters.AddWithValue("@StatementReference", model.StatementReference.Or(""));
                     command.Parameters.AddWithValue("@SupplierId", model.SupplierId);
                     command.Parameters.AddWithValue("@PriceTypeId", model.PriceTypeId);
                     command.Parameters.AddWithValue("@ShipperId", model.ShipperId);
