@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Frapid.Configuration;
+using Frapid.DataAccess.Extensions;
 using Frapid.Framework.Extensions;
 using MixERP.Purchases.ViewModels;
 using Npgsql;
@@ -26,18 +27,18 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
             {
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@TransactionMasterId", model.TransactionMasterId);
-                    command.Parameters.AddWithValue("@OfficeId", model.OfficeId);
-                    command.Parameters.AddWithValue("@UserId", model.UserId);
-                    command.Parameters.AddWithValue("@LoginId", model.LoginId);
-                    command.Parameters.AddWithValue("@ValueDate", model.ValueDate);
-                    command.Parameters.AddWithValue("@BookDate", model.BookDate);
-                    command.Parameters.AddWithValue("@CostCenterId", model.CostCenterId);
-                    command.Parameters.AddWithValue("@ReferenceNumber", model.ReferenceNumber);
-                    command.Parameters.AddWithValue("@StatementReference", model.StatementReference);
-                    command.Parameters.AddWithValue("@SupplierId", model.SupplierId);
-                    command.Parameters.AddWithValue("@PriceTypeId", model.PriceTypeId);
-                    command.Parameters.AddWithValue("@ShipperId", model.ShipperId);
+                    command.Parameters.AddWithNullableValue("@TransactionMasterId", model.TransactionMasterId);
+                    command.Parameters.AddWithNullableValue("@OfficeId", model.OfficeId);
+                    command.Parameters.AddWithNullableValue("@UserId", model.UserId);
+                    command.Parameters.AddWithNullableValue("@LoginId", model.LoginId);
+                    command.Parameters.AddWithNullableValue("@ValueDate", model.ValueDate);
+                    command.Parameters.AddWithNullableValue("@BookDate", model.BookDate);
+                    command.Parameters.AddWithNullableValue("@CostCenterId", model.CostCenterId);
+                    command.Parameters.AddWithNullableValue("@ReferenceNumber", model.ReferenceNumber);
+                    command.Parameters.AddWithNullableValue("@StatementReference", model.StatementReference);
+                    command.Parameters.AddWithNullableValue("@SupplierId", model.SupplierId);
+                    command.Parameters.AddWithNullableValue("@PriceTypeId", model.PriceTypeId);
+                    command.Parameters.AddWithNullableValue("@ShipperId", model.ShipperId);
 
                     command.Parameters.AddRange(Purchases.AddParametersForDetails(model.Details).ToArray());
 
