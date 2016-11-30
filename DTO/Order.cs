@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Frapid.NPoco;
+using Frapid.Mapper.Decorators;
 
 namespace MixERP.Purchases.DTO
 {

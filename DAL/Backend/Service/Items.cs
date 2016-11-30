@@ -3,17 +3,20 @@ using System.Threading.Tasks;
 using Frapid.Configuration;
 using Frapid.Configuration.Db;
 using Frapid.DataAccess;
+using Frapid.Mapper;
+using Frapid.Mapper.Query.Select;
 using MixERP.Purchases.DTO;
 
 namespace MixERP.Purchases.DAL.Backend.Service
 {
     public static class Items
     {
-        public static async Task<List<ItemView>> GetItemsAsync(string tenant)
+        public static async Task<IEnumerable<ItemView>> GetItemsAsync(string tenant)
         {
             using (var db = DbProvider.Get(FrapidDbServer.GetConnectionString(tenant), tenant).GetDatabase())
             {
-                return await db.Query<ItemView>().ToListAsync().ConfigureAwait(false);
+                var sql = new Sql("SELECT * FROM purchase.item_view");
+                return await db.SelectAsync<ItemView>(sql).ConfigureAwait(false);
             }
         }
 

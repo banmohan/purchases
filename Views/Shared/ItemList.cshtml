@@ -344,17 +344,17 @@
 
                 const units = window.Enumerable.From(window.metaUnits)
                     .Where(function (x) {
-                        return validUnits.indexOf(x.unit_id.toString()) > -1;
+                        return validUnits.indexOf(x.UnitId.toString()) > -1;
                     }).ToArray();
 
                 $.each(units, function () {
                     const unit = this;
 
                     const option = $("<option/ >");
-                    option.attr("value", unit.unit_id);
-                    option.html(unit.unit_name);
+                    option.attr("value", unit.UnitId);
+                    option.html(unit.UnitName);
 
-                    if (defaultUnitId === unit.unit_id) {
+                    if (defaultUnitId === unit.UnitId) {
                         option.attr("selected", "");
                     };
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -5,6 +6,7 @@ using Frapid.Configuration;
 using Frapid.Configuration.Db;
 using Frapid.DataAccess;
 using Frapid.Framework.Extensions;
+using Frapid.Mapper.Query.Insert;
 using MixERP.Purchases.DTO;
 using MixERP.Purchases.QueryModels;
 
@@ -16,16 +18,28 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
         {
             using (var db = DbProvider.Get(FrapidDbServer.GetConnectionString(tenant), tenant).GetDatabase())
             {
-                var awaiter = await db.InsertAsync("purchase.orders", "order_id", true, model).ConfigureAwait(false);
-                long orderId = awaiter.To<long>();
-
-                foreach (var detail in model.Details)
+                try
                 {
-                    detail.OrderId = orderId;
-                    await db.InsertAsync("purchase.order_details", "order_detail_id", true, detail).ConfigureAwait(false);
-                }
+                    await db.BeginTransactionAsync().ConfigureAwait(false);
 
-                return orderId;
+                    var awaiter = await db.InsertAsync("purchase.orders", "order_id", true, model).ConfigureAwait(false);
+                    long orderId = awaiter.To<long>();
+
+                    foreach (var detail in model.Details)
+                    {
+                        detail.OrderId = orderId;
+                        await db.InsertAsync("purchase.order_details", "order_detail_id", true, detail).ConfigureAwait(false);
+                    }
+
+                    db.CommitTransaction();
+
+                    return orderId;
+                }
+                catch
+                {
+                    db.RollbackTransaction();
+                    throw;
+                }
             }
         }
 

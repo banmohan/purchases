@@ -1,4 +1,4 @@
-﻿using Frapid.NPoco;
+﻿using Frapid.Mapper.Decorators;
 
 namespace MixERP.Purchases.DTO
 {

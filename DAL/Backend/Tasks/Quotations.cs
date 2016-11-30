@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Frapid.Configuration;
 using Frapid.Configuration.Db;
 using Frapid.DataAccess;
 using Frapid.Framework.Extensions;
+using Frapid.Mapper.Query.Insert;
 using MixERP.Purchases.DTO;
 using MixERP.Purchases.QueryModels;
 
@@ -16,16 +18,27 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
         {
             using (var db = DbProvider.Get(FrapidDbServer.GetConnectionString(tenant), tenant).GetDatabase())
             {
-                var awaiter = await db.InsertAsync("purchase.quotations", "quotation_id", true, model).ConfigureAwait(false);
-                long quotationId = awaiter.To<long>();
-
-                foreach (var detail in model.Details)
+                try
                 {
-                    detail.QuotationId = quotationId;
-                    await db.InsertAsync("purchase.quotation_details", "quotation_detail_id", true, detail).ConfigureAwait(false);
-                }
+                    await db.BeginTransactionAsync().ConfigureAwait(false);
+                    var awaiter = await db.InsertAsync("purchase.quotations", "quotation_id", true, model).ConfigureAwait(false);
+                    long quotationId = awaiter.To<long>();
 
-                return quotationId;
+                    foreach (var detail in model.Details)
+                    {
+                        detail.QuotationId = quotationId;
+                        await db.InsertAsync("purchase.quotation_details", "quotation_detail_id", true, detail).ConfigureAwait(false);
+                    }
+
+                    db.CommitTransaction();
+
+                    return quotationId;
+                }
+                catch
+                {
+                    db.RollbackTransaction();
+                    throw;
+                }
             }
         }
 
