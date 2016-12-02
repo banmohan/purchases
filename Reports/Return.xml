@@ -126,7 +126,7 @@
         AND finance.transaction_master.transaction_master_id=@transaction_master_id;
       </Query>
       <Parameters>
-        <Parameter Name="@transaction_master_id" Type="Number" />
+        <Parameter Name="@transaction_master_id" Type="long" />
       </Parameters>
     </DataSource>
     <DataSource>
@@ -160,7 +160,7 @@
         ORDER BY checkout_detail_id;
       </Query>
       <Parameters>
-        <Parameter Name="@transaction_master_id" Type="Number" />
+        <Parameter Name="@transaction_master_id" Type="long" />
       </Parameters>
       <RunningTotalTextColumnIndex>4</RunningTotalTextColumnIndex>
       <RunningTotalFieldIndices>6,7,8,9,10</RunningTotalFieldIndices>

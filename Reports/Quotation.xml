@@ -75,7 +75,7 @@
 		WHERE purchase.quotations.quotation_id = @quotation_id;
       </Query>
       <Parameters>
-        <Parameter Name="@quotation_id" Type="Number" />
+        <Parameter Name="@quotation_id" Type="long" />
       </Parameters>
     </DataSource>
     <DataSource>
@@ -97,7 +97,7 @@
 		ORDER BY purchase.quotation_details.quotation_detail_id;
       </Query>
       <Parameters>
-        <Parameter Name="@quotation_id" Type="Number" />
+        <Parameter Name="@quotation_id" Type="long" />
       </Parameters>
       <RunningTotalTextColumnIndex>3</RunningTotalTextColumnIndex>
       <RunningTotalFieldIndices>5,6,7,8,9</RunningTotalFieldIndices>

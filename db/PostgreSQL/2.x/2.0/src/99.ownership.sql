@@ -153,6 +153,25 @@ BEGIN
     END IF;
 
     FOR this IN 
+    SELECT oid::regclass::text as mat_view
+    FROM   pg_class
+    WHERE  relkind = 'm'
+    LOOP
+        EXECUTE 'GRANT SELECT ON TABLE '|| this.mat_view  ||' TO report_user;';
+    END LOOP;
+END
+$$
+LANGUAGE plpgsql;
+
+DO
+$$
+    DECLARE this record;
+BEGIN
+    IF(CURRENT_USER = 'report_user') THEN
+        RETURN;
+    END IF;
+
+    FOR this IN 
     SELECT 'GRANT EXECUTE ON '
         || CASE WHEN p.proisagg THEN 'AGGREGATE ' ELSE 'FUNCTION ' END
         || quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' 
