@@ -78,6 +78,7 @@ CREATE TABLE purchase.quotation_details
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
     discount_rate                           public.decimal_strict2 NOT NULL DEFAULT(0),    
+    tax                                     public.money_strict2 NOT NULL DEFAULT(0),    
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                public.decimal_strict2 NOT NULL
@@ -112,6 +113,7 @@ CREATE TABLE purchase.order_details
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
     discount_rate                           public.decimal_strict2 NOT NULL DEFAULT(0),    
+    tax                                     public.money_strict2 NOT NULL DEFAULT(0),    
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                public.decimal_strict2 NOT NULL
@@ -127,6 +129,7 @@ AS
     unit_id           	integer,
     price               public.money_strict,
     discount            public.money_strict2,
+    tax                 public.money_strict2,
     shipping_charge     public.money_strict2
 );
 
@@ -495,12 +498,16 @@ $$
     DECLARE _is_periodic                    boolean = inventory.is_periodic_inventory(_office_id);
     DECLARE _tran_counter                   integer;
     DECLARE _transaction_code               text;
+    DECLARE _tax_total                      public.money_strict2;
+    DECLARE _tax_account_id                 integer;
     DECLARE _shipping_charge                public.money_strict2;
     DECLARE _book_name                      national character varying(100) = 'Purchase';
 BEGIN
     IF NOT finance.can_post_transaction(_login_id, _user_id, _office_id, _book_name, _value_date) THEN
         RETURN 0;
     END IF;
+
+    _tax_account_id                         := finance.get_sales_tax_account_id_by_office_id(_office_id);
 
     IF(_supplier_id IS NULL) THEN
         RAISE EXCEPTION '%', 'Invalid supplier';
@@ -521,7 +528,8 @@ BEGIN
         price                           	public.money_strict NOT NULL DEFAULT(0),
         cost_of_goods_sold              	public.money_strict2 NOT NULL DEFAULT(0),
         discount                        	public.money_strict2 NOT NULL DEFAULT(0),
-        shipping_charge                 	public.money_strict2 NOT NULL DEFAULT(0),
+        tax                                 public.money_strict2 NOT NULL DEFAULT(0),
+        shipping_charge                     public.money_strict2 NOT NULL DEFAULT(0),
         purchase_account_id             	integer, 
         purchase_discount_account_id    	integer, 
         inventory_account_id            	integer
@@ -529,8 +537,8 @@ BEGIN
 
 
 
-    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, shipping_charge)
-    SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, shipping_charge
+    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge)
+    SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge
     FROM explode_array(_details);
 
 
@@ -555,6 +563,7 @@ BEGIN
     SELECT SUM(COALESCE(discount, 0))                               INTO _discount_total FROM temp_checkout_details;
     SELECT SUM(COALESCE(price, 0) * COALESCE(quantity, 0))          INTO _grand_total FROM temp_checkout_details;
     SELECT SUM(COALESCE(shipping_charge, 0))                        INTO _shipping_charge FROM temp_checkout_details;
+   SELECT SUM(COALESCE(tax, 0))                                     INTO _tax_total FROM temp_checkout_details;
 
 
     DROP TABLE IF EXISTS temp_transaction_details;
@@ -571,7 +580,7 @@ BEGIN
         amount_in_local_currency    		public.money_strict
     ) ON COMMIT DROP;
 
-    _payable                                := _grand_total - COALESCE(_discount_total, 0) + COALESCE(_shipping_charge, 0);
+    _payable                                := _grand_total - COALESCE(_discount_total, 0) + COALESCE(_shipping_charge, 0) + COALESCE(_tax_total, 0);
     _default_currency_code              	:= core.get_currency_code_by_office_id(_office_id);
     _transaction_master_id  				:= nextval(pg_get_serial_sequence('finance.transaction_master', 'transaction_master_id'));
     _checkout_id            				:= nextval(pg_get_serial_sequence('inventory.checkouts', 'checkout_id'));
@@ -599,6 +608,11 @@ BEGIN
         GROUP BY purchase_discount_account_id;
     END IF;
 
+    IF(COALESCE(_tax_total, 0) > 0) THEN
+        INSERT INTO temp_transaction_details(tran_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
+        SELECT 'Dr', _tax_account_id, _statement_reference, _default_currency_code, _tax_total, 1, _default_currency_code, _tax_total;
+    END IF;	
+
     INSERT INTO temp_transaction_details(tran_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
     SELECT 'Cr', inventory.get_account_id_by_supplier_id(_supplier_id), _statement_reference, _default_currency_code, _payable, 1, _default_currency_code, _payable;
 
@@ -625,8 +639,8 @@ BEGIN
     INSERT INTO purchase.purchases(checkout_id, supplier_id, price_type_id)
     SELECT _checkout_id, _supplier_id, _price_type_id;
 
-    INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
-    SELECT _checkout_id, _value_date, _book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
+    INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, tax, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
+    SELECT _checkout_id, _value_date, _book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, tax, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
     FROM temp_checkout_details;
     
     PERFORM finance.auto_verify(_transaction_master_id, _office_id);
@@ -637,12 +651,12 @@ LANGUAGE plpgsql;
 
 
 
--- SELECT * FROM purchase.post_purchase(1, 1, 1, '2/2/2015', '2/2/2015', 1, '', '', 1, 1, NULL,
+-- SELECT * FROM purchase.post_purchase(1, 1, 1, finance.get_value_date(1), finance.get_value_date(1), 1, '', '', 1, 1, NULL,
 -- ARRAY[
--- ROW(1, 'Dr', 1, 1, 1,180000, 0, 200)::purchase.purchase_detail_type,
--- ROW(1, 'Dr', 2, 1, 7,130000, 300, 30)::purchase.purchase_detail_type,
--- ROW(1, 'Dr', 3, 1, 1,110000, 5000, 50)::purchase.purchase_detail_type]);
-
+-- ROW(1, 'Dr', 1, 1, 1,180000, 0, 10, 200)::purchase.purchase_detail_type,
+-- ROW(1, 'Dr', 2, 1, 7,130000, 300, 10, 30)::purchase.purchase_detail_type,
+-- ROW(1, 'Dr', 3, 1, 1,110000, 5000, 10, 50)::purchase.purchase_detail_type]);
+-- 
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/02.functions-and-logic/purchase.post_return.sql --<--<--
@@ -691,6 +705,7 @@ $$
     DECLARE _checkout_id                    bigint;
     DECLARE _grand_total                    public.money_strict;
     DECLARE _discount_total                 public.money_strict2;
+    DECLARE _tax_total                      public.money_strict2;
     DECLARE _credit_account_id              bigint;
     DECLARE _default_currency_code          national character varying(12);
     DECLARE _sm_id                          bigint;
@@ -698,6 +713,7 @@ $$
     DECLARE _is_periodic                    boolean = inventory.is_periodic_inventory(_office_id);
     DECLARE _book_name                      text='Purchase Return';
     DECLARE _receivable                     public.money_strict;
+    DECLARE _tax_account_id                 integer;
 BEGIN    
     IF NOT finance.can_post_transaction(_login_id, _user_id, _office_id, _book_name, _value_date) THEN
         RETURN 0;
@@ -718,6 +734,7 @@ BEGIN
         base_unit_id                        integer,                
         price                               public.money_strict,
         discount                            public.money_strict2,
+        tax                                 public.money_strict2,
         shipping_charge                     public.money_strict2,
         purchase_account_id                 integer, 
         purchase_discount_account_id        integer, 
@@ -759,8 +776,8 @@ BEGIN
 	WHERE inventory.checkouts.transaction_master_id = _transaction_master_id
 	AND NOT inventory.checkouts.deleted;
 
-    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, shipping_charge)
-	SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, shipping_charge
+    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge)
+	SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge
 	FROM explode_array(_details);
 
     UPDATE temp_checkout_details 
@@ -788,10 +805,11 @@ BEGIN
     _tran_counter                       := finance.get_new_transaction_counter(_value_date);
     _transaction_code                   := finance.get_transaction_code(_value_date, _office_id, _user_id, _login_id);
        
+    SELECT SUM(COALESCE(tax, 0))                                INTO _tax_total FROM temp_checkout_details;
     SELECT SUM(COALESCE(discount, 0))                           INTO _discount_total FROM temp_checkout_details;
     SELECT SUM(COALESCE(price, 0) * COALESCE(quantity, 0))      INTO _grand_total FROM temp_checkout_details;
 
-    _receivable := _grand_total - COALESCE(_discount_total, 0);
+    _receivable := _grand_total + _tax_total - COALESCE(_discount_total, 0);
 
 
     IF(_is_periodic = true) THEN
@@ -808,11 +826,16 @@ BEGIN
     END IF;
 
 
-    IF(_discount_total IS NOT NULL AND _discount_total > 0) THEN
+    IF(COALESCE(_discount_total, 0) > 0) THEN
         INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
         SELECT 'Dr', purchase_discount_account_id, _statement_reference, _default_currency_code, SUM(COALESCE(discount, 0)), 1, _default_currency_code, SUM(COALESCE(discount, 0))
         FROM temp_checkout_details
         GROUP BY purchase_discount_account_id;
+    END IF;
+
+    IF(COALESCE(_tax_total, 0) > 0) THEN
+        INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
+        SELECT 'Cr', _tax_account_id, _statement_reference, _default_currency_code, _tax_total, 1, _default_currency_code, _tax_total;
     END IF;
 
     INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
@@ -840,8 +863,8 @@ BEGIN
     LOOP
         _checkout_detail_id        := nextval(pg_get_serial_sequence('inventory.checkout_details', 'checkout_detail_id'));
 
-        INSERT INTO inventory.checkout_details(checkout_detail_id, value_date, book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, shipping_charge)
-        SELECT _checkout_detail_id, _value_date, _book_date, this.checkout_id, this.transaction_type, this.store_id, this.item_id, this.quantity, this.unit_id, this.base_quantity, this.base_unit_id, this.price, this.discount, this.shipping_charge
+        INSERT INTO inventory.checkout_details(checkout_detail_id, value_date, book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, tax, shipping_charge)
+        SELECT _checkout_detail_id, _value_date, _book_date, this.checkout_id, this.transaction_type, this.store_id, this.item_id, this.quantity, this.unit_id, this.base_quantity, this.base_unit_id, this.price, this.discount, this.tax, this.shipping_charge
         FROM temp_checkout_details
         WHERE id = this.id;        
     END LOOP;
@@ -956,6 +979,7 @@ SELECT
     inventory.items.item_id,
     inventory.items.item_code,
     inventory.items.item_name,
+    inventory.items.is_taxable_item,
     inventory.items.barcode,
     inventory.items.item_group_id,
     inventory.item_groups.item_group_name,

@@ -43,6 +43,7 @@ $$
     DECLARE _checkout_id                    bigint;
     DECLARE _grand_total                    public.money_strict;
     DECLARE _discount_total                 public.money_strict2;
+    DECLARE _tax_total                      public.money_strict2;
     DECLARE _credit_account_id              bigint;
     DECLARE _default_currency_code          national character varying(12);
     DECLARE _sm_id                          bigint;
@@ -50,6 +51,7 @@ $$
     DECLARE _is_periodic                    boolean = inventory.is_periodic_inventory(_office_id);
     DECLARE _book_name                      text='Purchase Return';
     DECLARE _receivable                     public.money_strict;
+    DECLARE _tax_account_id                 integer;
 BEGIN    
     IF NOT finance.can_post_transaction(_login_id, _user_id, _office_id, _book_name, _value_date) THEN
         RETURN 0;
@@ -70,6 +72,7 @@ BEGIN
         base_unit_id                        integer,                
         price                               public.money_strict,
         discount                            public.money_strict2,
+        tax                                 public.money_strict2,
         shipping_charge                     public.money_strict2,
         purchase_account_id                 integer, 
         purchase_discount_account_id        integer, 
@@ -111,8 +114,8 @@ BEGIN
 	WHERE inventory.checkouts.transaction_master_id = _transaction_master_id
 	AND NOT inventory.checkouts.deleted;
 
-    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, shipping_charge)
-	SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, shipping_charge
+    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge)
+	SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge
 	FROM explode_array(_details);
 
     UPDATE temp_checkout_details 
@@ -140,10 +143,11 @@ BEGIN
     _tran_counter                       := finance.get_new_transaction_counter(_value_date);
     _transaction_code                   := finance.get_transaction_code(_value_date, _office_id, _user_id, _login_id);
        
+    SELECT SUM(COALESCE(tax, 0))                                INTO _tax_total FROM temp_checkout_details;
     SELECT SUM(COALESCE(discount, 0))                           INTO _discount_total FROM temp_checkout_details;
     SELECT SUM(COALESCE(price, 0) * COALESCE(quantity, 0))      INTO _grand_total FROM temp_checkout_details;
 
-    _receivable := _grand_total - COALESCE(_discount_total, 0);
+    _receivable := _grand_total + _tax_total - COALESCE(_discount_total, 0);
 
 
     IF(_is_periodic = true) THEN
@@ -160,11 +164,16 @@ BEGIN
     END IF;
 
 
-    IF(_discount_total IS NOT NULL AND _discount_total > 0) THEN
+    IF(COALESCE(_discount_total, 0) > 0) THEN
         INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
         SELECT 'Dr', purchase_discount_account_id, _statement_reference, _default_currency_code, SUM(COALESCE(discount, 0)), 1, _default_currency_code, SUM(COALESCE(discount, 0))
         FROM temp_checkout_details
         GROUP BY purchase_discount_account_id;
+    END IF;
+
+    IF(COALESCE(_tax_total, 0) > 0) THEN
+        INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
+        SELECT 'Cr', _tax_account_id, _statement_reference, _default_currency_code, _tax_total, 1, _default_currency_code, _tax_total;
     END IF;
 
     INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
@@ -192,8 +201,8 @@ BEGIN
     LOOP
         _checkout_detail_id        := nextval(pg_get_serial_sequence('inventory.checkout_details', 'checkout_detail_id'));
 
-        INSERT INTO inventory.checkout_details(checkout_detail_id, value_date, book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, shipping_charge)
-        SELECT _checkout_detail_id, _value_date, _book_date, this.checkout_id, this.transaction_type, this.store_id, this.item_id, this.quantity, this.unit_id, this.base_quantity, this.base_unit_id, this.price, this.discount, this.shipping_charge
+        INSERT INTO inventory.checkout_details(checkout_detail_id, value_date, book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, tax, shipping_charge)
+        SELECT _checkout_detail_id, _value_date, _book_date, this.checkout_id, this.transaction_type, this.store_id, this.item_id, this.quantity, this.unit_id, this.base_quantity, this.base_unit_id, this.price, this.discount, this.tax, this.shipping_charge
         FROM temp_checkout_details
         WHERE id = this.id;        
     END LOOP;

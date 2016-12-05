@@ -6,6 +6,7 @@ SELECT
     inventory.items.item_id,
     inventory.items.item_code,
     inventory.items.item_name,
+    inventory.items.is_taxable_item,
     inventory.items.barcode,
     inventory.items.item_group_id,
     inventory.item_groups.item_group_name,

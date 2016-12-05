@@ -8,6 +8,7 @@ namespace MixERP.Purchases.DTO
         public int ItemId { get; set; }
         public string ItemCode { get; set; }
         public string ItemName { get; set; }
+        public bool IsTaxableItem { get; set; }
         public string Barcode { get; set; }
         public int ItemGroupId { get; set; }
         public string ItemGroupName { get; set; }

@@ -15,6 +15,7 @@ namespace MixERP.Purchases.DTO
         public int UnitId { get; set; }
         public decimal Price { get; set; }
         public decimal DiscountRate { get; set; }
+        public decimal Tax { get; set; }
         public decimal ShippingCharge { get; set; }
     }
 }
