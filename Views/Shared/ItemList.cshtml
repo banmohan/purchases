@@ -8,6 +8,7 @@
 }
 
 <link rel="stylesheet" href="/Areas/MixERP.Purchases/Styles/purchase.css"></link>
+<input type="hidden" id="SalesTaxRateHidden" />
 
 <div class="ui attached inverted pos purchase segment">
     <div class="ui active inverted dimmer" id="POSDimmer">
@@ -179,6 +180,14 @@
 			<span>&nbsp; =&nbsp; </span>
 			<span class="discounted amount"></span>
 		</div>
+		<div class ="tax info" style="display:none;">
+			<span>Add Tax </span>
+			<span class ="tax-amount"></span>
+			<span> (</span>
+			<span class ="tax-rate"></span>
+			<span>%) = </span>
+			<span class ="amount-plus-tax"></span>
+		</div>
 		<div>
 			<select class="unit inverted" data-item-id="{ItemId}">
 			</select>
@@ -293,6 +302,8 @@
             var itemCode = el.attr("data-item-code");
             var itemId = el.attr("data-item-id");
             var price = parseFloat(costPrice || 0);
+            var isTaxableItem = el.attr("data-is-taxable-item") === "true";
+            var taxRate = window.parseFloat($("#SalesTaxRateHidden").val());
 
             if (!price) {
                 alert("Cannot add item because the price is zero.");
@@ -372,10 +383,9 @@
                 const quantity = parseInt(quantityEl.val() || 0);
                 const discountRate = parseFloat(discountEl.val().replace("%", ""));
                 const price = parseFloat(el.find("input.price").val());
-                //var price = parseFloat(el.attr("data-price") || 0);
 
-                const amount = (price * quantity).toFixed(2);
-                const discountedAmount = ((price * quantity) * ((100 - discountRate) / 100)).toFixed(2);
+                const amount = window.round(price * quantity, 2);
+                const discountedAmount = window.round((price * quantity) * ((100 - discountRate) / 100), 2);
 
                 el.find("span.rate:not(.discount)").html(price);
                 el.find("span.quantity").html(quantity);
@@ -389,10 +399,22 @@
                     el.find("span.discounted.amount").html(discountedAmount);
                 } else {
                     el.find(".discount.info").hide();
-                }
+                };
+
+                if (isTaxableItem) {
+                    const tax = window.round((discountedAmount || amount) * taxRate / 100, 2);
+                    const amountPlusTax = window.round((discountedAmount || amount) + tax, 2);
+
+                    //alert(discountedAmount);
+                    //alert(amount);
+
+                    el.find(".tax.info .tax-amount").html(tax);
+                    el.find(".tax.info .tax-rate").html(window.round(taxRate, 2));
+                    el.find(".tax.info .amount-plus-tax").html(amountPlusTax);
+                    el.find(".tax.info").show();
+                };
 
                 window.updateTotal();
-
             };
 
             quantityInput.on("keyup", function () {
@@ -515,7 +537,7 @@
             //totalQuantity += quantity;
         });
 
-        totalPrice = parseFloat(totalPrice.toFixed(2));
+        totalPrice = window.round(totalPrice, 2);
 
         amountEl.html(totalPrice);
     };
@@ -606,6 +628,7 @@
             item.attr("data-barcode", product.Barcode);
             item.attr("data-photo", product.Photo);
             item.attr("data-cost-price", product.CostPrice);
+            item.attr("data-is-taxable-item", product.IsTaxableItem);
 
             if (product.HotItem) {
                 item.addClass("hot");
@@ -713,7 +736,28 @@
 </script>
 
 <script>
-    setTimeout(function () {
+    setTimeout(function() {
         $(".decimal").number(true, window.currencyDecimalPlaces, ".", "");
     }, 100);
+</script>
+
+<script>
+    function getTaxRate() {
+        function request() {
+            const url = "/api/forms/finance/tax-setups/get-where/-1";
+            const filters = [];
+            filters.push(window.getAjaxColumnFilter("WHERE", "OfficeId", "int", window.FilterConditions.IsEqualTo, window.metaView.OfficeId));
+
+            return window.getAjaxRequest(url, "POST", filters);
+        };
+
+        const ajax = request();
+
+        ajax.success(function (response) {
+            const salesTaxRate = window.parseFloat(response[0].SalesTaxRate);
+            $("#SalesTaxRateHidden").val(salesTaxRate);
+        });
+    };
+
+    getTaxRate();
 </script>

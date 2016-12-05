@@ -48,7 +48,7 @@
 
     initializeUI();
 
-    $("#CheckoutButton").unbind("click").bind("click", function() {
+    $("#CheckoutButton").unbind("click").bind("click", function () {
         function request(model) {
             const url = "/dashboard/purchase/tasks/order/new";
             const data = JSON.stringify(model);
@@ -60,18 +60,20 @@
                 const items = $("#PurchaseItems .item");
                 var model = [];
 
-                $.each(items, function() {
+                $.each(items, function () {
                     const el = $(this);
                     const itemId = parseInt(el.attr("data-item-id"));
                     const quantity = parseInt(el.find("input.quantity").val());
                     const unitId = parseInt(el.find("select.unit").val());
                     const price = parseFloat(el.find("input.price").val() || 0);
                     const discount = parseFloat(el.find("input.discount").val() || 0);
+                    const tax = window.parseFloat(el.find(".tax-amount").html() || 0);
 
                     model.push({
                         ValueDate: $("#ValueDateInputDate").datepicker("getDate"),
                         ItemId: itemId,
                         Quantity: quantity,
+                        Tax: tax,
                         UnitId: unitId,
                         Price: price,
                         DiscountRate: discount
@@ -122,12 +124,12 @@
 
         const ajax = request(model);
 
-        ajax.success(function(response) {
+        ajax.success(function (response) {
             const id = response;
             document.location = `/dashboard/purchase/tasks/order/checklist/${id}`;
         });
 
-        ajax.fail(function(xhr) {
+        ajax.fail(function (xhr) {
             $("#CheckoutButton").removeClass("loading");
             window.logAjaxErrorMessage(xhr);
         });

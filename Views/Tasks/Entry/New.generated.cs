@@ -33,7 +33,6 @@ namespace ASP
     using Frapid.Framework;
     using Frapid.i18n;
     using Frapid.Messaging;
-    using Frapid.Mapper.Decorators;
     using Frapid.WebsiteBuilder;
     using MixERP.Purchases;
     
@@ -82,35 +81,37 @@ WriteLiteral("\r\n\r\n<script>\r\n    window.overrideUrl = \"/dashboard/purchase
 "ity = parseInt(el.find(\"input.quantity\").val());\r\n                    const unit" +
 "Id = parseInt(el.find(\"select.unit\").val());\r\n                    const price = " +
 "parseFloat(el.find(\"input.price\").val() || 0);\r\n                    const discou" +
-"nt = parseFloat(el.find(\"input.discount\").val() || 0);\r\n\r\n                    mo" +
-"del.push({\r\n                        StoreId: $(\"#StoreSelect\").val(),\r\n         " +
-"               ItemId: itemId,\r\n                        Quantity: quantity,\r\n   " +
-"                     UnitId: unitId,\r\n                        Price: price,\r\n   " +
-"                     Discount: discount\r\n                    });\r\n              " +
-"  });\r\n\r\n                return model;\r\n            };\r\n\r\n            const valu" +
-"eDate = $(\"#ValueDateInputDate\").datepicker(\"getDate\");\r\n            const bookD" +
-"ate = $(\"#BookDateInputDate\").datepicker(\"getDate\");\r\n            const costCent" +
-"erId = $(\"#CostCenterSelect\").val();\r\n            const referenceNumber = $(\"#Re" +
-"ferenceNumberInputText\").val();\r\n            const statementReference = $(\"#Stat" +
-"ementReferenceInputText\").val();\r\n            const supplierId = $(\"#SupplierSel" +
-"ect\").val();\r\n            const priceTypeId = $(\"#PriceTypeSelect\").val();\r\n    " +
-"        const shipperId = $(\"#ShipperSelect\").val();\r\n            const storeId " +
-"= $(\"#StoreSelect\").val();\r\n            const details = getDetails();\r\n\r\n       " +
-"     return {\r\n                ValueDate: valueDate,\r\n                BookDate: " +
-"bookDate,\r\n                CostCenterId: costCenterId,\r\n                Referenc" +
-"eNumber: referenceNumber,\r\n                StatementReference: statementReferenc" +
-"e,\r\n                SupplierId: supplierId,\r\n                PriceTypeId: priceT" +
-"ypeId,\r\n                ShipperId: shipperId,\r\n                StoreId: storeId," +
-"\r\n                Details: details\r\n            };\r\n        };\r\n\r\n        const " +
-"model = getModel();\r\n\r\n        if (!model.Details.length) {\r\n            alert(\"" +
-"Please select an item.\");\r\n            return;\r\n        };\r\n\r\n        const conf" +
-"irmed = confirm(\"Are you sure\");\r\n\r\n        if (!confirmed) {\r\n            retur" +
-"n;\r\n        };\r\n\r\n\r\n        $(\"#CheckoutButton\").addClass(\"loading\");\r\n\r\n       " +
-" const ajax = request(model);\r\n\r\n        ajax.success(function(response) {\r\n    " +
-"        const id = response;\r\n            document.location = `/dashboard/purcha" +
-"se/tasks/entry/checklist/${id}`;\r\n        });\r\n\r\n        ajax.fail(function(xhr)" +
-" {\r\n            $(\"#CheckoutButton\").removeClass(\"loading\");\r\n            window" +
-".logAjaxErrorMessage(xhr);\r\n        });\r\n    });\r\n\r\n</script>");
+"nt = parseFloat(el.find(\"input.discount\").val() || 0);\r\n                    cons" +
+"t tax = window.parseFloat(el.find(\".tax-amount\").html() || 0);\r\n\r\n              " +
+"      model.push({\r\n                        StoreId: $(\"#StoreSelect\").val(),\r\n " +
+"                       ItemId: itemId,\r\n                        Quantity: quanti" +
+"ty,\r\n                        Tax: tax,\r\n                        UnitId: unitId,\r" +
+"\n                        Price: price,\r\n                        Discount: discou" +
+"nt\r\n                    });\r\n                });\r\n\r\n                return model" +
+";\r\n            };\r\n\r\n            const valueDate = $(\"#ValueDateInputDate\").date" +
+"picker(\"getDate\");\r\n            const bookDate = $(\"#BookDateInputDate\").datepic" +
+"ker(\"getDate\");\r\n            const costCenterId = $(\"#CostCenterSelect\").val();\r" +
+"\n            const referenceNumber = $(\"#ReferenceNumberInputText\").val();\r\n    " +
+"        const statementReference = $(\"#StatementReferenceInputText\").val();\r\n   " +
+"         const supplierId = $(\"#SupplierSelect\").val();\r\n            const price" +
+"TypeId = $(\"#PriceTypeSelect\").val();\r\n            const shipperId = $(\"#Shipper" +
+"Select\").val();\r\n            const storeId = $(\"#StoreSelect\").val();\r\n         " +
+"   const details = getDetails();\r\n\r\n            return {\r\n                ValueD" +
+"ate: valueDate,\r\n                BookDate: bookDate,\r\n                CostCenter" +
+"Id: costCenterId,\r\n                ReferenceNumber: referenceNumber,\r\n          " +
+"      StatementReference: statementReference,\r\n                SupplierId: suppl" +
+"ierId,\r\n                PriceTypeId: priceTypeId,\r\n                ShipperId: sh" +
+"ipperId,\r\n                StoreId: storeId,\r\n                Details: details\r\n " +
+"           };\r\n        };\r\n\r\n        const model = getModel();\r\n\r\n        if (!m" +
+"odel.Details.length) {\r\n            alert(\"Please select an item.\");\r\n          " +
+"  return;\r\n        };\r\n\r\n        const confirmed = confirm(\"Are you sure\");\r\n\r\n " +
+"       if (!confirmed) {\r\n            return;\r\n        };\r\n\r\n\r\n        $(\"#Check" +
+"outButton\").addClass(\"loading\");\r\n\r\n        const ajax = request(model);\r\n\r\n    " +
+"    ajax.success(function(response) {\r\n            const id = response;\r\n       " +
+"     document.location = `/dashboard/purchase/tasks/entry/checklist/${id}`;\r\n   " +
+"     });\r\n\r\n        ajax.fail(function(xhr) {\r\n            $(\"#CheckoutButton\")." +
+"removeClass(\"loading\");\r\n            window.logAjaxErrorMessage(xhr);\r\n        }" +
+");\r\n    });\r\n\r\n</script>");
 
         }
     }

@@ -33,7 +33,6 @@ namespace ASP
     using Frapid.Framework;
     using Frapid.i18n;
     using Frapid.Messaging;
-    using Frapid.Mapper.Decorators;
     using Frapid.WebsiteBuilder;
     using MixERP.Purchases;
     
@@ -82,40 +81,41 @@ WriteLiteral("\r\n\r\n\r\n<script>\r\n    $(\".page.title\").html(\"Purchase Ret
 "nt(el.find(\"input.quantity\").val());\r\n                    const unitId = parseIn" +
 "t(el.find(\"select.unit\").val());\r\n                    const price = parseFloat(e" +
 "l.find(\"input.price\").val() || 0);\r\n                    const discount = parseFl" +
-"oat(el.find(\"input.discount\").val() || 0);\r\n                    model.push({\r\n  " +
-"                      StoreId: $(\"#StoreSelect\").val(),\r\n                       " +
-" ItemId: itemId,\r\n                        Quantity: quantity,\r\n                 " +
-"       UnitId: unitId,\r\n                        Price: price,\r\n                 " +
-"       Discount: discount\r\n                    });\r\n                });\r\n\r\n     " +
-"           return model;\r\n            };\r\n\r\n            const transactionMasterI" +
-"d = parseInt(window.getQueryStringByName(\"TransactionMasterId\") || 0);\r\n        " +
-"    const valueDate = $(\"#ValueDateInputDate\").datepicker(\"getDate\");\r\n         " +
-"   const bookDate = $(\"#BookDateInputDate\").datepicker(\"getDate\");\r\n            " +
-"const costCenterId = $(\"#CostCenterSelect\").val();\r\n            const referenceN" +
-"umber = $(\"#ReferenceNumberInputText\").val();\r\n            const statementRefere" +
-"nce = $(\"#StatementReferenceInputText\").val();\r\n            const supplierId = $" +
-"(\"#SupplierSelect\").val();\r\n            const priceTypeId = $(\"#PriceTypeSelect\"" +
-").val();\r\n            const shipperId = $(\"#ShipperSelect\").val();\r\n            " +
-"const storeId = $(\"#StoreSelect\").val();\r\n            const details = getDetails" +
-"();\r\n\r\n            return {\r\n                TransactionMasterId: transactionMas" +
-"terId,\r\n                ValueDate: valueDate,\r\n                BookDate: bookDat" +
-"e,\r\n                CostCenterId: costCenterId,\r\n                ReferenceNumber" +
-": referenceNumber,\r\n                StatementReference: statementReference,\r\n   " +
-"             SupplierId: supplierId,\r\n                PriceTypeId: priceTypeId,\r" +
-"\n                ShipperId: shipperId,\r\n                StoreId: storeId,\r\n     " +
-"           Details: details\r\n            };\r\n        };\r\n\r\n        const model =" +
-" getModel();\r\n\r\n        if (!model.TransactionMasterId) {\r\n            alert(\"Ac" +
-"cess is denied.\");\r\n            document.location = \"/dashboard/purchase/tasks/e" +
-"ntry\";\r\n            return;\r\n        };\r\n\r\n        if (!model.Details.length) {\r" +
-"\n            window.displayMessage(\"Please select an item.\");\r\n            retur" +
-"n;\r\n        };\r\n\r\n        const confirmed = confirm(\"Are you sure\");\r\n\r\n        " +
-"if (!confirmed) {\r\n            return;\r\n        };\r\n\r\n\r\n        $(\"#CheckoutButt" +
-"on\").addClass(\"loading\");\r\n\r\n        const ajax = request(model);\r\n\r\n        aja" +
-"x.success(function (response) {\r\n            const id = response;\r\n            d" +
-"ocument.location = \"/dashboard/purchase/tasks/return/checklist/\" + id;\r\n        " +
-"});\r\n\r\n        ajax.fail(function (xhr) {\r\n            $(\"#CheckoutButton\").remo" +
-"veClass(\"loading\");\r\n            window.logAjaxErrorMessage(xhr);\r\n        });\r\n" +
-"    });\r\n</script>\r\n");
+"oat(el.find(\"input.discount\").val() || 0);\r\n                    const tax = wind" +
+"ow.parseFloat(el.find(\".tax-amount\").html() || 0);\r\n\r\n                    model." +
+"push({\r\n                        StoreId: $(\"#StoreSelect\").val(),\r\n             " +
+"           ItemId: itemId,\r\n                        Quantity: quantity,\r\n       " +
+"                 Tax: tax,\r\n                        UnitId: unitId,\r\n           " +
+"             Price: price,\r\n                        Discount: discount\r\n        " +
+"            });\r\n                });\r\n\r\n                return model;\r\n         " +
+"   };\r\n\r\n            const transactionMasterId = parseInt(window.getQueryStringB" +
+"yName(\"TransactionMasterId\") || 0);\r\n            const valueDate = $(\"#ValueDate" +
+"InputDate\").datepicker(\"getDate\");\r\n            const bookDate = $(\"#BookDateInp" +
+"utDate\").datepicker(\"getDate\");\r\n            const costCenterId = $(\"#CostCenter" +
+"Select\").val();\r\n            const referenceNumber = $(\"#ReferenceNumberInputTex" +
+"t\").val();\r\n            const statementReference = $(\"#StatementReferenceInputTe" +
+"xt\").val();\r\n            const supplierId = $(\"#SupplierSelect\").val();\r\n       " +
+"     const priceTypeId = $(\"#PriceTypeSelect\").val();\r\n            const shipper" +
+"Id = $(\"#ShipperSelect\").val();\r\n            const storeId = $(\"#StoreSelect\").v" +
+"al();\r\n            const details = getDetails();\r\n\r\n            return {\r\n      " +
+"          TransactionMasterId: transactionMasterId,\r\n                ValueDate: " +
+"valueDate,\r\n                BookDate: bookDate,\r\n                CostCenterId: c" +
+"ostCenterId,\r\n                ReferenceNumber: referenceNumber,\r\n               " +
+" StatementReference: statementReference,\r\n                SupplierId: supplierId" +
+",\r\n                PriceTypeId: priceTypeId,\r\n                ShipperId: shipper" +
+"Id,\r\n                StoreId: storeId,\r\n                Details: details\r\n      " +
+"      };\r\n        };\r\n\r\n        const model = getModel();\r\n\r\n        if (!model." +
+"TransactionMasterId) {\r\n            alert(\"Access is denied.\");\r\n            doc" +
+"ument.location = \"/dashboard/purchase/tasks/entry\";\r\n            return;\r\n      " +
+"  };\r\n\r\n        if (!model.Details.length) {\r\n            window.displayMessage(" +
+"\"Please select an item.\");\r\n            return;\r\n        };\r\n\r\n        const con" +
+"firmed = confirm(\"Are you sure\");\r\n\r\n        if (!confirmed) {\r\n            retu" +
+"rn;\r\n        };\r\n\r\n\r\n        $(\"#CheckoutButton\").addClass(\"loading\");\r\n\r\n      " +
+"  const ajax = request(model);\r\n\r\n        ajax.success(function (response) {\r\n  " +
+"          const id = response;\r\n            document.location = \"/dashboard/purc" +
+"hase/tasks/return/checklist/\" + id;\r\n        });\r\n\r\n        ajax.fail(function (" +
+"xhr) {\r\n            $(\"#CheckoutButton\").removeClass(\"loading\");\r\n            wi" +
+"ndow.logAjaxErrorMessage(xhr);\r\n        });\r\n    });\r\n</script>\r\n");
 
         }
     }

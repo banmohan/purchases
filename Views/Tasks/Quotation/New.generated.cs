@@ -33,7 +33,6 @@ namespace ASP
     using Frapid.Framework;
     using Frapid.i18n;
     using Frapid.Messaging;
-    using Frapid.Mapper.Decorators;
     using Frapid.WebsiteBuilder;
     using MixERP.Purchases;
     
@@ -103,34 +102,36 @@ WriteLiteral("\r\n\r\n\r\n<script>\r\n    function initializeUI() {\r\n        c
 "l.find(\"input.quantity\").val());\r\n                    const unitId = parseInt(el" +
 ".find(\"select.unit\").val());\r\n                    const price = parseFloat(el.fi" +
 "nd(\"input.price\").val() || 0);\r\n                    const discount = parseFloat(" +
-"el.find(\"input.discount\").val() || 0);\r\n\r\n                    model.push({\r\n    " +
-"                    ValueDate: $(\"#ValueDateInputDate\").datepicker(\"getDate\"),\r\n" +
-"                        ItemId: itemId,\r\n                        Quantity: quant" +
-"ity,\r\n                        UnitId: unitId,\r\n                        Price: pr" +
-"ice,\r\n                        DiscountRate: discount\r\n                    });\r\n " +
-"               });\r\n\r\n                return model;\r\n            };\r\n\r\n         " +
-"   const valueDate = $(\"#ValueDateInputDate\").datepicker(\"getDate\");\r\n          " +
-"  const expectedDeliveryDate = $(\"#ExpectedDeliveryDateInputText\").datepicker(\"g" +
-"etDate\");\r\n            const referenceNumber = $(\"#ReferenceNumberInputText\").va" +
-"l();\r\n            const terms = $(\"#TermsTextArea\").val();\r\n            const in" +
-"ternalMemo = $(\"#InternalMemoTextArea\").val();\r\n            const supplierId = $" +
-"(\"#SupplierSelect\").val();\r\n            const priceTypeId = $(\"#PriceTypeSelect\"" +
-").val();\r\n            const shipperId = $(\"#ShipperSelect\").val();\r\n            " +
-"const details = getDetails();\r\n\r\n            return {\r\n                ValueDate" +
-": valueDate,\r\n                ExpectedDeliveryDate: expectedDeliveryDate,\r\n     " +
-"           ReferenceNumber: referenceNumber,\r\n                Terms: terms,\r\n   " +
-"             InternalMemo: internalMemo,\r\n                SupplierId: supplierId" +
-",\r\n                PriceTypeId: priceTypeId,\r\n                ShipperId: shipper" +
-"Id,\r\n                Details: details\r\n            };\r\n        };\r\n\r\n        con" +
-"st model = getModel();\r\n\r\n        if (!model.Details.length) {\r\n            aler" +
-"t(\"Please select an item.\");\r\n            return;\r\n        };\r\n\r\n        const c" +
-"onfirmed = confirm(\"Are you sure\");\r\n\r\n        if (!confirmed) {\r\n            re" +
-"turn;\r\n        };\r\n\r\n\r\n        $(\"#CheckoutButton\").addClass(\"loading\");\r\n\r\n    " +
-"    const ajax = request(model);\r\n\r\n        ajax.success(function(response) {\r\n " +
-"           const id = response;\r\n            document.location = `/dashboard/pur" +
-"chase/tasks/quotation/checklist/${id}`;\r\n        });\r\n\r\n        ajax.fail(functi" +
-"on(xhr) {\r\n            $(\"#CheckoutButton\").removeClass(\"loading\");\r\n           " +
-" window.logAjaxErrorMessage(xhr);\r\n        });\r\n    });\r\n</script>\r\n");
+"el.find(\"input.discount\").val() || 0);\r\n                    const tax = window.p" +
+"arseFloat(el.find(\".tax-amount\").html() || 0);\r\n\r\n                    model.push" +
+"({\r\n                        ValueDate: $(\"#ValueDateInputDate\").datepicker(\"getD" +
+"ate\"),\r\n                        ItemId: itemId,\r\n                        Quantit" +
+"y: quantity,\r\n                        Tax: tax,\r\n                        UnitId:" +
+" unitId,\r\n                        Price: price,\r\n                        Discoun" +
+"tRate: discount\r\n                    });\r\n                });\r\n\r\n               " +
+" return model;\r\n            };\r\n\r\n            const valueDate = $(\"#ValueDateInp" +
+"utDate\").datepicker(\"getDate\");\r\n            const expectedDeliveryDate = $(\"#Ex" +
+"pectedDeliveryDateInputText\").datepicker(\"getDate\");\r\n            const referenc" +
+"eNumber = $(\"#ReferenceNumberInputText\").val();\r\n            const terms = $(\"#T" +
+"ermsTextArea\").val();\r\n            const internalMemo = $(\"#InternalMemoTextArea" +
+"\").val();\r\n            const supplierId = $(\"#SupplierSelect\").val();\r\n         " +
+"   const priceTypeId = $(\"#PriceTypeSelect\").val();\r\n            const shipperId" +
+" = $(\"#ShipperSelect\").val();\r\n            const details = getDetails();\r\n\r\n    " +
+"        return {\r\n                ValueDate: valueDate,\r\n                Expecte" +
+"dDeliveryDate: expectedDeliveryDate,\r\n                ReferenceNumber: reference" +
+"Number,\r\n                Terms: terms,\r\n                InternalMemo: internalMe" +
+"mo,\r\n                SupplierId: supplierId,\r\n                PriceTypeId: price" +
+"TypeId,\r\n                ShipperId: shipperId,\r\n                Details: details" +
+"\r\n            };\r\n        };\r\n\r\n        const model = getModel();\r\n\r\n        if " +
+"(!model.Details.length) {\r\n            alert(\"Please select an item.\");\r\n       " +
+"     return;\r\n        };\r\n\r\n        const confirmed = confirm(\"Are you sure\");\r\n" +
+"\r\n        if (!confirmed) {\r\n            return;\r\n        };\r\n\r\n\r\n        $(\"#Ch" +
+"eckoutButton\").addClass(\"loading\");\r\n\r\n        const ajax = request(model);\r\n\r\n " +
+"       ajax.success(function(response) {\r\n            const id = response;\r\n    " +
+"        document.location = `/dashboard/purchase/tasks/quotation/checklist/${id}" +
+"`;\r\n        });\r\n\r\n        ajax.fail(function(xhr) {\r\n            $(\"#CheckoutBu" +
+"tton\").removeClass(\"loading\");\r\n            window.logAjaxErrorMessage(xhr);\r\n  " +
+"      });\r\n    });\r\n</script>\r\n");
 
         }
     }

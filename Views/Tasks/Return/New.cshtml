@@ -31,10 +31,13 @@
                     const unitId = parseInt(el.find("select.unit").val());
                     const price = parseFloat(el.find("input.price").val() || 0);
                     const discount = parseFloat(el.find("input.discount").val() || 0);
+                    const tax = window.parseFloat(el.find(".tax-amount").html() || 0);
+
                     model.push({
                         StoreId: $("#StoreSelect").val(),
                         ItemId: itemId,
                         Quantity: quantity,
+                        Tax: tax,
                         UnitId: unitId,
                         Price: price,
                         Discount: discount
