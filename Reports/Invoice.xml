@@ -41,10 +41,6 @@
         <td> {DataSource[0].verification_reason}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.TranCode}</td>
-        <td>{DataSource[0].transaction_code}</td>
-      </tr>
-      <tr>
         <td>{Resources.Titles.Office}</td>
         <td>{DataSource[0].office_name}</td>
       </tr>
