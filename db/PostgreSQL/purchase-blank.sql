@@ -706,7 +706,7 @@ $$
     DECLARE _grand_total                    public.money_strict;
     DECLARE _discount_total                 public.money_strict2;
     DECLARE _tax_total                      public.money_strict2;
-    DECLARE _credit_account_id              bigint;
+    DECLARE _credit_account_id              integer;
     DECLARE _default_currency_code          national character varying(12);
     DECLARE _sm_id                          bigint;
     DECLARE this                            RECORD;
