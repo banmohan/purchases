@@ -38,7 +38,7 @@ ON inventory.brands.brand_id = inventory.items.brand_id
 INNER JOIN inventory.units
 ON inventory.units.unit_id = inventory.items.unit_id
 WHERE inventory.items.deleted = 0
-AND inventory.items.allow_purchase
-AND inventory.items.maintain_inventory;
+AND inventory.items.allow_purchase = 1
+AND inventory.items.maintain_inventory = 1;
 
 GO

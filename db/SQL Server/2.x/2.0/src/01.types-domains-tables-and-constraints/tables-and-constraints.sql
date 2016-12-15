@@ -126,9 +126,9 @@ AS TABLE
 (
     store_id            integer,
     transaction_type    national character varying(2),
-    item_id               integer,
-    quantity            dbo.integer_strict,
-    unit_id               integer,
+    item_id             integer,
+    quantity            dbo.decimal_strict2,
+    unit_id             integer,
     price               dbo.money_strict,
     discount            dbo.money_strict2,
     tax                 dbo.money_strict2,

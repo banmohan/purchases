@@ -145,7 +145,7 @@ AS
 $$
     DECLARE _price              public.money_strict2;
     DECLARE _costing_unit_id    integer;
-    DECLARE _factor             decimal;
+    DECLARE _factor             decimal(30, 6);
   
 BEGIN
     --Fist pick the catalog price which matches all these fields:
@@ -523,7 +523,7 @@ BEGIN
         item_id                         	integer, 
         quantity                        	public.integer_strict,
         unit_id                         	integer,
-        base_quantity                   	decimal,
+        base_quantity                   	decimal(30, 6),
         base_unit_id                    	integer,
         price                           	public.money_strict NOT NULL DEFAULT(0),
         cost_of_goods_sold              	public.money_strict2 NOT NULL DEFAULT(0),
@@ -730,7 +730,7 @@ BEGIN
         quantity                            public.integer_strict,
         unit_name                           text,
         unit_id                             integer,
-        base_quantity                       decimal,
+        base_quantity                       decimal(30, 6),
         base_unit_id                        integer,                
         price                               public.money_strict,
         discount                            public.money_strict2,

@@ -9,20 +9,17 @@ AS
 BEGIN
     DECLARE @price              dbo.money_strict2;
     DECLARE @costing_unit_id    integer;
-    DECLARE @factor             decimal;
+    DECLARE @factor             decimal(30, 6);
 
     --Fist pick the catalog price which matches all these fields:
     --Item, Customer Type, Price Type, and Unit.
     --This is the most effective price.
     SELECT 
-        purchase.item_cost_prices.price, 
-        purchase.item_cost_prices.unit_id
-    INTO 
-        @price,
-        @costing_unit_id
+        @price = purchase.item_cost_prices.price, 
+        @costing_unit_id = purchase.item_cost_prices.unit_id
     FROM purchase.item_cost_prices
-    WHERE purchase.item_cost_prices.item_id=_item_id
-    AND purchase.item_cost_prices.supplier_id =_supplier_id
+    WHERE purchase.item_cost_prices.item_id = @item_id
+    AND purchase.item_cost_prices.supplier_id = @supplier_id
     AND purchase.item_cost_prices.unit_id = @unit_id
     AND purchase.item_cost_prices.deleted = 0;
 
@@ -32,14 +29,11 @@ BEGIN
         --We do not have a cost price of this item for the unit supplied.
         --Let's see if this item has a price for other units.
         SELECT 
-            purchase.item_cost_prices.price, 
-            purchase.item_cost_prices.unit_id
-        INTO 
-            @price, 
-            @costing_unit_id
+            @price = purchase.item_cost_prices.price, 
+            @costing_unit_id = purchase.item_cost_prices.unit_id
         FROM purchase.item_cost_prices
-        WHERE purchase.item_cost_prices.item_id=_item_id
-        AND purchase.item_cost_prices.supplier_id =_supplier_id
+        WHERE purchase.item_cost_prices.item_id = @item_id
+        AND purchase.item_cost_prices.supplier_id = @supplier_id
         AND purchase.item_cost_prices.deleted = 0;
     END;
 
@@ -49,18 +43,15 @@ BEGIN
         --This item does not have cost price defined in the catalog.
         --Therefore, getting the default cost price from the item definition.
         SELECT 
-            cost_price, 
-            unit_id
-        INTO 
-            @price, 
-            @costing_unit_id
+            @price = cost_price, 
+            @costing_unit_id = unit_id
         FROM inventory.items
         WHERE inventory.items.item_id = @item_id
         AND inventory.items.deleted = 0;
     END;
 
         --Get the unitary conversion factor if the requested unit does not match with the price defition.
-    @factor = inventory.convert_unit(@unit_id, @costing_unit_id);
+    SET @factor = inventory.convert_unit(@unit_id, @costing_unit_id);
     RETURN @price * @factor;
 END;
 

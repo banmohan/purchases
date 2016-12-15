@@ -68,7 +68,7 @@ BEGIN
         quantity                            public.integer_strict,
         unit_name                           text,
         unit_id                             integer,
-        base_quantity                       decimal,
+        base_quantity                       decimal(30, 6),
         base_unit_id                        integer,                
         price                               public.money_strict,
         discount                            public.money_strict2,

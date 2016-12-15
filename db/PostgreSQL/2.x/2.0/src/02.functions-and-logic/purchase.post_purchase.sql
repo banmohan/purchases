@@ -69,7 +69,7 @@ BEGIN
         item_id                         	integer, 
         quantity                        	public.integer_strict,
         unit_id                         	integer,
-        base_quantity                   	decimal,
+        base_quantity                   	decimal(30, 6),
         base_unit_id                    	integer,
         price                           	public.money_strict NOT NULL DEFAULT(0),
         cost_of_goods_sold              	public.money_strict2 NOT NULL DEFAULT(0),
