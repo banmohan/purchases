@@ -27,7 +27,7 @@ CREATE TABLE purchase.item_cost_prices
     includes_tax                            bit NOT NULL
                                             CONSTRAINT item_cost_prices_includes_tax_df   
                                             DEFAULT(0),
-    price                                   dbo.money_strict NOT NULL,
+    price                                   decimal(30, 6) NOT NULL,
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETDATE()),
     deleted                                    bit DEFAULT(0)
@@ -78,12 +78,12 @@ CREATE TABLE purchase.quotation_details
     quotation_id                            bigint NOT NULL REFERENCES purchase.quotations,
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
-    price                                   dbo.money_strict NOT NULL,
-    discount_rate                           dbo.decimal_strict2 NOT NULL DEFAULT(0),    
-    tax                                     dbo.money_strict2 NOT NULL DEFAULT(0),    
-    shipping_charge                         dbo.money_strict2 NOT NULL DEFAULT(0),    
+    price                                   decimal(30, 6) NOT NULL,
+    discount_rate                           decimal(30, 6) NOT NULL DEFAULT(0),    
+    tax                                     decimal(30, 6) NOT NULL DEFAULT(0),    
+    shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
-    quantity                                dbo.decimal_strict2 NOT NULL
+    quantity                                decimal(30, 6) NOT NULL
 );
 
 
@@ -113,12 +113,12 @@ CREATE TABLE purchase.order_details
     order_id                                bigint NOT NULL REFERENCES purchase.orders,
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
-    price                                   dbo.money_strict NOT NULL,
-    discount_rate                           dbo.decimal_strict2 NOT NULL DEFAULT(0),    
-    tax                                     dbo.money_strict2 NOT NULL DEFAULT(0),    
-    shipping_charge                         dbo.money_strict2 NOT NULL DEFAULT(0),    
+    price                                   decimal(30, 6) NOT NULL,
+    discount_rate                           decimal(30, 6) NOT NULL DEFAULT(0),    
+    tax                                     decimal(30, 6) NOT NULL DEFAULT(0),    
+    shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
-    quantity                                dbo.decimal_strict2 NOT NULL
+    quantity                                decimal(30, 6) NOT NULL
 );
 
 CREATE TYPE purchase.purchase_detail_type
@@ -127,12 +127,12 @@ AS TABLE
     store_id            integer,
     transaction_type    national character varying(2),
     item_id             integer,
-    quantity            dbo.decimal_strict2,
+    quantity            decimal(30, 6),
     unit_id             integer,
-    price               dbo.money_strict,
-    discount            dbo.money_strict2,
-    tax                 dbo.money_strict2,
-    shipping_charge     dbo.money_strict2
+    price               decimal(30, 6),
+    discount            decimal(30, 6),
+    tax                 decimal(30, 6),
+    shipping_charge     decimal(30, 6)
 );
 
 

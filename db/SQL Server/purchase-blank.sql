@@ -28,7 +28,7 @@ CREATE TABLE purchase.item_cost_prices
     includes_tax                            bit NOT NULL
                                             CONSTRAINT item_cost_prices_includes_tax_df   
                                             DEFAULT(0),
-    price                                   dbo.money_strict NOT NULL,
+    price                                   decimal(30, 6) NOT NULL,
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETDATE()),
     deleted                                    bit DEFAULT(0)
@@ -79,12 +79,12 @@ CREATE TABLE purchase.quotation_details
     quotation_id                            bigint NOT NULL REFERENCES purchase.quotations,
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
-    price                                   dbo.money_strict NOT NULL,
-    discount_rate                           dbo.decimal_strict2 NOT NULL DEFAULT(0),    
-    tax                                     dbo.money_strict2 NOT NULL DEFAULT(0),    
-    shipping_charge                         dbo.money_strict2 NOT NULL DEFAULT(0),    
+    price                                   decimal(30, 6) NOT NULL,
+    discount_rate                           decimal(30, 6) NOT NULL DEFAULT(0),    
+    tax                                     decimal(30, 6) NOT NULL DEFAULT(0),    
+    shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
-    quantity                                dbo.decimal_strict2 NOT NULL
+    quantity                                decimal(30, 6) NOT NULL
 );
 
 
@@ -114,12 +114,12 @@ CREATE TABLE purchase.order_details
     order_id                                bigint NOT NULL REFERENCES purchase.orders,
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
-    price                                   dbo.money_strict NOT NULL,
-    discount_rate                           dbo.decimal_strict2 NOT NULL DEFAULT(0),    
-    tax                                     dbo.money_strict2 NOT NULL DEFAULT(0),    
-    shipping_charge                         dbo.money_strict2 NOT NULL DEFAULT(0),    
+    price                                   decimal(30, 6) NOT NULL,
+    discount_rate                           decimal(30, 6) NOT NULL DEFAULT(0),    
+    tax                                     decimal(30, 6) NOT NULL DEFAULT(0),    
+    shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
-    quantity                                dbo.decimal_strict2 NOT NULL
+    quantity                                decimal(30, 6) NOT NULL
 );
 
 CREATE TYPE purchase.purchase_detail_type
@@ -128,12 +128,12 @@ AS TABLE
     store_id            integer,
     transaction_type    national character varying(2),
     item_id             integer,
-    quantity            dbo.decimal_strict2,
+    quantity            decimal(30, 6),
     unit_id             integer,
-    price               dbo.money_strict,
-    discount            dbo.money_strict2,
-    tax                 dbo.money_strict2,
-    shipping_charge     dbo.money_strict2
+    price               decimal(30, 6),
+    discount            decimal(30, 6),
+    tax                 decimal(30, 6),
+    shipping_charge     decimal(30, 6)
 );
 
 
@@ -148,10 +148,10 @@ DROP FUNCTION purchase.get_item_cost_price;
 GO
 
 CREATE FUNCTION purchase.get_item_cost_price(@item_id integer, @supplier_id bigint, @unit_id integer)
-RETURNS dbo.money_strict2
+RETURNS decimal(30, 6)
 AS  
 BEGIN
-    DECLARE @price              dbo.money_strict2;
+    DECLARE @price              decimal(30, 6);
     DECLARE @costing_unit_id    integer;
     DECLARE @factor             decimal(30, 6);
 
@@ -485,16 +485,16 @@ BEGIN
     DECLARE @checkout_id                    bigint;
     DECLARE @checkout_detail_id             bigint;
     DECLARE @shipping_address_id            integer;
-    DECLARE @grand_total                    dbo.money_strict;
-    DECLARE @discount_total                 dbo.money_strict2;
-    DECLARE @payable                        dbo.money_strict2;
+    DECLARE @grand_total                    decimal(30, 6);
+    DECLARE @discount_total                 decimal(30, 6);
+    DECLARE @payable                        decimal(30, 6);
     DECLARE @default_currency_code          national character varying(12);
     DECLARE @is_periodic                    bit = inventory.is_periodic_inventory(@office_id);
     DECLARE @tran_counter                   integer;
     DECLARE @transaction_code               national character varying(50);
-    DECLARE @tax_total                      dbo.money_strict2;
+    DECLARE @tax_total                      decimal(30, 6);
     DECLARE @tax_account_id                 integer;
-    DECLARE @shipping_charge                dbo.money_strict2;
+    DECLARE @shipping_charge                decimal(30, 6);
     DECLARE @book_name                      national character varying(100) = 'Purchase';
 
     DECLARE @can_post_transaction           bit;
@@ -525,15 +525,15 @@ BEGIN
         store_id                            integer,
         transaction_type                    national character varying(2),
         item_id                             integer, 
-        quantity                            dbo.decimal_strict2,
+        quantity                            decimal(30, 6),
         unit_id                             integer,
         base_quantity                       decimal(30, 6),
         base_unit_id                        integer,
-        price                               dbo.money_strict NOT NULL DEFAULT(0),
-        cost_of_goods_sold                  dbo.money_strict2 NOT NULL DEFAULT(0),
-        discount                            dbo.money_strict2 NOT NULL DEFAULT(0),
-        tax                                 dbo.money_strict2 NOT NULL DEFAULT(0),
-        shipping_charge                     dbo.money_strict2 NOT NULL DEFAULT(0),
+        price                               decimal(30, 6) NOT NULL DEFAULT(0),
+        cost_of_goods_sold                  decimal(30, 6) NOT NULL DEFAULT(0),
+        discount                            decimal(30, 6) NOT NULL DEFAULT(0),
+        tax                                 decimal(30, 6) NOT NULL DEFAULT(0),
+        shipping_charge                     decimal(30, 6) NOT NULL DEFAULT(0),
         purchase_account_id                 integer, 
         purchase_discount_account_id        integer, 
         inventory_account_id                integer
@@ -576,10 +576,10 @@ BEGIN
         account_id                          integer, 
         statement_reference                 national character varying(2000), 
         currency_code                       national character varying(12), 
-        amount_in_currency                  dbo.money_strict, 
+        amount_in_currency                  decimal(30, 6), 
         local_currency_code                 national character varying(12), 
         er                                  decimal_strict, 
-        amount_in_local_currency            dbo.money_strict
+        amount_in_local_currency            decimal(30, 6)
     ) ;
 
     SET @payable                                = @grand_total - COALESCE(@discount_total, 0) + COALESCE(@shipping_charge, 0) + COALESCE(@tax_total, 0);
@@ -687,15 +687,15 @@ BEGIN
     DECLARE @tran_counter                   integer;
     DECLARE @transaction_code national character varying(50);
     DECLARE @checkout_id                    bigint;
-    DECLARE @grand_total                    dbo.money_strict;
-    DECLARE @discount_total                 dbo.money_strict2;
-    DECLARE @tax_total                      dbo.money_strict2;
+    DECLARE @grand_total                    decimal(30, 6);
+    DECLARE @discount_total                 decimal(30, 6);
+    DECLARE @tax_total                      decimal(30, 6);
     DECLARE @credit_account_id              integer;
     DECLARE @default_currency_code          national character varying(12);
     DECLARE @sm_id                          bigint;
     DECLARE @is_periodic                    bit = inventory.is_periodic_inventory(@office_id);
     DECLARE @book_name                      national character varying(1000)='Purchase Return';
-    DECLARE @receivable                     dbo.money_strict;
+    DECLARE @receivable                     decimal(30, 6);
     DECLARE @tax_account_id                 integer;
 
     DECLARE @total_rows                     integer = 0;
@@ -705,14 +705,14 @@ BEGIN
     DECLARE @loop_transaction_type          national character varying(2);
     DECLARE @loop_store_id                  integer;
     DECLARE @loop_item_id                   integer;
-    DECLARE @loop_quantity                  dbo.decimal_strict2;
+    DECLARE @loop_quantity                  decimal(30, 6);
     DECLARE @loop_unit_id                   integer;
     DECLARE @loop_base_quantity             decimal(30, 6);
     DECLARE @loop_base_unit_id              integer;
-    DECLARE @loop_price                     dbo.money_strict;
-    DECLARE @loop_discount                  dbo.money_strict2;
-    DECLARE @loop_tax                       dbo.money_strict2;
-    DECLARE @loop_shipping_charge           dbo.money_strict2;
+    DECLARE @loop_price                     decimal(30, 6);
+    DECLARE @loop_discount                  decimal(30, 6);
+    DECLARE @loop_tax                       decimal(30, 6);
+    DECLARE @loop_shipping_charge           decimal(30, 6);
 
     DECLARE @can_post_transaction           bit;
     DECLARE @error_message                  national character varying(MAX);
@@ -736,15 +736,15 @@ BEGIN
         store_id                            integer,
         item_code                           national character varying(50),
         item_id                             integer, 
-        quantity                            dbo.decimal_strict2,
+        quantity                            decimal(30, 6),
         unit_name                           national character varying(1000),
         unit_id                             integer,
         base_quantity                       decimal(30, 6),
         base_unit_id                        integer,                
-        price                               dbo.money_strict,
-        discount                            dbo.money_strict2,
-        tax                                 dbo.money_strict2,
-        shipping_charge                     dbo.money_strict2,
+        price                               decimal(30, 6),
+        discount                            decimal(30, 6),
+        tax                                 decimal(30, 6),
+        shipping_charge                     decimal(30, 6),
         purchase_account_id                 integer, 
         purchase_discount_account_id        integer, 
         inventory_account_id                integer
@@ -757,10 +757,10 @@ BEGIN
         account_id                          integer, 
         statement_reference                 national character varying(2000), 
         currency_code                       national character varying(12), 
-        amount_in_currency                  dbo.money_strict, 
+        amount_in_currency                  decimal(30, 6), 
         local_currency_code                 national character varying(12), 
-        er                                  dbo.decimal_strict, 
-        amount_in_local_currency            dbo.money_strict
+        er                                  decimal(30, 6), 
+        amount_in_local_currency            decimal(30, 6)
     ) ;
    
     SELECT @purchase_id = purchase.purchases.purchase_id

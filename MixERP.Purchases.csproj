@@ -155,7 +155,13 @@
     <Compile Include="Controllers\Backend\Tasks\EntryController.cs" />
     <Compile Include="Controllers\PurchaseDashboardController.cs" />
     <Compile Include="DAL\Backend\Tasks\Orders.cs" />
+    <Compile Include="DAL\Backend\Tasks\PurchaseEntry\IPurchaseEntry.cs" />
+    <Compile Include="DAL\Backend\Tasks\PurchaseEntry\PostgreSQL.cs" />
+    <Compile Include="DAL\Backend\Tasks\PurchaseEntry\SqlServer.cs" />
     <Compile Include="DAL\Backend\Tasks\PurchaseReturns.cs" />
+    <Compile Include="DAL\Backend\Tasks\PurchaseReturn\IPurchaseReturn.cs" />
+    <Compile Include="DAL\Backend\Tasks\PurchaseReturn\PostgreSQL.cs" />
+    <Compile Include="DAL\Backend\Tasks\PurchaseReturn\SqlServer.cs" />
     <Compile Include="DAL\Backend\Tasks\Purchases.cs" />
     <Compile Include="DAL\Backend\Tasks\Quotations.cs" />
     <Compile Include="DTO\ItemView.cs" />
