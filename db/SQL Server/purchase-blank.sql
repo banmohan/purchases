@@ -481,6 +481,8 @@ CREATE PROCEDURE purchase.post_purchase
 )
 AS
 BEGIN
+    SET NOCOUNT ON;
+
     DECLARE @transaction_master_id          bigint;
     DECLARE @checkout_id                    bigint;
     DECLARE @checkout_detail_id             bigint;
@@ -680,7 +682,9 @@ CREATE PROCEDURE purchase.post_return
     @details                                purchase.purchase_detail_type READONLY
 )
 AS
-BEGIN    
+BEGIN
+    SET NOCOUNT ON;
+
     DECLARE @purchase_id                    bigint;
     DECLARE @original_price_type_id         integer;
     DECLARE @tran_master_id                 bigint;

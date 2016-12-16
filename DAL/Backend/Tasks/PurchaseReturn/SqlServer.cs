@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Data.SqlClient;
+using System.Threading.Tasks;
 using Frapid.Configuration;
 using Frapid.DataAccess.Extensions;
 using Frapid.Framework.Extensions;
-using Npgsql;
 
 namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
 {
@@ -20,9 +20,9 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
 
             sql = string.Format(sql, new PurchaseEntry.PostgreSQL().GetParametersForDetails(model.Details));
 
-            using (var connection = new NpgsqlConnection(connectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
-                using (var command = new NpgsqlCommand(sql, connection))
+                using (var command = new SqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithNullableValue("@TransactionMasterId", model.TransactionMasterId);
                     command.Parameters.AddWithNullableValue("@OfficeId", model.OfficeId);

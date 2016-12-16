@@ -21,6 +21,8 @@ CREATE PROCEDURE purchase.post_purchase
 )
 AS
 BEGIN
+    SET NOCOUNT ON;
+
     DECLARE @transaction_master_id          bigint;
     DECLARE @checkout_id                    bigint;
     DECLARE @checkout_detail_id             bigint;

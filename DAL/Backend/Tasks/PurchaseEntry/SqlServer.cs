@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Frapid.Configuration;
 using Frapid.DataAccess.Extensions;
 using Frapid.Framework.Extensions;
 using MixERP.Purchases.ViewModels;
-using Npgsql;
 
 namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
 {
@@ -21,9 +21,9 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
                                 @SupplierId, @PriceTypeId, @ShipperId, @Details
                             ;";
 
-            using (var connection = new NpgsqlConnection(connectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
-                using (var command = new NpgsqlCommand(sql, connection))
+                using (var command = new SqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithNullableValue("@OfficeId", model.OfficeId);
                     command.Parameters.AddWithNullableValue("@UserId", model.UserId);
