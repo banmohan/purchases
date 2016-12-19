@@ -120,7 +120,7 @@ BEGIN
         currency_code                       national character varying(12), 
         amount_in_currency                  decimal(30, 6), 
         local_currency_code                 national character varying(12), 
-        er                                  decimal_strict, 
+        er                                  decimal(30, 6), 
         amount_in_local_currency            decimal(30, 6)
     ) ;
 
