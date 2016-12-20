@@ -93,7 +93,7 @@
         finance.transaction_master.transaction_ts,
         finance.transaction_master.value_date,
         account.users.name AS entered_by,
-        finance.verification_statuses.verification_status_name AS status,
+        core.verification_statuses.verification_status_name AS status,
         verified_by_user.name AS verified_by,
         finance.transaction_master.verification_reason,
         finance.transaction_master.transaction_code,
@@ -116,8 +116,8 @@
         ON purchase.purchase_returns.checkout_id = inventory.checkouts.checkout_id
         INNER JOIN inventory.suppliers
         ON purchase.purchase_returns.supplier_id = inventory.suppliers.supplier_id
-        INNER JOIN finance.verification_statuses
-        ON finance.transaction_master.verification_status_id = finance.verification_statuses.verification_status_id
+        INNER JOIN core.verification_statuses
+        ON finance.transaction_master.verification_status_id = core.verification_statuses.verification_status_id
         LEFT JOIN account.users AS verified_by_user
         ON finance.transaction_master.verified_by_user_id = verified_by_user.user_id
         LEFT JOIN inventory.shippers

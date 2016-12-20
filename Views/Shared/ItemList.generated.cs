@@ -438,7 +438,7 @@ WriteLiteral(">\r\n                        <button");
 
 WriteLiteral(" id=\"CheckoutButton\"");
 
-WriteLiteral(" class=\"ui green icon big button\"");
+WriteLiteral(" class=\"ui green icon button\"");
 
 WriteLiteral(">\r\n                            <i");
 
@@ -449,7 +449,7 @@ WriteLiteral("></i>\r\n                            CHECKOUT\r\n                 
 
 WriteLiteral(" id=\"ClearScreenButton\"");
 
-WriteLiteral(" class=\"ui red icon big button\"");
+WriteLiteral(" class=\"ui red icon button\"");
 
 WriteLiteral(">\r\n                            <i");
 

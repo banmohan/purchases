@@ -18,7 +18,8 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
             string sql = @"EXECUTE purchase.post_purchase
                                 @OfficeId, @UserId, @LoginId, @ValueDate, @BookDate, 
                                 @CostCenterId, @ReferenceNumber, @StatementReference, 
-                                @SupplierId, @PriceTypeId, @ShipperId, @Details
+                                @SupplierId, @PriceTypeId, @ShipperId, @Details,
+                                @TransactionMasterId OUTPUT
                             ;";
 
             using (var connection = new SqlConnection(connectionString))
@@ -42,9 +43,11 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
                         command.Parameters.AddWithNullableValue("@Details", details, "purchase.purchase_detail_type");
                     }
 
+                    command.Parameters.Add("@TransactionMasterId", SqlDbType.BigInt).Direction = ParameterDirection.Output;
+
                     connection.Open();
-                    var awaiter = await command.ExecuteScalarAsync().ConfigureAwait(false);
-                    return awaiter.To<long>();
+                    await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+                    return command.Parameters["@TransactionMasterId"].Value.To<long>();
                 }
             }
         }
@@ -53,6 +56,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
         {
             var table = new DataTable();
             table.Columns.Add("StoreId", typeof(int));
+            table.Columns.Add("TransactionType", typeof(string));
             table.Columns.Add("ItemId", typeof(int));
             table.Columns.Add("Quantity", typeof(decimal));
             table.Columns.Add("UnitId", typeof(int));
@@ -65,6 +69,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
             {
                 var row = table.NewRow();
                 row["StoreId"] = detail.StoreId;
+                row["TransactionType"] = "Dr";//Inventory is increased
                 row["ItemId"] = detail.ItemId;
                 row["Quantity"] = detail.Quantity;
                 row["UnitId"] = detail.UnitId;

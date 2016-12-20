@@ -17,13 +17,14 @@ CREATE PROCEDURE purchase.post_purchase
     @supplier_id                            integer,
     @price_type_id                          integer,
     @shipper_id                             integer,
-    @details                                purchase.purchase_detail_type READONLY
+    @details                                purchase.purchase_detail_type READONLY,
+	@transaction_master_id					bigint OUTPUT
 )
 AS
 BEGIN
     SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
-    DECLARE @transaction_master_id          bigint;
     DECLARE @checkout_id                    bigint;
     DECLARE @checkout_detail_id             bigint;
     DECLARE @shipping_address_id            integer;

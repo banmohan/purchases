@@ -33,7 +33,6 @@ namespace ASP
     using Frapid.Framework;
     using Frapid.i18n;
     using Frapid.Messaging;
-    using Frapid.Mapper.Decorators;
     using Frapid.WebsiteBuilder;
     using MixERP.Purchases;
     
@@ -62,7 +61,7 @@ WriteLiteral(@"
 
     scrudFactory.title = ""Price Types"";
 
-    scrudFactory.viewAPI = ""/api/views/purchase/price-types"";
+    scrudFactory.viewAPI = ""/api/forms/purchase/price-types"";
     scrudFactory.viewTableName = ""purchase.price_types"";
 
     scrudFactory.formAPI = ""/api/forms/purchase/price-types"";
@@ -76,8 +75,8 @@ WriteLiteral(@"
     scrudFactory.live = ""PriceTypeName"";
 
     scrudFactory.card = {
-        header: ""price_type_name"",
-        description: ""price_type_code""        
+        header: ""PriceTypeName"",
+        description: ""PriceTypeCode""        
     };
 
     //scrudFactory.layout = [

@@ -22,6 +22,7 @@ CREATE PROCEDURE purchase.post_return
 AS
 BEGIN
     SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
     DECLARE @purchase_id                    bigint;
     DECLARE @original_price_type_id         integer;

@@ -2,6 +2,10 @@
     padding: 0 !important;
 }
 
+.pos.purchase.segment {
+    font-size: 0.8em;
+}
+
 iframe {
     background-color: white;
     width: 100%;
@@ -132,7 +136,7 @@ input.invoice.number.for.reprint {
 
         .item.list .item .info .name {
             font-size: 1.4em;
-            font-weight: 100;
+            font-weight: 800;
             position: relative;
             z-index: 1;
             top: -5.5em;
@@ -143,7 +147,7 @@ input.invoice.number.for.reprint {
 
         .item.list .item .info .price {
             font-size: 3em;
-            font-weight: 100 !important;
+            font-weight: 600 !important;
             text-align: right;
             position: relative;
             z-index: 1;
@@ -175,7 +179,6 @@ input.invoice.number.for.reprint {
         font-size: 0.9em;
         letter-spacing: 1px;
         cursor: pointer;
-        text-shadow: 0 0 2px white;
     }
 
     .category.list .cat.filter {
@@ -251,7 +254,6 @@ input.invoice.number.for.reprint {
             height: 100%;
             text-transform: uppercase;
             letter-spacing: 1px;
-            font-weight: 100;
         }
 
     .purchase.items .item input {
@@ -279,7 +281,7 @@ input.invoice.number.for.reprint {
 
         .purchase.items .item .info.block .header {
             font-size: 1.5em;
-            font-weight: 100;
+            font-weight: 400;
             text-transform: uppercase;
         }
 

@@ -111,7 +111,8 @@ WriteLiteral("\r\n\r\n<script>\r\n    window.overrideUrl = \"/dashboard/purchase
 "     document.location = `/dashboard/purchase/tasks/entry/checklist/${id}`;\r\n   " +
 "     });\r\n\r\n        ajax.fail(function(xhr) {\r\n            $(\"#CheckoutButton\")." +
 "removeClass(\"loading\");\r\n            window.logAjaxErrorMessage(xhr);\r\n        }" +
-");\r\n    });\r\n\r\n</script>");
+");\r\n    });\r\n\r\n    window.overridePath = \"/dashboard/purchase/tasks/entry\";\r\n</s" +
+"cript>");
 
         }
     }
