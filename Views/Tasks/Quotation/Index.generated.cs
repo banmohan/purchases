@@ -33,7 +33,6 @@ namespace ASP
     using Frapid.Framework;
     using Frapid.i18n;
     using Frapid.Messaging;
-    using Frapid.Mapper.Decorators;
     using Frapid.WebsiteBuilder;
     using MixERP.Purchases;
     
@@ -373,30 +372,35 @@ WriteLiteral(" class=\"ui green button\"");
 
 WriteLiteral(" id=\"ShowButton\"");
 
-WriteLiteral(">Show</div>\r\n            </div>\r\n        </div>\r\n\r\n\r\n    </div>\r\n\r\n    <table");
+WriteLiteral(">Show</div>\r\n            </div>\r\n        </div>\r\n\r\n\r\n    </div>\r\n\r\n    <div");
+
+WriteLiteral(" class=\"fluid width overflown section\"");
+
+WriteLiteral(">\r\n        <table");
 
 WriteLiteral(" id=\"JournalView\"");
 
-WriteLiteral(" class=\"ui table segment\"");
+WriteLiteral(" class=\"ui table nowrap segment\"");
 
 WriteLiteral(@">
-        <thead>
-        <tr>
-            <th>Actions</th>
-            <th>Id</th>
-            <th>Supplier</th>
-            <th>Value Date</th>
-            <th>Expected Date</th>
-            <th>Ref#</th>
-            <th>Terms</th>
-            <th>Internal Memo</th>
-            <th>Posted By</th>
-            <th>Office</th>
-            <th>Posted On</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+            <thead>
+                <tr>
+                    <th>Actions</th>
+                    <th>Id</th>
+                    <th>Supplier</th>
+                    <th>Value Date</th>
+                    <th>Expected Date</th>
+                    <th>Ref#</th>
+                    <th>Terms</th>
+                    <th>Internal Memo</th>
+                    <th>Posted By</th>
+                    <th>Office</th>
+                    <th>Posted On</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </div>
 
 <div");
@@ -420,34 +424,34 @@ WriteLiteral("></i>\r\n    <iframe></iframe>\r\n</div>\r\n<script>\r\n    functi
 "0);\");\r\n            journalAdviceAnchor.attr(\"onclick\", \"showQuotation(\" + id + " +
 "\");\");\r\n\r\n            cell.append(checklistAnchor);\r\n            cell.append(jou" +
 "rnalAdviceAnchor);\r\n\r\n            return cell;\r\n        };\r\n\r\n\r\n        $.each(d" +
-"ata, function() {\r\n            const item = this;\r\n\r\n            const row = $(\"" +
-"<tr />\");\r\n\r\n            row.append(getActionCell(item.Id));\r\n            row.ap" +
-"pend(getCell(item.Id));\r\n            row.append(getCell(item.Supplier));\r\n      " +
-"      row.append(getCell(item.ValueDate));\r\n            row.append(getCell(item." +
-"ExpectedDate));\r\n            row.append(getCell(item.ReferenceNumber));\r\n       " +
-"     row.append(getCell(item.Terms));\r\n            row.append(getCell(item.Inter" +
-"nalMemo));\r\n            row.append(getCell(item.PostedBy));\r\n            row.app" +
-"end(getCell(item.Office));\r\n            row.append(getCell(item.TransactionTs));" +
-"\r\n\r\n            target.find(\"tbody\").append(row);\r\n        });\r\n    };\r\n\r\n    fu" +
-"nction processQuery() {\r\n        function getModel() {\r\n            const form =" +
-" window.serializeForm($(\"#Annotation\"));\r\n            return form;\r\n        };\r\n" +
-"\r\n        function displayGrid(target) {\r\n            function request(query) {\r" +
-"\n                const url = \"/dashboard/purchase/tasks/quotation/view\";\r\n      " +
-"          const data = JSON.stringify(query);\r\n                return window.get" +
-"AjaxRequest(url, \"POST\", data);\r\n            };\r\n\r\n            const query = get" +
-"Model();\r\n\r\n            const ajax = request(query);\r\n\r\n            ajax.success" +
-"(function(response) {\r\n                displayTable(target, response);\r\n        " +
-"        target.removeClass(\"loading\");\r\n            });\r\n\r\n            ajax.fail" +
-"(function(xhr) {\r\n                alert(JSON.stringify(xhr));\r\n            });\r\n" +
-"        };\r\n\r\n        const view = $(\"#JournalView\").addClass(\"loading\");\r\n\r\n   " +
-"     displayGrid(view);\r\n    };\r\n\r\n    $(\"#ShowButton\").unbind(\"click\").bind(\"cl" +
-"ick\", function() {\r\n        processQuery();\r\n    });\r\n\r\n    function showQuotati" +
-"on(id) {\r\n        $(\".modal iframe\").attr(\"src\", \"/dashboard/reports/source/Area" +
-"s/MixERP.Purchases/Reports/Quotation.xml?quotation_id=\" + id);\r\n\r\n        setTim" +
-"eout(function () {\r\n            $(\".advice.modal\")\r\n                .modal(\'sett" +
-"ing\', \'transition\', \'horizontal flip\')\r\n                .modal(\"show\");\r\n\r\n     " +
-"   }, 300);\r\n    };\r\n\r\n    window.loadDatepicker();\r\n\r\n    setTimeout(function()" +
-" {\r\n        processQuery();\r\n    }, 1000);\r\n</script>");
+"ata, function () {\r\n            const item = this;\r\n\r\n            const row = $(" +
+"\"<tr />\");\r\n\r\n            row.append(getActionCell(item.Id));\r\n            row.a" +
+"ppend(getCell(item.Id));\r\n            row.append(getCell(item.Supplier));\r\n     " +
+"       row.append(getCell(item.ValueDate));\r\n            row.append(getCell(item" +
+".ExpectedDate));\r\n            row.append(getCell(item.ReferenceNumber));\r\n      " +
+"      row.append(getCell(item.Terms));\r\n            row.append(getCell(item.Inte" +
+"rnalMemo));\r\n            row.append(getCell(item.PostedBy));\r\n            row.ap" +
+"pend(getCell(item.Office));\r\n            row.append(getCell(item.TransactionTs))" +
+";\r\n\r\n            target.find(\"tbody\").append(row);\r\n        });\r\n    };\r\n\r\n    f" +
+"unction processQuery() {\r\n        function getModel() {\r\n            const form " +
+"= window.serializeForm($(\"#Annotation\"));\r\n            return form;\r\n        };\r" +
+"\n\r\n        function displayGrid(target) {\r\n            function request(query) {" +
+"\r\n                const url = \"/dashboard/purchase/tasks/quotation/view\";\r\n     " +
+"           const data = JSON.stringify(query);\r\n                return window.ge" +
+"tAjaxRequest(url, \"POST\", data);\r\n            };\r\n\r\n            const query = ge" +
+"tModel();\r\n\r\n            const ajax = request(query);\r\n\r\n            ajax.succes" +
+"s(function (response) {\r\n                displayTable(target, response);\r\n      " +
+"          target.removeClass(\"loading\");\r\n            });\r\n\r\n            ajax.fa" +
+"il(function (xhr) {\r\n                alert(JSON.stringify(xhr));\r\n            })" +
+";\r\n        };\r\n\r\n        const view = $(\"#JournalView\").addClass(\"loading\");\r\n\r\n" +
+"        displayGrid(view);\r\n    };\r\n\r\n    $(\"#ShowButton\").unbind(\"click\").bind(" +
+"\"click\", function () {\r\n        processQuery();\r\n    });\r\n\r\n    function showQuo" +
+"tation(id) {\r\n        $(\".modal iframe\").attr(\"src\", \"/dashboard/reports/source/" +
+"Areas/MixERP.Purchases/Reports/Quotation.xml?quotation_id=\" + id);\r\n\r\n        se" +
+"tTimeout(function () {\r\n            $(\".advice.modal\")\r\n                .modal(\'" +
+"setting\', \'transition\', \'horizontal flip\')\r\n                .modal(\"show\");\r\n\r\n " +
+"       }, 300);\r\n    };\r\n\r\n    window.loadDatepicker();\r\n\r\n    setTimeout(functi" +
+"on () {\r\n        processQuery();\r\n    }, 1000);\r\n</script>");
 
         }
     }

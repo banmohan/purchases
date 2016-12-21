@@ -54,7 +54,7 @@
                 </div>
             </div>
             <div class="search panel">
-                <input type="search" placeholder="Search ..."/>
+                <input type="search" placeholder="Search ..." />
 
             </div>
             <div class="item list" id="POSItemList">
@@ -147,17 +147,15 @@
 </div>
 
 <script>
-    $("#PurchaseItems .item")
-        .on("contextmenu",
-            function (e) {
-                e.preventDefault();
-                const el = $(this);
-                const defaultMenu = el.find(".info.block, .number.block");
-                const contextMenu = el.find(".context.menu");
+    $("#PurchaseItems .item").on("contextmenu", function (e) {
+        e.preventDefault();
+        const el = $(this);
+        const defaultMenu = el.find(".info.block, .number.block");
+        const contextMenu = el.find(".context.menu");
 
-                defaultMenu.toggle();
-                contextMenu.toggle();
-            });
+        defaultMenu.toggle();
+        contextMenu.toggle();
+    });
 </script>
 
 <script>
@@ -610,7 +608,7 @@
             };
         };
 
-        groupItems = window.Enumerable.From(groupItems).OrderBy(function(x) { return x.ItemId }).ToArray();
+        groupItems = window.Enumerable.From(groupItems).OrderBy(function (x) { return x.ItemId }).ToArray();
 
         target.html("").hide();
 
@@ -736,7 +734,7 @@
 </script>
 
 <script>
-    setTimeout(function() {
+    setTimeout(function () {
         $(".decimal").number(true, window.currencyDecimalPlaces, ".", "");
     }, 100);
 </script>

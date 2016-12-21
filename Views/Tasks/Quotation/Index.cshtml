@@ -92,24 +92,26 @@
 
     </div>
 
-    <table id="JournalView" class="ui table segment">
-        <thead>
-        <tr>
-            <th>Actions</th>
-            <th>Id</th>
-            <th>Supplier</th>
-            <th>Value Date</th>
-            <th>Expected Date</th>
-            <th>Ref#</th>
-            <th>Terms</th>
-            <th>Internal Memo</th>
-            <th>Posted By</th>
-            <th>Office</th>
-            <th>Posted On</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <div class="fluid width overflown section">
+        <table id="JournalView" class="ui table nowrap segment">
+            <thead>
+                <tr>
+                    <th>Actions</th>
+                    <th>Id</th>
+                    <th>Supplier</th>
+                    <th>Value Date</th>
+                    <th>Expected Date</th>
+                    <th>Ref#</th>
+                    <th>Terms</th>
+                    <th>Internal Memo</th>
+                    <th>Posted By</th>
+                    <th>Office</th>
+                    <th>Posted On</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </div>
 
 <div class="ui large advice modal">
@@ -147,7 +149,7 @@
         };
 
 
-        $.each(data, function() {
+        $.each(data, function () {
             const item = this;
 
             const row = $("<tr />");
@@ -185,12 +187,12 @@
 
             const ajax = request(query);
 
-            ajax.success(function(response) {
+            ajax.success(function (response) {
                 displayTable(target, response);
                 target.removeClass("loading");
             });
 
-            ajax.fail(function(xhr) {
+            ajax.fail(function (xhr) {
                 alert(JSON.stringify(xhr));
             });
         };
@@ -200,7 +202,7 @@
         displayGrid(view);
     };
 
-    $("#ShowButton").unbind("click").bind("click", function() {
+    $("#ShowButton").unbind("click").bind("click", function () {
         processQuery();
     });
 
@@ -217,7 +219,7 @@
 
     window.loadDatepicker();
 
-    setTimeout(function() {
+    setTimeout(function () {
         processQuery();
     }, 1000);
 </script>
