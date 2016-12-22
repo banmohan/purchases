@@ -12,7 +12,7 @@ CREATE TABLE purchase.price_types
     price_type_code                         national character varying(24) NOT NULL,
     price_type_name                         national character varying(500) NOT NULL,
     audit_user_id                           integer REFERENCES account.users,
-    audit_ts                                DATETIMEOFFSET DEFAULT(GETDATE()),
+    audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
     deleted                                    bit DEFAULT(0)
 );
 
@@ -29,7 +29,7 @@ CREATE TABLE purchase.item_cost_prices
                                             DEFAULT(0),
     price                                   decimal(30, 6) NOT NULL,
     audit_user_id                           integer REFERENCES account.users,
-    audit_ts                                DATETIMEOFFSET DEFAULT(GETDATE()),
+    audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
     deleted                                    bit DEFAULT(0)
 );
 
@@ -58,7 +58,7 @@ CREATE TABLE purchase.quotations
     quotation_id                            bigint IDENTITY PRIMARY KEY,
     value_date                              date NOT NULL,
     expected_delivery_date                    date NOT NULL,
-    transaction_timestamp                   DATETIMEOFFSET NOT NULL DEFAULT(GETDATE()),
+    transaction_timestamp                   DATETIMEOFFSET NOT NULL DEFAULT(GETUTCDATE()),
     supplier_id                             integer NOT NULL REFERENCES inventory.customers,
     price_type_id                           integer NOT NULL REFERENCES purchase.price_types,
     shipper_id                                integer REFERENCES inventory.shippers,
@@ -68,7 +68,7 @@ CREATE TABLE purchase.quotations
     terms                                    national character varying(500),
     internal_memo                           national character varying(500),
     audit_user_id                           integer REFERENCES account.users,
-    audit_ts                                DATETIMEOFFSET DEFAULT(GETDATE()),
+    audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
     deleted                                    bit DEFAULT(0)
 );
 
@@ -93,7 +93,7 @@ CREATE TABLE purchase.orders
     quotation_id                            bigint REFERENCES purchase.quotations,
     value_date                              date NOT NULL,
     expected_delivery_date                    date NOT NULL,
-    transaction_timestamp                   DATETIMEOFFSET NOT NULL DEFAULT(GETDATE()),
+    transaction_timestamp                   DATETIMEOFFSET NOT NULL DEFAULT(GETUTCDATE()),
     supplier_id                             integer NOT NULL REFERENCES inventory.suppliers,
     price_type_id                           integer NOT NULL REFERENCES purchase.price_types,
     shipper_id                                integer REFERENCES inventory.shippers,
@@ -103,7 +103,7 @@ CREATE TABLE purchase.orders
     terms                                   national character varying(500),
     internal_memo                           national character varying(500),
     audit_user_id                           integer REFERENCES account.users,
-    audit_ts                                DATETIMEOFFSET DEFAULT(GETDATE()),
+    audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
     deleted                                    bit DEFAULT(0)
 );
 
