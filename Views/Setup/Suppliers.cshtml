@@ -16,7 +16,8 @@
     scrudFactory.formAPI = "/api/forms/inventory/suppliers";
     scrudFactory.formTableName = "inventory.suppliers";
 
-    scrudFactory.excludedColumns = ["AuditUserId", "AuditTs"];
+    scrudFactory.excludedColumns = ["AuditUserId", "AuditTs", "Deleted"];
+
 
     scrudFactory.allowDelete = true;
     scrudFactory.allowEdit = true;

@@ -28,7 +28,7 @@ BEGIN
     DECLARE @purchase_id                    bigint;
     DECLARE @original_price_type_id         integer;
     DECLARE @tran_counter                   integer;
-    DECLARE @transaction_code national character varying(50);
+    DECLARE @transaction_code				national character varying(50);
     DECLARE @checkout_id                    bigint;
     DECLARE @grand_total                    decimal(30, 6);
     DECLARE @discount_total                 decimal(30, 6);
@@ -158,6 +158,7 @@ BEGIN
         END;
 
         
+		SET @tax_account_id                     = finance.get_sales_tax_account_id_by_office_id(@office_id);
         SET @default_currency_code              = core.get_currency_code_by_office_id(@office_id);
         SET @tran_counter                       = finance.get_new_transaction_counter(@value_date);
         SET @transaction_code                   = finance.get_transaction_code(@value_date, @office_id, @user_id, @login_id);
@@ -205,13 +206,14 @@ BEGIN
 
 
 
-        UPDATE @temp_transaction_details        SET transaction_master_id   = @transaction_master_id;
-        UPDATE @checkout_details           SET checkout_id         = @checkout_id;
 
         INSERT INTO finance.transaction_master(transaction_counter, transaction_code, book, value_date, book_date, user_id, login_id, office_id, cost_center_id, reference_number, statement_reference) 
         SELECT @tran_counter, @transaction_code, @book_name, @value_date, @book_date, @user_id, @login_id, @office_id, @cost_center_id, @reference_number, @statement_reference;
 
-        SET @transaction_master_id = SCOPE_IDENTITY();
+        SET @tran_master_id = SCOPE_IDENTITY();
+
+        UPDATE @temp_transaction_details
+		SET transaction_master_id   = @tran_master_id;
 
 
         INSERT INTO finance.transaction_details(office_id, value_date, book_date, transaction_master_id, tran_type, account_id, statement_reference, currency_code, amount_in_currency, local_currency_code, er, amount_in_local_currency)
@@ -220,11 +222,14 @@ BEGIN
         ORDER BY transaction_type DESC;
 
 
-        SET IDENTITY_INSERT inventory.checkouts ON;
-        INSERT INTO inventory.checkouts(value_date, book_date, checkout_id, transaction_master_id, transaction_book, posted_by, office_id, shipper_id)
-        SELECT @value_date, @book_date, @checkout_id, @tran_master_id, @book_name, @user_id, @office_id, @shipper_id;
-        SET IDENTITY_INSERT inventory.checkouts OFF;
-                
+        INSERT INTO inventory.checkouts(value_date, book_date, transaction_master_id, transaction_book, posted_by, office_id, shipper_id)
+        SELECT @value_date, @book_date, @tran_master_id, @book_name, @user_id, @office_id, @shipper_id;
+ 
+        SET @checkout_id = SCOPE_IDENTITY();
+
+        UPDATE @checkout_details				
+		SET checkout_id				= @checkout_id;
+               
         SELECT @total_rows=MAX(id) FROM @checkout_details;
 
         WHILE @counter<@total_rows

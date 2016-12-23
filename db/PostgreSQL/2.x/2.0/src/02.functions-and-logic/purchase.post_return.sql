@@ -92,6 +92,7 @@ BEGIN
         amount_in_local_currency            public.money_strict
     ) ON COMMIT DROP;
    
+
     SELECT purchase.purchases.purchase_id INTO _purchase_id
     FROM purchase.purchases
     INNER JOIN inventory.checkouts
@@ -126,6 +127,7 @@ BEGIN
         purchase_discount_account_id    = inventory.get_purchase_discount_account_id(item_id),
         inventory_account_id            = inventory.get_inventory_account_id(item_id);    
 
+
     IF EXISTS
     (
         SELECT 1 FROM temp_checkout_details AS details
@@ -137,6 +139,7 @@ BEGIN
     END IF;
 
     
+    _tax_account_id                     := finance.get_sales_tax_account_id_by_office_id(_office_id);
     _default_currency_code              := core.get_currency_code_by_office_id(_office_id);
     _tran_master_id                     := nextval(pg_get_serial_sequence('finance.transaction_master', 'transaction_master_id'));
     _checkout_id                        := nextval(pg_get_serial_sequence('inventory.checkouts', 'checkout_id'));
@@ -150,7 +153,8 @@ BEGIN
     _receivable := _grand_total + _tax_total - COALESCE(_discount_total, 0);
 
 
-    IF(_is_periodic = true) THEN
+
+    IF(_is_periodic = true) THEN        
         INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
         SELECT 'Cr', purchase_account_id, _statement_reference, _default_currency_code, SUM(COALESCE(price, 0) * COALESCE(quantity, 0)), 1, _default_currency_code, SUM(COALESCE(price, 0) * COALESCE(quantity, 0))
         FROM temp_checkout_details
@@ -176,13 +180,16 @@ BEGIN
         SELECT 'Cr', _tax_account_id, _statement_reference, _default_currency_code, _tax_total, 1, _default_currency_code, _tax_total;
     END IF;
 
+    --RAISE EXCEPTION '%', array_to_string(ARRAY(SELECT temp_transaction_details.*::text FROM temp_transaction_details), E'\n');
+
     INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
     SELECT 'Dr', inventory.get_account_id_by_supplier_id(_supplier_id), _statement_reference, _default_currency_code, _receivable, 1, _default_currency_code, _receivable;
 
 
+    UPDATE temp_transaction_details        SET transaction_master_id   = _tran_master_id;
+    UPDATE temp_checkout_details           SET checkout_id             = _checkout_id;
 
-    UPDATE temp_transaction_details     SET transaction_master_id   = _transaction_master_id;
-    UPDATE temp_checkout_details           SET checkout_id         = _checkout_id;
+
 
     INSERT INTO finance.transaction_master(transaction_master_id, transaction_counter, transaction_code, book, value_date, book_date, user_id, login_id, office_id, cost_center_id, reference_number, statement_reference) 
     SELECT _tran_master_id, _tran_counter, _transaction_code, _book_name, _value_date, _book_date, _user_id, _login_id, _office_id, _cost_center_id, _reference_number, _statement_reference;
@@ -218,9 +225,23 @@ $$
 LANGUAGE plpgsql;
 
 
--- SELECT * FROM purchase.post_return(4, 1, 1, 1, '1-1-2000', '1-1-2000', 1, 1, 1, '1234-AD', 'Test', 
--- ARRAY[
--- ROW(1, 'Dr', 1, 1, 1,180000, 0, 200)::purchase.purchase_detail_type,
--- ROW(1, 'Dr', 2, 1, 7,130000, 300, 30)::purchase.purchase_detail_type,
--- ROW(1, 'Dr', 3, 1, 1,110000, 5000, 50)::purchase.purchase_detail_type]);
--- 
+-- SELECT * FROM purchase.post_return
+-- (
+--     1,
+--     1,
+--     1,
+--     1,
+--     finance.get_value_date(1),
+--     finance.get_value_date(1),
+--     1,
+--     1,
+--     1,
+--     1,
+--     '',
+--     '',
+--     ARRAY[
+--         ROW(1, 'Dr', 1, 1, 1,180000, 0, 1200, 200)::purchase.purchase_detail_type,
+--         ROW(1, 'Dr', 2, 1, 7,130000, 300, 1200, 30)::purchase.purchase_detail_type,
+--         ROW(1, 'Dr', 3, 1, 1,110000, 5000, 1200, 50)::purchase.purchase_detail_type
+--         ]
+-- );

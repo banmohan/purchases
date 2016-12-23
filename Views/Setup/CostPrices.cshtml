@@ -16,7 +16,8 @@
     scrudFactory.formAPI = "/api/forms/purchase/item-cost-prices";
     scrudFactory.formTableName = "purchase.item_cost_prices";
 
-    scrudFactory.excludedColumns = ["AuditUserId", "AuditTs"];
+    scrudFactory.excludedColumns = ["AuditUserId", "AuditTs", "Deleted"];
+
 
     scrudFactory.allowDelete = true;
     scrudFactory.allowEdit = true;

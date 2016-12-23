@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using System.Data;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Frapid.Configuration;
 using Frapid.DataAccess.Extensions;
@@ -15,8 +16,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
             string sql = @"EXECUTE purchase.post_return
                                 @TransactionMasterId, @OfficeId, @UserId, @LoginId, @ValueDate, @BookDate, 
                                 @CostCenterId, @SupplierId, @PriceTypeId, @ShipperId,
-                                @ReferenceNumber, @StatementReference, @Details
-                            ;";
+                                @ReferenceNumber, @StatementReference, @Details, @TranMasterId OUTPUT;";
 
             sql = string.Format(sql, new PurchaseEntry.PostgreSQL().GetParametersForDetails(model.Details));
 
@@ -39,12 +39,14 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
 
                     using (var details = new PurchaseEntry.SqlServer().GetDetails(model.Details))
                     {
-                        command.Parameters.AddWithNullableValue("@Details", details);
+                        command.Parameters.AddWithNullableValue("@Details", details, "purchase.purchase_detail_type");
                     }
 
+                    command.Parameters.Add("@TranMasterId", SqlDbType.BigInt).Direction = ParameterDirection.Output;
+
                     connection.Open();
-                    var awaiter = await command.ExecuteScalarAsync().ConfigureAwait(false);
-                    return awaiter.To<long>();
+                    await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+                    return command.Parameters["@TranMasterId"].Value.To<long>();
                 }
             }
         }

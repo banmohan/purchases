@@ -15,9 +15,10 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
 
             string sql = @"SELECT * FROM purchase.post_return
                             (
-                                @TransactionMasterId, @OfficeId, @UserId, @LoginId, @ValueDate, @BookDate, 
-                                @CostCenterId, @SupplierId, @PriceTypeId, @ShipperId,
-                                @ReferenceNumber, @StatementReference, ARRAY[{0}]
+                                @TransactionMasterId::bigint, @OfficeId::integer, @UserId::integer, @LoginId::bigint, 
+                                @ValueDate::date, @BookDate::date, 
+                                @CostCenterId::integer, @SupplierId::integer, @PriceTypeId::integer, @ShipperId::integer,
+                                @ReferenceNumber::national character varying(24), @StatementReference::text, ARRAY[{0}]
                             );";
 
             sql = string.Format(sql, new PurchaseEntry.PostgreSQL().GetParametersForDetails(model.Details));
