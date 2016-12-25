@@ -8,7 +8,7 @@
 <script>
     var scrudFactory = new Object();
 
-    scrudFactory.title = "Suppliers";
+    scrudFactory.title = window.translate("Suppliers");
 
     scrudFactory.viewAPI = "/api/forms/inventory/suppliers";
     scrudFactory.viewTableName = "inventory.suppliers";
@@ -17,6 +17,7 @@
     scrudFactory.formTableName = "inventory.suppliers";
 
     scrudFactory.excludedColumns = ["AuditUserId", "AuditTs", "Deleted"];
+    scrudFactory.uploadHanlder = "/dashboard/inventory/services/attachments";
 
 
     scrudFactory.allowDelete = true;
