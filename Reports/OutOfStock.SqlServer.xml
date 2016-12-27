@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <FrapidReport>
   <Header />
-  <Title>Low Inventory Report</Title>
+  <Title>Out of Stock Inventory</Title>
   <Body>
     <Content>
       <h5>Store: {DataSource[1].store_name}</h5>
@@ -34,7 +34,7 @@
 		JOIN inventory.suppliers ON items.preferred_supplier_id = suppliers.supplier_id
 		WHERE items.deleted = 0
 		AND items.maintain_inventory = 1
-		AND inventory.count_item_in_stock(items.item_id, items.unit_id, @StoreId) &lt; items.reorder_level;
+		AND inventory.count_item_in_stock(items.item_id, items.unit_id, @StoreId) &lt;= 0;
       </Query>
       <Parameters>
         <Parameter Name="@StoreId" FieldLabel="Store Id" Type="int" PopulateFrom="/api/forms/inventory/stores/display-fields" KeyField="Key" ValueField="Value" Optional="true" />
