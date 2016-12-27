@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FrapidReport>
+  <Header />
+  <Title>Low Inventory Report</Title>
+  <Body>
+    <Content>
+      <h5>Store: {DataSource[1].store_name}</h5>
+    </Content>
+    <GridViews>
+      <GridView>
+        <GridViewDataSource Index="0">
+        </GridViewDataSource>
+      </GridView>
+    </GridViews>
+  </Body>
+  <BottomSection>
+  </BottomSection>
+  <DataSources>
+    <DataSource>
+      <Query>
+		SELECT
+			items.item_code,
+			items.item_name,
+			item_groups.item_group_name,
+			suppliers.supplier_name,
+			items.cost_price,
+			items.selling_price,
+			inventory.count_item_in_stock(items.item_id, items.unit_id, @StoreId) count,
+			items.reorder_level,
+			items.reorder_quantity
+		FROM inventory.items
+		JOIN inventory.item_groups ON items.item_group_id = item_groups.item_group_id
+		JOIN inventory.brands ON items.brand_id = brands.brand_id
+		JOIN inventory.suppliers ON items.preferred_supplier_id = suppliers.supplier_id
+		WHERE items.deleted = 0
+		AND items.maintain_inventory = 1
+		AND inventory.count_item_in_stock(items.item_id, items.unit_id, @StoreId) &lt; items.reorder_level;
+      </Query>
+      <Parameters>
+        <Parameter Name="@StoreId" FieldLabel="Store Id" Type="int" PopulateFrom="/api/forms/inventory/stores/display-fields" KeyField="Key" ValueField="Value" />
+      </Parameters>
+    </DataSource>
+	<DataSource>
+	  <Query>
+		SELECT inventory.get_store_name_by_store_id(@StoreId) AS store_name;
+	  </Query>
+      <Parameters>
+        <Parameter Name="@StoreId" FieldLabel="Store Id" Type="int" PopulateFrom="/api/forms/inventory/stores/display-fields" KeyField="Key" ValueField="Value" />
+      </Parameters>
+	</DataSource>
+  </DataSources>
+</FrapidReport>

@@ -943,9 +943,10 @@ SELECT * FROM core.create_menu('Purchase', 'Price Types', '/dashboard/purchase/s
 SELECT * FROM core.create_menu('Purchase', 'Cost Prices', '/dashboard/purchase/setup/cost-prices', 'rupee', 'Setup');
 
 SELECT * FROM core.create_menu('Purchase', 'Reports', '', 'block layout', '');
-SELECT * FROM core.create_menu('Purchase', 'Top Suppliers', '/dashboard/purchase/reports/purchase-account-statement', 'spy', 'Reports');
-SELECT * FROM core.create_menu('Purchase', 'Low Inventory Products', '/dashboard/purchase/reports/purchase-account-statement', 'warning', 'Reports');
-SELECT * FROM core.create_menu('Purchase', 'Out of Stock Products', '/dashboard/purchase/reports/purchase-account-statement', 'remove circle', 'Reports');
+SELECT * FROM core.create_menu('Purchase', 'Top Suppliers', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/TopSuppliers.xml', 'spy', 'Reports');
+SELECT * FROM core.create_menu('Purchase', 'Low Inventory Products', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/LowInventory.xml', 'warning', 'Reports');
+SELECT * FROM core.create_menu('Purchase', 'Out of Stock Products', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/OutOfStock.xml', 'remove circle', 'Reports');
+SELECT * FROM core.create_menu('Purchase', 'Supplier Contacts', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/SupplierContacts.xml', 'remove circle', 'Reports');
 
 
 SELECT * FROM auth.create_app_menu_policy

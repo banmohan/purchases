@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrapidReport>
+  <Header />
+  <Title>Top Suppliers</Title>
+  <TopSection>
+    <Charts>
+      <Chart ID="Chart1" GridViewIndex="0" HideGridView="false" Type="Bar" 
+			BorderColor="#FFF" Width="1000" 
+			Height="300" TitleColumnIndex="1" ValueColumnIndex="3">
+      </Chart>
+    </Charts>
+  </TopSection>
+  <Body>
+    <Content></Content>
+    <GridViews>
+      <GridView>
+        <GridViewDataSource Index="0" />
+      </GridView>
+    </GridViews>
+  </Body>
+  <BottomSection></BottomSection>
+  <DataSources>
+    <DataSource>
+      <Query>
+		SELECT
+		inventory.suppliers.supplier_id,
+		CASE WHEN COALESCE(inventory.suppliers.supplier_name, '') = ''
+		THEN inventory.suppliers.company_name
+		ELSE inventory.suppliers.supplier_name
+		END as supplier,
+		inventory.suppliers.company_country AS country,
+		SUM((price * quantity) - discount + tax) AS amount
+		FROM inventory.verified_checkout_details_view
+		INNER JOIN purchase.purchases
+		ON inventory.verified_checkout_details_view.checkout_id = purchase.purchases.checkout_id
+		INNER JOIN inventory.suppliers
+		ON purchase.purchases.supplier_id = inventory.suppliers.supplier_id
+		GROUP BY
+		inventory.suppliers.supplier_id,
+		inventory.suppliers.supplier_name,
+		inventory.suppliers.company_name,
+		inventory.suppliers.company_country
+		ORDER BY 2 DESC
+		LIMIT 5;
+      </Query>
+    </DataSource>
+  </DataSources>
+  <Menu Code="TOPSUP" Text="Top Suppliers" ParentMenuCode="PUR" />
+</FrapidReport>
