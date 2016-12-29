@@ -11,7 +11,7 @@
 
 <script>
     $(".page.title").html("Purchase Return");
-    $("#CheckoutButton").unbind("click").bind("click", function () {
+    $("#CheckoutButton").off("click").on("click", function () {
 
         function request(model) {
             const url = "/dashboard/purchase/tasks/return/new";

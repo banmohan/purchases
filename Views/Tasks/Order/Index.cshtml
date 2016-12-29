@@ -202,7 +202,7 @@
         displayGrid(view);
     };
 
-    $("#ShowButton").unbind("click").bind("click", function () {
+    $("#ShowButton").off("click").on("click", function () {
         processQuery();
     });
 

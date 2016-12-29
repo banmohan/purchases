@@ -11,7 +11,7 @@
 <script>
     window.overrideUrl = "/dashboard/purchase/tasks/entry";
 
-    $("#CheckoutButton").unbind("click").bind("click", function () {
+    $("#CheckoutButton").off("click").on("click", function () {
 
         function request(model) {
             const url = "/dashboard/purchase/tasks/entry/new";

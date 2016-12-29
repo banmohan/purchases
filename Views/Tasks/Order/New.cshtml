@@ -48,7 +48,7 @@
 
     initializeUI();
 
-    $("#CheckoutButton").unbind("click").bind("click", function () {
+    $("#CheckoutButton").off("click").on("click", function () {
         function request(model) {
             const url = "/dashboard/purchase/tasks/order/new";
             const data = JSON.stringify(model);
