@@ -3,9 +3,11 @@ using System.Web.Mvc;
 using Frapid.ApplicationState.Cache;
 using Frapid.Dashboard;
 using MixERP.Purchases.ViewModels;
+using Frapid.Areas.CSRF;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
+    [AntiForgery]
     public class ReturnController : PurchaseDashboardController
     {
         [Route("dashboard/purchase/tasks/return/checklist/{tranId}")]
