@@ -2,8 +2,6 @@
 DROP SCHEMA IF EXISTS purchase CASCADE;
 CREATE SCHEMA purchase;
 
---TODO: CREATE UNIQUE INDEXES
-
 CREATE TABLE purchase.price_types
 (
     price_type_id                           SERIAL PRIMARY KEY,
@@ -14,6 +12,13 @@ CREATE TABLE purchase.price_types
 	deleted									boolean DEFAULT(false)
 );
 
+CREATE UNIQUE INDEX price_types_price_type_code_uix
+ON purchase.price_types(UPPER(price_type_code))
+WHERE NOT deleted;
+
+CREATE UNIQUE INDEX price_types_price_type_name_uix
+ON purchase.price_types(UPPER(price_type_name))
+WHERE NOT deleted;
 
 CREATE TABLE purchase.item_cost_prices
 (   
@@ -31,7 +36,9 @@ CREATE TABLE purchase.item_cost_prices
 	deleted									boolean DEFAULT(false)
 );
 
-
+CREATE UNIQUE INDEX item_cost_prices_item_id_unit_id_supplier_id_uix
+ON purchase.item_cost_prices(item_id, unit_id, supplier_id)
+WHERE NOT deleted;
 
 CREATE TABLE purchase.purchases
 (
