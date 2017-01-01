@@ -17,6 +17,13 @@ CREATE TABLE purchase.price_types
     deleted                                    bit DEFAULT(0)
 );
 
+CREATE UNIQUE INDEX price_types_price_type_code_uix
+ON purchase.price_types(price_type_code)
+WHERE deleted = 0;
+
+CREATE UNIQUE INDEX price_types_price_type_name_uix
+ON purchase.price_types(price_type_name)
+WHERE deleted = 0;
 
 CREATE TABLE purchase.item_cost_prices
 (   
@@ -34,7 +41,9 @@ CREATE TABLE purchase.item_cost_prices
     deleted                                    bit DEFAULT(0)
 );
 
-
+CREATE UNIQUE INDEX item_cost_prices_item_id_unit_id_supplier_id
+ON purchase.item_cost_prices(item_id, unit_id, supplier_id)
+WHERE deleted = 0;
 
 CREATE TABLE purchase.purchases
 (
