@@ -1025,6 +1025,7 @@ EXECUTE core.create_menu 'Purchase', 'Price Types', '/dashboard/purchase/setup/p
 EXECUTE core.create_menu 'Purchase', 'Cost Prices', '/dashboard/purchase/setup/cost-prices', 'rupee', 'Setup';
 
 EXECUTE core.create_menu 'Purchase', 'Reports', '', 'block layout', '';
+EXECUTE core.create_menu 'Purchase', 'Account Payables', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/AccountPayables.xml', 'spy', 'Reports';
 EXECUTE core.create_menu 'Purchase', 'Top Suppliers', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/TopSuppliers.xml', 'spy', 'Reports';
 EXECUTE core.create_menu 'Purchase', 'Low Inventory Products', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/LowInventory.xml', 'warning', 'Reports';
 EXECUTE core.create_menu 'Purchase', 'Out of Stock Products', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/OutOfStock.xml', 'remove circle', 'Reports';
@@ -1051,6 +1052,93 @@ SELECT 'WHO',   'Wholesale';
 
 
 GO
+
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/05.reports/purchase.get_account_payables_report.sql --<--<--
+IF OBJECT_ID('purchase.get_account_payables_report') IS NOT NULL
+DROP FUNCTION purchase.get_account_payables_report;
+
+GO
+
+CREATE FUNCTION purchase.get_account_payables_report(@office_id integer, @from date)
+RETURNS @results TABLE
+(
+    office_id                   integer,
+    office_name                 national character varying(500),
+    account_id                  integer,
+    account_number              national character varying(24),
+    account_name                national character varying(500),
+    previous_period             numeric(30, 6),
+    current_period              numeric(30, 6),
+    total_amount                numeric(30, 6)
+)
+AS
+BEGIN
+    INSERT INTO @results(office_id, office_name, account_id)
+    SELECT DISTINCT inventory.suppliers.account_id, core.get_office_name_by_office_id(@office_id), @office_id FROM inventory.suppliers;
+
+    UPDATE @results
+    SET
+        account_number  = finance.accounts.account_number,
+        account_name    = finance.accounts.account_name
+    FROM @results AS results
+	INNER JOIN finance.accounts
+    ON finance.accounts.account_id = results.account_id;
+
+
+    UPDATE @results
+    SET previous_period = 
+    (        
+        SELECT 
+            SUM
+            (
+                CASE WHEN finance.verified_transaction_view.tran_type = 'Cr' THEN
+                finance.verified_transaction_view.amount_in_local_currency
+                ELSE
+                finance.verified_transaction_view.amount_in_local_currency * -1
+                END                
+            ) AS amount
+        FROM finance.verified_transaction_view
+        WHERE finance.verified_transaction_view.value_date < @from
+        AND finance.verified_transaction_view.office_id IN (SELECT * FROM core.get_office_ids(@office_id))
+        AND finance.verified_transaction_view.account_id IN
+        (
+            SELECT * FROM finance.get_account_ids(results.account_id)
+        )
+    )
+	FROM @results  results;
+
+    UPDATE @results
+    SET current_period = 
+    (        
+        SELECT 
+            SUM
+            (
+                CASE WHEN finance.verified_transaction_view.tran_type = 'Cr' THEN
+                finance.verified_transaction_view.amount_in_local_currency
+                ELSE
+                finance.verified_transaction_view.amount_in_local_currency * -1
+                END                
+            ) AS amount
+        FROM finance.verified_transaction_view
+        WHERE finance.verified_transaction_view.value_date >= @from
+        AND finance.verified_transaction_view.office_id IN (SELECT * FROM core.get_office_ids(@office_id))
+        AND finance.verified_transaction_view.account_id IN
+        (
+            SELECT * FROM finance.get_account_ids(results.account_id)
+        )
+    ) FROM @results AS results;
+
+    UPDATE @results
+    SET total_amount = COALESCE(results.previous_period, 0) + COALESCE(results.current_period, 0)
+	FROM @results AS results;
+    
+    RETURN;
+END
+
+GO
+
+--SELECT * FROM purchase.get_account_payables_report(1, '1-1-2000');
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/05.scrud-views/purchase.item_cost_price_scrud_view.sql --<--<--

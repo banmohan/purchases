@@ -950,6 +950,7 @@ SELECT * FROM core.create_menu('Purchase', 'Price Types', '/dashboard/purchase/s
 SELECT * FROM core.create_menu('Purchase', 'Cost Prices', '/dashboard/purchase/setup/cost-prices', 'rupee', 'Setup');
 
 SELECT * FROM core.create_menu('Purchase', 'Reports', '', 'block layout', '');
+SELECT * FROM core.create_menu('Purchase', 'Account Payables', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/AccountPayables.xml', 'spy', 'Reports');
 SELECT * FROM core.create_menu('Purchase', 'Top Suppliers', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/TopSuppliers.xml', 'spy', 'Reports');
 SELECT * FROM core.create_menu('Purchase', 'Low Inventory Products', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/LowInventory.xml', 'warning', 'Reports');
 SELECT * FROM core.create_menu('Purchase', 'Out of Stock Products', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/OutOfStock.xml', 'remove circle', 'Reports');
@@ -970,6 +971,104 @@ SELECT * FROM auth.create_app_menu_policy
 INSERT INTO purchase.price_types(price_type_code, price_type_name)
 SELECT 'RET',   'Retail' UNION ALL
 SELECT 'WHO',   'Wholesale';
+
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.reports/purchase.get_account_payables_report.sql --<--<--
+DROP FUNCTION IF EXISTS purchase.get_account_payables_report(_office_id integer, _from date);
+
+CREATE FUNCTION purchase.get_account_payables_report(_office_id integer, _from date)
+RETURNS TABLE
+(
+    office_id                   integer,
+    office_name                 national character varying(500),
+    account_id                  integer,
+    account_number              national character varying(24),
+    account_name                national character varying(500),
+    previous_period             numeric(30, 6),
+    current_period              numeric(30, 6),
+    total_amount                numeric(30, 6)
+)
+AS
+$$
+BEGIN
+    DROP TABLE IF EXISTS _results;
+    
+    CREATE TEMPORARY TABLE _results
+    (
+        office_id                   integer,
+        office_name                 national character varying(500),
+        account_id                  integer,
+        account_number              national character varying(24),
+        account_name                national character varying(500),
+        previous_period             numeric(30, 6),
+        current_period              numeric(30, 6),
+        total_amount                numeric(30, 6)
+    ) ON COMMIT DROP;
+
+    INSERT INTO _results(office_id, office_name, account_id)
+    SELECT DISTINCT inventory.suppliers.account_id, core.get_office_name_by_office_id(_office_id), _office_id FROM inventory.suppliers;
+
+    UPDATE _results
+    SET
+        account_number  = finance.accounts.account_number,
+        account_name    = finance.accounts.account_name
+    FROM finance.accounts
+    WHERE finance.accounts.account_id = _results.account_id;
+
+
+    UPDATE _results AS results
+    SET previous_period = 
+    (        
+        SELECT 
+            SUM
+            (
+                CASE WHEN finance.verified_transaction_view.tran_type = 'Cr' THEN
+                finance.verified_transaction_view.amount_in_local_currency
+                ELSE
+                finance.verified_transaction_view.amount_in_local_currency * -1
+                END                
+            ) AS amount
+        FROM finance.verified_transaction_view
+        WHERE finance.verified_transaction_view.value_date < _from
+        AND finance.verified_transaction_view.office_id IN (SELECT * FROM core.get_office_ids(_office_id))
+        AND finance.verified_transaction_view.account_id IN
+        (
+            SELECT * FROM finance.get_account_ids(results.account_id)
+        )
+    );
+
+    UPDATE _results AS results
+    SET current_period = 
+    (        
+        SELECT 
+            SUM
+            (
+                CASE WHEN finance.verified_transaction_view.tran_type = 'Cr' THEN
+                finance.verified_transaction_view.amount_in_local_currency
+                ELSE
+                finance.verified_transaction_view.amount_in_local_currency * -1
+                END                
+            ) AS amount
+        FROM finance.verified_transaction_view
+        WHERE finance.verified_transaction_view.value_date >= _from
+        AND finance.verified_transaction_view.office_id IN (SELECT * FROM core.get_office_ids(_office_id))
+        AND finance.verified_transaction_view.account_id IN
+        (
+            SELECT * FROM finance.get_account_ids(results.account_id)
+        )
+    );
+
+    UPDATE _results
+    SET total_amount = COALESCE(_results.previous_period, 0) + COALESCE(_results.current_period, 0);
+    
+    RETURN QUERY
+    SELECT * FROM _results;
+END
+$$
+LANGUAGE plpgsql;
+
+
+--SELECT * FROM purchase.get_account_payables_report(1, '1-1-2000');
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.scrud-views/purchase.item_cost_price_scrud_view.sql --<--<--

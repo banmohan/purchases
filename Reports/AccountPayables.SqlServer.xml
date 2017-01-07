@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FrapidReport>
+  <Header />
+  <Title>Account Payables (Current Office)</Title>
+  <TopSection>
+  </TopSection>
+  <Body>
+    <GridViews>
+      <GridView>
+        <GridViewDataSource Index="0">
+        </GridViewDataSource>
+      </GridView>
+    </GridViews>
+  </Body>
+  <DataSources>
+    <DataSource>
+      <Query>
+		SELECT * FROM purchase.get_account_payables_report(@OfficeId, @From);
+      </Query>
+      <Parameters>
+        <Parameter Name="@From" FieldLabel="From Date" Type="System.DateTime" />
+        <Parameter Name="@OfficeId" FieldLabel="Office Id" Type="int"  DefaultValue="{Meta.OfficeId}" />
+      </Parameters>
+      <RunningTotalTextColumnIndex>6</RunningTotalTextColumnIndex>
+      <RunningTotalFieldIndices>7</RunningTotalFieldIndices>
+    </DataSource>
+  </DataSources>
+</FrapidReport>
