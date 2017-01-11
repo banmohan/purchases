@@ -42,19 +42,6 @@ BEGIN
     DECLARE @tax_account_id                 integer;
     DECLARE @total_rows                     integer = 0;
     DECLARE @counter                        integer = 0;
-    DECLARE @loop_id                        integer;
-    DECLARE @loop_checkout_id               bigint;
-    DECLARE @loop_transaction_type          national character varying(2);
-    DECLARE @loop_store_id                  integer;
-    DECLARE @loop_item_id                   integer;
-    DECLARE @loop_quantity                  decimal(30, 6);
-    DECLARE @loop_unit_id                   integer;
-    DECLARE @loop_base_quantity             decimal(30, 6);
-    DECLARE @loop_base_unit_id              integer;
-    DECLARE @loop_price                     decimal(30, 6);
-    DECLARE @loop_discount                  decimal(30, 6);
-    DECLARE @loop_tax                       decimal(30, 6);
-    DECLARE @loop_shipping_charge           decimal(30, 6);
     DECLARE @can_post_transaction           bit;
     DECLARE @error_message                  national character varying(MAX);
         
@@ -230,42 +217,9 @@ BEGIN
         UPDATE @checkout_details				
 		SET checkout_id				= @checkout_id;
                
-        SELECT @total_rows=MAX(id) FROM @checkout_details;
-
-        WHILE @counter<@total_rows
-        BEGIN
-            SELECT TOP 1 
-                @loop_checkout_id = checkout_id,
-                @loop_transaction_type = transaction_type,
-                @loop_store_id = store_id,
-                @loop_item_id = item_id,
-                @loop_quantity = quantity,
-                @loop_unit_id = unit_id,
-                @loop_base_quantity = base_quantity,
-                @loop_base_unit_id = base_unit_id,
-                @loop_price = price,
-                @loop_discount = discount,
-                @loop_tax = tax,
-                @loop_shipping_charge = shipping_charge,
-                @loop_id = id
-            FROM @checkout_details
-            WHERE id >= @counter
-            ORDER BY id;
-
-            IF(@loop_id IS NOT NULL)
-            BEGIN
-                SET @counter = @loop_id + 1;        
-            END
-            ELSE
-            BEGIN
-                BREAK;
-            END;
-
-            INSERT INTO inventory.checkout_details(value_date, book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, tax, shipping_charge)
-            SELECT @value_date, @book_date, @loop_checkout_id, @loop_transaction_type, @loop_store_id, @loop_item_id, @loop_quantity, @loop_unit_id, @loop_base_quantity, @loop_base_unit_id, @loop_price, @loop_discount, @loop_tax, @loop_shipping_charge
-            FROM @checkout_details
-            WHERE id = @loop_id;  
-        END;
+        INSERT INTO inventory.checkout_details(value_date, book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, tax, shipping_charge)
+        SELECT @value_date, @book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, tax, shipping_charge
+        FROM @checkout_details;
 
         INSERT INTO purchase.purchase_returns(checkout_id, purchase_id, supplier_id)
         SELECT @checkout_id, @purchase_id, @supplier_id;
