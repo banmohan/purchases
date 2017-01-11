@@ -50,7 +50,7 @@
       </tr>
       <tr>
         <td>{Resources.Titles.SupplierName}</td>
-        <td>{DataSource[0].party_name}</td>
+        <td>{DataSource[0].supplier_name}</td>
       </tr>
     </table>
     <br />
