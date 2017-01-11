@@ -873,15 +873,9 @@ BEGIN
     INSERT INTO inventory.checkouts(value_date, book_date, checkout_id, transaction_master_id, transaction_book, posted_by, office_id, shipper_id)
     SELECT _value_date, _book_date, _checkout_id, _tran_master_id, _book_name, _user_id, _office_id, _shipper_id;
             
-    FOR this IN SELECT * FROM temp_checkout_details ORDER BY id
-    LOOP
-        _checkout_detail_id        := nextval(pg_get_serial_sequence('inventory.checkout_details', 'checkout_detail_id'));
-
-        INSERT INTO inventory.checkout_details(checkout_detail_id, value_date, book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, tax, shipping_charge)
-        SELECT _checkout_detail_id, _value_date, _book_date, this.checkout_id, this.transaction_type, this.store_id, this.item_id, this.quantity, this.unit_id, this.base_quantity, this.base_unit_id, this.price, this.discount, this.tax, this.shipping_charge
-        FROM temp_checkout_details
-        WHERE id = this.id;        
-    END LOOP;
+    INSERT INTO inventory.checkout_details(value_date, book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, tax, shipping_charge)
+    SELECT _value_date, _book_date, this.checkout_id, this.transaction_type, this.store_id, this.item_id, this.quantity, this.unit_id, this.base_quantity, this.base_unit_id, this.price, this.discount, this.tax, this.shipping_charge
+    FROM temp_checkout_details;
 
     INSERT INTO purchase.purchase_returns(checkout_id, purchase_id, supplier_id)
     SELECT _checkout_id, _purchase_id, _supplier_id;
