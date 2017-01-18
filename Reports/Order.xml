@@ -5,29 +5,29 @@
   <TopSection>
     <table class="table horizontal">
       <tr>
-        <td>{Resources.Titles.OrderId}</td>
+        <td>{i18n.OrderId}</td>
         <td>
           {DataSource[0].order_id}
         </td>
       </tr>
       <tr>
-        <td>{Resources.Titles.TransactionDate}</td>
+        <td>{i18n.TransactionDate}</td>
         <td>{DataSource[0].transaction_timestamp}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.ValueDate}</td>
+        <td>{i18n.ValueDate}</td>
         <td>{DataSource[0].value_date}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.EnteredBy}</td>
+        <td>{i18n.EnteredBy}</td>
         <td> {DataSource[0].entered_by}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.Office}</td>
+        <td>{i18n.Office}</td>
         <td>{DataSource[0].office_name}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.SupplierName}</td>
+        <td>{i18n.SupplierName}</td>
         <td>{DataSource[0].supplier_name}</td>
       </tr>
     </table>
@@ -35,7 +35,7 @@
   </TopSection>
   <Body>
     <Content>
-      <h2>{Resources.Titles.OrderItems}</h2>
+      <h2>{i18n.OrderItems}</h2>
     </Content>
     <GridViews>
       <GridView>
@@ -45,15 +45,15 @@
     </GridViews>
   </Body>
   <BottomSection>
-    <h3>{Resources.Titles.OtherDetails}</h3>
+    <h3>{i18n.OtherDetails}</h3>
     <p>
       <table class="table horizontal">
         <tr>
-          <td>{Resources.Titles.Terms}</td>
+          <td>{i18n.Terms}</td>
           <td>{DataSource[0].terms}</td>
         </tr>
         <tr>
-          <td>{Resources.Titles.InternalMemo}</td>
+          <td>{i18n.InternalMemo}</td>
           <td>{DataSource[0].internal_memo}</td>
         </tr>
       </table>

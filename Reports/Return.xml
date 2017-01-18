@@ -5,51 +5,51 @@
   <TopSection>
     <table class="table horizontal">
       <tr>
-        <td>{Resources.Titles.TranId}</td>
+        <td>{i18n.TranId}</td>
         <td>
           {DataSource[0].transaction_master_id}
         </td>
       </tr>
       <tr>
-        <td>{Resources.Titles.TranCode}</td>
+        <td>{i18n.TranCode}</td>
         <td>
           {DataSource[0].transaction_code}
         </td>
       </tr>
       <tr>
-        <td>{Resources.Titles.TransactionDate}</td>
+        <td>{i18n.TransactionDate}</td>
         <td>{DataSource[0].transaction_ts}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.ValueDate}</td>
+        <td>{i18n.ValueDate}</td>
         <td>{DataSource[0].value_date}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.EnteredBy}</td>
+        <td>{i18n.EnteredBy}</td>
         <td> {DataSource[0].entered_by}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.TransactionStatus}</td>
+        <td>{i18n.TransactionStatus}</td>
         <td> {DataSource[0].status}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.VerifiedBy}</td>
+        <td>{i18n.VerifiedBy}</td>
         <td> {DataSource[0].verified_by}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.VerificationReason}</td>
+        <td>{i18n.VerificationReason}</td>
         <td> {DataSource[0].verification_reason}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.TranCode}</td>
+        <td>{i18n.TranCode}</td>
         <td>{DataSource[0].transaction_code}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.Office}</td>
+        <td>{i18n.Office}</td>
         <td>{DataSource[0].office_name}</td>
       </tr>
       <tr>
-        <td>{Resources.Titles.SupplierName}</td>
+        <td>{i18n.SupplierName}</td>
         <td>{DataSource[0].supplier_name}</td>
       </tr>
     </table>
@@ -57,7 +57,7 @@
   </TopSection>
   <Body>
     <Content>
-      <h2>{Resources.Titles.InvoiceDetails}</h2>
+      <h2>{i18n.InvoiceDetails}</h2>
     </Content>
     <GridViews>
       <GridView>
@@ -67,19 +67,19 @@
     </GridViews>
   </Body>
   <BottomSection>
-    <h3>{Resources.Titles.OtherDetails}</h3>
+    <h3>{i18n.OtherDetails}</h3>
     <p>
       <table class="table horizontal">
         <tr>
-          <td>{Resources.Titles.CostCenter}</td>
+          <td>{i18n.CostCenter}</td>
           <td>{DataSource[0].cost_center_name}</td>
         </tr>
         <tr>
-          <td>{Resources.Titles.ReferenceNumber}</td>
+          <td>{i18n.ReferenceNumber}</td>
           <td>{DataSource[0].reference_number}</td>
         </tr>
         <tr>
-          <td>{Resources.Titles.StatementReference}</td>
+          <td>{i18n.StatementReference}</td>
           <td>{DataSource[0].statement_reference}</td>
         </tr>
       </table>
