@@ -301,7 +301,7 @@
             var itemId = el.attr("data-item-id");
             var price = parseFloat(costPrice || 0);
             var isTaxableItem = el.attr("data-is-taxable-item") === "true";
-            var taxRate = window.parseFloat($("#SalesTaxRateHidden").val());
+            var taxRate = parseFloat($("#SalesTaxRateHidden").val());
 
             if (!price) {
                 alert("Cannot add item because the price is zero.");
@@ -385,16 +385,16 @@
                 const amount = window.round(price * quantity, 2);
                 const discountedAmount = window.round((price * quantity) * ((100 - discountRate) / 100), 2);
 
-                el.find("span.rate:not(.discount)").html(price);
-                el.find("span.quantity").html(quantity);
-                el.find("span.amount").html(amount);
+                el.find("span.rate:not(.discount)").html(window.getFormattedNumber(price));
+                el.find("span.quantity").html(window.getFormattedNumber(quantity));
+                el.find("span.amount").html(window.getFormattedNumber(amount));
                 el.find("span.discount.rate").html("");
                 el.find("span.discounted.amount").html("");
 
                 if (discountRate) {
                     el.find(".discount.info").show();
-                    el.find("span.discount.rate").html(discountEl.val().replace("%", "") + "%");
-                    el.find("span.discounted.amount").html(discountedAmount);
+                    el.find("span.discount.rate").html(window.getFormattedNumber(discountEl.val().replace("%", "")) + "%");
+                    el.find("span.discounted.amount").html(window.getFormattedNumber(discountedAmount));
                 } else {
                     el.find(".discount.info").hide();
                 };
@@ -406,9 +406,9 @@
                     //alert(discountedAmount);
                     //alert(amount);
 
-                    el.find(".tax.info .tax-amount").html(tax);
-                    el.find(".tax.info .tax-rate").html(window.round(taxRate, 2));
-                    el.find(".tax.info .amount-plus-tax").html(amountPlusTax);
+                    el.find(".tax.info .tax-amount").html(window.getFormattedNumber(tax));
+                    el.find(".tax.info .tax-rate").html(window.getFormattedNumber(window.round(taxRate, 2)));
+                    el.find(".tax.info .amount-plus-tax").html(window.getFormattedNumber(amountPlusTax));
                     el.find(".tax.info").show();
                 };
 
@@ -537,7 +537,7 @@
 
         totalPrice = window.round(totalPrice, 2);
 
-        amountEl.html(totalPrice);
+        amountEl.html(window.getFormattedNumber(totalPrice));
     };
 
     function displayCategories() {
@@ -635,7 +635,7 @@
             const info = $("<div class='info' />");
 
             const price = $("<div class='price' />");
-            price.html(product.CostPrice);
+            price.html(window.getFormattedNumber(product.CostPrice));
 
             price.appendTo(info);
 
@@ -752,7 +752,7 @@
         const ajax = request();
 
         ajax.success(function (response) {
-            const salesTaxRate = window.parseFloat(response[0].SalesTaxRate);
+            const salesTaxRate = parseFloat(response[0].SalesTaxRate);
             $("#SalesTaxRateHidden").val(salesTaxRate);
         });
     };

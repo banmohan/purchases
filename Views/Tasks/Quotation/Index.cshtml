@@ -122,10 +122,17 @@
     function displayTable(target, data) {
         target.find("tbody").html("");
 
-        function getCell(text) {
+        function getCell(text, isDate) {
             const cell = $("<td />");
 
-            cell.text(text || "");
+            cell.text(text);
+
+            if (isDate) {
+                if ((text || "").trim()) {
+                    cell.text(window.moment(new Date(text)).fromNow() || "");
+                    cell.attr("title", text);
+                };
+            };
 
             return cell;
         };
@@ -157,14 +164,14 @@
             row.append(getActionCell(item.Id));
             row.append(getCell(item.Id));
             row.append(getCell(item.Supplier));
-            row.append(getCell(item.ValueDate));
-            row.append(getCell(item.ExpectedDate));
+            row.append(getCell(item.ValueDate, true));
+            row.append(getCell(item.ExpectedDate, true));
             row.append(getCell(item.ReferenceNumber));
             row.append(getCell(item.Terms));
             row.append(getCell(item.InternalMemo));
             row.append(getCell(item.PostedBy));
             row.append(getCell(item.Office));
-            row.append(getCell(item.TransactionTs));
+            row.append(getCell(item.TransactionTs, true));
 
             target.find("tbody").append(row);
         });
