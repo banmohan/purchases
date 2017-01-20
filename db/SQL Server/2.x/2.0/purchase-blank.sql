@@ -967,10 +967,12 @@ EXECUTE core.create_app 'Purchase', 'Purchase', '1.0', 'MixERP Inc.', 'December 
 
 EXECUTE core.create_menu 'Purchase', 'Tasks', '', 'lightning', '';
 EXECUTE core.create_menu 'Purchase', 'Purchase Entry', '/dashboard/purchase/tasks/entry', 'write', 'Tasks';
+EXECUTE core.create_menu 'Purchase', 'Supplier Payment', '/dashboard/purchase/tasks/payment', 'write', 'Tasks';
 EXECUTE core.create_menu 'Purchase', 'Purchase Returns', '/dashboard/purchase/tasks/return', 'minus', 'Tasks';
 EXECUTE core.create_menu 'Purchase', 'Purchase Quotation', '/dashboard/purchase/tasks/quotation', 'newspaper', 'Tasks';
 EXECUTE core.create_menu 'Purchase', 'Purchase Orders', '/dashboard/purchase/tasks/order', 'file national character varying(1000) outline', 'Tasks';
 EXECUTE core.create_menu 'Purchase', 'Purchase Verification', '/dashboard/purchase/tasks/entry/verification', 'checkmark', 'Tasks';
+EXECUTE core.create_menu 'Purchase', 'Supplier Payment Verification', '/dashboard/purchase/tasks/payment/verification', 'checkmark', 'Tasks';
 EXECUTE core.create_menu 'Purchase', 'Purchase Return Verification', '/dashboard/purchase/tasks/return/verification', 'minus', 'Tasks';
 
 EXECUTE core.create_menu 'Purchase', 'Setup', 'square outline', 'configure', '';

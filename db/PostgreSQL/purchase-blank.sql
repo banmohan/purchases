@@ -874,7 +874,7 @@ BEGIN
     SELECT _value_date, _book_date, _checkout_id, _tran_master_id, _book_name, _user_id, _office_id, _shipper_id;
             
     INSERT INTO inventory.checkout_details(value_date, book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, tax, shipping_charge)
-    SELECT _value_date, _book_date, this.checkout_id, this.transaction_type, this.store_id, this.item_id, this.quantity, this.unit_id, this.base_quantity, this.base_unit_id, this.price, this.discount, this.tax, this.shipping_charge
+    SELECT _value_date, _book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, tax, shipping_charge
     FROM temp_checkout_details;
 
     INSERT INTO purchase.purchase_returns(checkout_id, purchase_id, supplier_id)
@@ -932,10 +932,12 @@ SELECT * FROM core.create_app('Purchase', 'Purchase', '1.0', 'MixERP Inc.', 'Dec
 
 SELECT * FROM core.create_menu('Purchase', 'Tasks', '', 'lightning', '');
 SELECT * FROM core.create_menu('Purchase', 'Purchase Entry', '/dashboard/purchase/tasks/entry', 'write', 'Tasks');
+SELECT * FROM core.create_menu('Purchase', 'Supplier Payment', '/dashboard/purchase/tasks/payment', 'write', 'Tasks');
 SELECT * FROM core.create_menu('Purchase', 'Purchase Returns', '/dashboard/purchase/tasks/return', 'minus', 'Tasks');
 SELECT * FROM core.create_menu('Purchase', 'Purchase Quotation', '/dashboard/purchase/tasks/quotation', 'newspaper', 'Tasks');
 SELECT * FROM core.create_menu('Purchase', 'Purchase Orders', '/dashboard/purchase/tasks/order', 'file text outline', 'Tasks');
 SELECT * FROM core.create_menu('Purchase', 'Purchase Verification', '/dashboard/purchase/tasks/entry/verification', 'checkmark', 'Tasks');
+SELECT * FROM core.create_menu('Purchase', 'Supplier Payment Verification', '/dashboard/purchase/tasks/payment/verification', 'checkmark', 'Tasks');
 SELECT * FROM core.create_menu('Purchase', 'Purchase Return Verification', '/dashboard/purchase/tasks/return/verification', 'minus', 'Tasks');
 
 SELECT * FROM core.create_menu('Purchase', 'Setup', 'square outline', 'configure', '');
