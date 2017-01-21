@@ -96,7 +96,7 @@ BEGIN
 
         IF(@can_post_transaction = 0)
         BEGIN
-            RAISERROR(@error_message, 10, 1);
+            RAISERROR(@error_message, 13, 1);
             RETURN;
         END;
 
@@ -115,7 +115,7 @@ BEGIN
 
         IF(@price_type_id != @original_price_type_id)
         BEGIN
-            RAISERROR('Please select the right price type.', 10, 1);
+            RAISERROR('Please select the right price type.', 13, 1);
         END;
         
         SELECT @sm_id = checkout_id 
@@ -141,7 +141,7 @@ BEGIN
             WHERE inventory.is_valid_unit_id(details.unit_id, details.item_id) = 0
         )
         BEGIN
-            RAISERROR('Item/unit mismatch.', 10, 1);
+            RAISERROR('Item/unit mismatch.', 13, 1);
         END;
 
         
