@@ -188,7 +188,7 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Styles\purchase.css" />
+    <Content Include="Styles\checkout.css" />
     <Content Include="Views\web.config" />
   </ItemGroup>
   <ItemGroup>

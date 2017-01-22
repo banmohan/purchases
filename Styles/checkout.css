@@ -1,18 +1,88 @@
-﻿#dashboard-container {
-    padding: 0 !important;
+﻿html, body {
+    font-smooth: always;
 }
 
 .pos.purchase.segment {
     font-size: 0.8em;
 }
 
-iframe {
+@media screen and (min-width: 1200px) {
+    #pos-container {
+        font-size: 9px !important;
+    }
+}
+
+@media screen and (min-width: 1300px) {
+    #pos-container {
+        font-size: 10px !important;
+    }
+}
+
+@media screen and (min-width: 1400px) {
+    #pos-container {
+        font-size: 11px !important;
+    }
+}
+
+.purchase.layout, #pos-container {
+    height: 100%;
+}
+
+    #pos-container .dimmer {
+        letter-spacing: 1px;
+        font-size: 1.5em;
+        text-transform: uppercase;
+        position: relative;
+        top: 50%;
+        -webkit-transform: translateY(-50%);
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+        text-align: center;
+    }
+
+        #pos-container .dimmer div.spinner {
+            padding: 0.5em;
+        }
+
+#dashboard-container {
+    padding: 0 !important;
+}
+
+#TenderInputText, #ChangeInputText {
+    color: yellow !important;
+    font-size: 1.5em;
+}
+
+#GiftCardNumberBalanceInputText {
+    color: yellow !important;
+}
+
+#TicketIframe {
     background-color: white;
     width: 100%;
-    height: 500px;
+    height: 600px;
     border: none;
+    margin: 1em 0.2em;
+    padding: 0.5em;
+    box-shadow: 2px 2px 10px #ddd;
+}
+
+.ticket.panel {
     display: none;
 }
+
+.customer.search.modal {
+    height: 100%;
+}
+
+
+    .customer.search.modal iframe {
+        border: none;
+        background-color: white;
+        width: 100%;
+        height: 1000px;
+        display: block;
+    }
 
 .inverted.header, .inverted.form {
     background: transparent !important;
@@ -68,29 +138,30 @@ input.invoice.number.for.reprint {
 .inline.blocks > .item {
     display: inline-block !important;
     padding: 2px;
+    min-width: 12em;
 }
 
 .two.inline.blocks > .item {
-    width: 50%;
+    width: 50% !important;
 }
 
 .three.inline.blocks > .item {
-    width: 33%;
+    width: 33% !important;
 }
 
 .four.inline.blocks > .item {
-    width: 25%;
+    width: 25% !important;
 }
 
 .status.head .left {
     display: inline-block;
-    width: 50%;
+    width: 40%;
 }
 
 .status.head .right {
     display: inline-block;
     text-align: right;
-    width: 50%;
+    width: 60%;
 }
 
 .item.list {
@@ -101,7 +172,7 @@ input.invoice.number.for.reprint {
 
     .item.list .item {
         display: inline-flex;
-        background-color: #333;
+        background: linear-gradient(to top, #222, #575553);
         margin: 4px;
         height: 280px;
         padding: 0.5em;
@@ -110,7 +181,7 @@ input.invoice.number.for.reprint {
     }
 
         .item.list .item:hover {
-            background-color: #444;
+            background: linear-gradient(to top, #575553, #222);
         }
 
         .item.list .item .info {
@@ -121,17 +192,20 @@ input.invoice.number.for.reprint {
             position: relative;
             top: -16px;
             left: -2px;
-            width: 180px;
-            height: 270px;
+            width: 200px;
+            height: 280px;
         }
+
 
         .item.list .item:hover img {
             filter: grayscale(0%) !important;
+            transition: opacity 1s ease-in-out;
         }
 
+
         .item.list .item .info .photo img {
-            height: 390px;
-            filter: grayscale(70%);
+            height: 300px;
+            filter: grayscale(50%);
         }
 
         .item.list .item .info .name {
@@ -139,20 +213,20 @@ input.invoice.number.for.reprint {
             font-weight: 800;
             position: relative;
             z-index: 1;
-            top: -5.5em;
+            top: -6.5em;
             line-height: 1.2em;
             text-align: center;
-            text-shadow: 2px 2px 10px black;
+            text-shadow: 2px 2px 5px black;
         }
 
         .item.list .item .info .price {
             font-size: 3em;
-            font-weight: 600 !important;
+            font-weight: 300;
             text-align: right;
             position: relative;
             z-index: 1;
             top: 0.7em;
-            text-shadow: -2px 3px 10px #000;
+            text-shadow: 2px 2px 6px #000;
             color: #eee;
         }
 
@@ -273,15 +347,15 @@ input.invoice.number.for.reprint {
     }
 
         .purchase.items .item .info.block .price.info,
-        .purchase.items .item .info.block .tax.info,
         .purchase.items .item .info.block .discount.info,
+        .purchase.items .item .info.block .tax.info,
         .purchase.items .item .info.block .header {
             display: block;
         }
 
         .purchase.items .item .info.block .header {
             font-size: 1.5em;
-            font-weight: 400;
+            font-weight: 500;
             text-transform: uppercase;
         }
 
@@ -289,9 +363,7 @@ input.invoice.number.for.reprint {
             padding-top: 4px;
         }
 
-        .purchase.items .item .info.block .price.info,
-        .purchase.items .item .info.block .tax.info,
-        .purchase.items .item .info.block .discount.info {
+        .purchase.items .item .info.block .info {
             font-size: 1.1em;
             text-align: left;
             padding: 0;
@@ -304,7 +376,8 @@ input.invoice.number.for.reprint {
     background-color: #333;
     width: 100%;
     cursor: pointer;
-    padding: 0;
+    margin: 0 0 8px 0;
+    padding: 6px 0;
 }
 
 
@@ -323,6 +396,10 @@ input.invoice.number.for.reprint {
         flex-direction: column;
         padding: 2px;
     }
+
+.three.summary.items > .item {
+    width: 32%;
+}
 
 .two.summary.items > .item {
     width: 48%;
@@ -379,8 +456,9 @@ input.customer.address {
     }
 
 .summary.items input,
-.summary.items textarea,
-.summary.items select {
+.summary.items select,
+.inverted.input,
+.inverted.select {
     background-color: #555 !important;
     color: #eee !important;
     border: 1px solid #666 !important;
@@ -388,6 +466,10 @@ input.customer.address {
     border-radius: 0.4em;
     width: 100%;
     -moz-appearance: none; /* Firefox */
+}
+
+.summary.items .dropdown {
+    padding: 1em !important;
 }
 
 select.inverted {
@@ -399,6 +481,163 @@ select.inverted {
     -moz-appearance: none; /* Firefox */
 }
 
+#dashboard-container {
+    padding: 0 !important;
+}
+
+#pos-container {
+    background-color: #555;
+}
+
+
+.pos.tabs {
+    display: flex;
+    padding: 0;
+}
+
+
+    .pos.tabs .item {
+        display: inline-flex;
+        flex-direction: column;
+        background: #444;
+        margin: 0 0.5em 0 0;
+        font-weight: bold;
+        font-size: 1.3em;
+        padding: 0.75em 1em;
+        border-radius: 0.5em 0.5em 0 0;
+        cursor: pointer;
+        text-shadow: 2px 2px 20px #222;
+    }
+
+        .pos.tabs .selected.item,
+        .pos.tabs .active.item,
+        .pos.tabs .item:hover {
+            background: #C6A13D;
+            color: #eee;
+        }
+
+.circular.button {
+    padding: 0.9em 2em !important;
+}
+
+#pos-items {
+    background-color: #3a3a3a;
+    height: 100%;
+    padding: 1em;
+}
+
+.tabs .actions {
+    background: #555;
+    width: 100%;
+    text-align: right;
+    margin: 0 !important;
+}
+
+    .tabs .actions .icon {
+        cursor: pointer;
+    }
+
+.ui.action.panel.inverted.segment {
+    background: none !important;
+}
+
+.action.panel .toolbar {
+    display: flex;
+    background-color: #2f2f2f;
+    background: linear-gradient(to top, #222, #444);
+    text-align: right;
+}
+
+    .action.panel .toolbar > .item {
+        text-align: center;
+        display: inline-flex;
+        flex-direction: column-reverse;
+        background: #3f3f3f;
+        background: linear-gradient(to top, #222, #444); /* Standard syntax */
+        padding: 1em 0.6em;
+        border-right: 1px solid #333;
+        height: 3em;
+        width: 2.5em;
+        font-size: 1.4em;
+        cursor: pointer;
+    }
+
+
+        .action.panel .toolbar > .item:hover {
+            background: #C4A03D;
+            background: linear-gradient(to bottom, #C4A03D, #C4343D); /* Standard syntax */
+        }
+
+.summary.items > .item > .description {
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.header.items {
+    background-color: #3f3f3f;
+    background: linear-gradient(to top, #292929, #444); /* Standard syntax */
+    padding: 1em 1em 1.5em;
+}
+
+
+
+    .header.items .count.item,
+    .header.items .count.item .description {
+        text-align: right !important;
+    }
+
+        .header.items .count.item .money {
+            color: #FBD840;
+        }
+
+.footer.items {
+    background-color: #3f3f3f;
+    background: linear-gradient(to top, #292929, #3a3a3a); /* Standard syntax */
+    padding: 1em;
+    text-align: right;
+}
+
+.action.panel.segment {
+    padding: 0;
+    border: 0;
+    margin: 0;
+}
+
+.payment.type.container {
+    padding-bottom: 1em;
+    border-bottom: 1px solid #444;
+}
+
+.show.anchor {
+    padding: 1em;
+    color: #C4A03D;
+}
+/*Semantic UI Override*/
+@media only screen and (max-width: 500px) {
+    .ui.buttons {
+        display: block !important;
+    }
+
+        .ui.buttons .button {
+            width: 100% !important;
+            margin-bottom: 0.5em !important;
+        }
+}
+
+#pos-items {
+    display: flex;
+}
+
+    #pos-items .all.items {
+        width: 100%;
+    }
+
+    #pos-items .checkout.items {
+        width: 700px !important;
+        overflow: auto;
+        padding: 0 1em;
+    }
+
 .page.title {
     font-size: 1.25em;
     text-transform: uppercase;
@@ -408,4 +647,16 @@ select.inverted {
     background: #444;
     padding: 1em;
     margin-bottom: 1em;
+}
+
+.summary.items input,
+.summary.items textarea,
+.summary.items select {
+    background-color: #555 !important;
+    color: #eee !important;
+    border: 1px solid #666 !important;
+    padding: .87em;
+    border-radius: 0.4em;
+    width: 100%;
+    -moz-appearance: none; /* Firefox */
 }
