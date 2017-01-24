@@ -2,7 +2,7 @@
 @model dynamic
 
 @{
-    ViewBag.Title = "Purchase";
+    ViewBag.Title = I18N.Purchase;
     Layout = ViewBag.PurchaseLayoutPath;
 }
 
@@ -83,7 +83,7 @@
         };
 
         if (!model.Details.length) {
-            window.displayMessage("Please select an item.");
+            window.displayMessage(window.translate("PleaseSelectItem"));
             return;
         };
 

@@ -2,7 +2,7 @@
 @model dynamic
 
 @{
-    ViewBag.Title = "Purchase Entries";
+    ViewBag.Title = I18N.PurchaseEntries;
     Layout = ViewBag.PurchaseLayoutPath;
 }
 
@@ -11,10 +11,10 @@
 
 <script>
     window.prepareView({
-        Title: "Purchase Entries",
-        AddNewText: "Add New",
+        Title: window.translate("PurchaseEntries"),
+        AddNewText: window.translate("AddNew"),
         AddNewUrl: "/dashboard/purchase/tasks/entry/new",
-        ReturnText: "Return",
+        ReturnText: window.translate("Return"),
         ReturnUrl: "javascript:void(0);",
         Book: "Purchase",
         ChecklistUrl: "/dashboard/purchase/tasks/entry/checklist/{tranId}",

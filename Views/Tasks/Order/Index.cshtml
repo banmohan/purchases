@@ -1,7 +1,7 @@
 ﻿@model dynamic
 
 @{
-    ViewBag.Title = "Purchase Orders";
+    ViewBag.Title = I18N.PurchaseOrders;
     Layout = ViewBag.PurchaseLayoutPath;
 }
 <style>
@@ -13,79 +13,79 @@
 </style>
 
 <div class="ui attached page segment" style="min-height: 100%; padding: 3em;">
-    <div class="ui huge title header">Purchase Orders</div>
+    <div class="ui huge title header">@I18N.PurchaseOrders</div>
     <div class="ui divider"></div>
     <div class="ui basic buttons">
-        <a id="AddNewButton" href="/dashboard/purchase/tasks/order/new" class="ui basic add new button">Add a New Purchase Order</a>
+        <a id="AddNewButton" href="/dashboard/purchase/tasks/order/new" class="ui basic add new button">@I18N.AddNewPurchaseOrder</a>
         <div class="ui icon top left pointing dropdown basic button" id="ExportDropDown" tabindex="0">
             <span>
-                Export
+                @I18N.Export
             </span>
             <div class="menu" tabindex="-1">
                 <div class="header">
-                    Export This Document
+                    @I18N.ExportDocument
                 </div>
                 <a class="item" href="javascript:void(0);" onclick="createDoc();">
-                    <i class="file word outline blue icon"></i> Export to Doc
+                    <i class="file word outline blue icon"></i> @I18N.ExportDoc
                 </a>
                 <a class="item" href="javascript:void(0);" onclick="createXls();">
-                    <i class="file excel outline green icon"></i> Export to Excel
+                    <i class="file excel outline green icon"></i> @I18N.ExportExcel
                 </a>
                 <a class="item" href="javascript:void(0);" onclick="createPDF();">
-                    <i class="file pdf outline red icon"></i> Export to PDF
+                    <i class="file pdf outline red icon"></i> @I18N.ExportPDF
                 </a>
             </div>
         </div>
         <a id="PrintButton" href="javascript:void(0);" onclick="print()" class="ui basic button">
-            Print
+            @I18N.Print
         </a>
     </div>
 
     <div class="ui stackable form segment" id="Annotation" style="">
         <div class="six fields">
             <div class="field">
-                <input class="date" data-persist placeholder="From" id="FromInputDate" title="From" type="date">
+                <input class="date" data-persist placeholder="@I18N.From" id="FromInputDate" title="@I18N.From" type="date">
             </div>
             <div class="field">
-                <input class="date" data-persist placeholder="To" id="ToInputDate" title="To" type="date">
+                <input class="date" data-persist placeholder="@I18N.To" id="ToInputDate" title="@I18N.To" type="date">
             </div>
             <div class="field">
-                <input class="date" data-persist placeholder="Expected From" id="ExpectedFromInputDate" title="Expected From" type="date">
+                <input class="date" data-persist placeholder="@I18N.ExpectedFrom" id="ExpectedFromInputDate" title="@I18N.ExpectedFrom" type="date">
             </div>
             <div class="field">
-                <input class="date" data-persist placeholder="Expected To" id="ExpectedToInputDate" title="Expected To" type="date">
+                <input class="date" data-persist placeholder="@I18N.ExpectedTo" id="ExpectedToInputDate" title="@I18N.ExpectedTo" type="date">
             </div>
             <div class="field">
-                <input placeholder="Id" id="IdInputText" title="Id" type="text">
+                <input placeholder="@I18N.Id" id="IdInputText" title="@I18N.Id" type="text">
             </div>
             <div class="field">
-                <input placeholder="ReferenceNumber" id="ReferenceNumberInputText" title="ReferenceNumber" type="text">
+                <input placeholder="@I18N.ReferenceNumber" id="ReferenceNumberInputText" title="@I18N.ReferenceNumber" type="text">
             </div>
         </div>
         <div class="six fields">
             <div class="field">
-                <input placeholder="Supplier" id="SupplierInputText" title="Supplier" type="text">
+                <input placeholder="@I18N.Supplier" id="SupplierInputText" title="@I18N.Supplier" type="text">
             </div>
             <div class="field">
-                <input placeholder="Terms & Conditions" id="TermsInputText" title="Internal Memo" type="text">
+                <input placeholder="@I18N.TermsConditions" id="TermsInputText" title="@I18N.TermsConditions" type="text">
             </div>
             <div class="field">
-                <input placeholder="InternalMemo" id="InternalMemoInputText" title="Internal Memo" type="text">
+                <input placeholder="@I18N.InternalMemo" id="InternalMemoInputText" title="@I18N.Internal Memo" type="text">
             </div>
             <div class="field">
-                <input placeholder="PostedBy" id="PostedByInputText" title="PostedBy" type="text">
+                <input placeholder="@I18N.PostedBy" id="PostedByInputText" title="@I18N.PostedBy" type="text">
             </div>
             <div class="field">
-                <input placeholder="Office" id="OfficeInputText" title="Office" type="text">
+                <input placeholder="@I18N.Office" id="OfficeInputText" title="@I18N.Office" type="text">
             </div>
             <div class="field hidden">
-                <input placeholder="UserId" id="UserIdInputText" title="UserId" type="text">
+                <input placeholder="@I18N.UserId" id="UserIdInputText" title="@I18N.UserId" type="text">
             </div>
             <div class="field hidden">
-                <input placeholder="OfficeId" id="OfficeIdInputText" title="OfficeId" type="text">
+                <input placeholder="@I18N.OfficeId" id="OfficeIdInputText" title="@I18N.OfficeId" type="text">
             </div>
             <div class="field">
-                <div class="ui green button" id="ShowButton">Show</div>
+                <div class="ui green button" id="ShowButton">@I18N.Show</div>
             </div>
         </div>
 
@@ -96,17 +96,17 @@
         <table id="JournalView" class="ui table nowrap segment">
             <thead>
                 <tr>
-                    <th>Actions</th>
-                    <th>Id</th>
-                    <th>Supplier</th>
-                    <th>Value Date</th>
-                    <th>Expected Date</th>
-                    <th>Ref#</th>
-                    <th>Terms</th>
-                    <th>Internal Memo</th>
-                    <th>Posted By</th>
-                    <th>Office</th>
-                    <th>Posted On</th>
+                    <th>@I18N.Actions</th>
+                    <th>@I18N.Id</th>
+                    <th>@I18N.Supplier</th>
+                    <th>@I18N.ValueDate</th>
+                    <th>@I18N.ExpectedDate</th>
+                    <th>@I18N.ReferenceNumberAbbreviated</th>
+                    <th>@I18N.Terms</th>
+                    <th>@I18N.InternalMemo</th>
+                    <th>@I18N.PostedBy</th>
+                    <th>@I18N.Office</th>
+                    <th>@I18N.PostedOn</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -140,12 +140,12 @@
         function getActionCell(id) {
             const cell = $("<td />");
 
-            const checklistAnchor = $("<a title='Checklist Window'><i class='list icon'></i></a>");
+            const checklistAnchor = $("<a title='" + window.translate("ChecklistWindow") + "'><i class='list icon'></i></a>");
             const checklistUrl = "/dashboard/purchase/tasks/order/checklist/{id}";
             checklistAnchor.attr("href", checklistUrl.replace("{id}", id));
 
 
-            const journalAdviceAnchor = $("<a title='View Order'><i class='print icon'></i></a>");
+            const journalAdviceAnchor = $("<a title='" + window.translate("ViewOrder") + "'><i class='print icon'></i></a>");
             journalAdviceAnchor.attr("href", "javascript:void(0);");
             journalAdviceAnchor.attr("onclick", "showOrder(" + id + ");");
 

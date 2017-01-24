@@ -2,7 +2,7 @@
 @model dynamic
 
 @{
-    ViewBag.Title = "Purchase";
+    ViewBag.Title = I18N.Purchase;
     Layout = ViewBag.PurchaseLayoutPath;
 }
 
@@ -13,7 +13,7 @@
     function initializeUI() {
         const template = `<div class="one summary items">
                             <div class="terms item">
-                                <div class="description">Terms & Conditions</div>
+                                <div class="description">@I18N.TermsConditions</div>
                                 <div class="control">
                                     <textarea id="TermsTextArea" type="text"></textarea>
                                 </div>
@@ -21,7 +21,7 @@
                         </div>
                         <div class="one summary items">
                             <div class="terms item">
-                                <div class="description">Internal Memo</div>
+                                <div class="description">@I18N.InternalMemo</div>
                                 <div class="control">
                                     <textarea id="InternalMemoTextArea" type="text"></textarea>
                                 </div>
