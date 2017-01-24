@@ -178,11 +178,6 @@
     <Compile Include="ViewModels\Purchase.cs" />
     <Compile Include="ViewModels\PurchaseDetailType.cs" />
     <Compile Include="ViewModels\PurchaseReturn.cs" />
-    <Compile Include="Views\Shared\ItemList.generated.cs">
-      <DependentUpon>ItemList.cshtml</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
