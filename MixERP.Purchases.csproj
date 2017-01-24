@@ -172,6 +172,7 @@
     <Compile Include="DTO\QuotationDetail.cs" />
     <Compile Include="DTO\QuotationResultview.cs" />
     <Compile Include="Extensions\PartialViewExtensions.cs" />
+    <Compile Include="I18N.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryModels\OrderQueryModel.cs" />
     <Compile Include="QueryModels\QuotationQueryModel.cs" />

@@ -28,12 +28,12 @@
                             </div>
                         </div>`;
 
-        $(".page.title").html("Purchase Order");
+        $(".page.title").html(window.translate("PurchaseOrder"));
 
         const expectedDeliveryDate =
             $("<input type='text' class='date' value='7d' id='ExpectedDeliveryDateInputText' />");
         $("#BookDateInputDate").after(expectedDeliveryDate).remove();
-        expectedDeliveryDate.parent().parent().find(".description").html("Expected Delivery Date");
+        expectedDeliveryDate.parent().parent().find(".description").html(window.translate("ExpectedDeliveryDate"));
 
         $("#StatementReferenceInputText").closest(".two.summary.items").attr("class", "one summary items")
             .after(template);
@@ -109,11 +109,11 @@
         const model = getModel();
 
         if (!model.Details.length) {
-            alert("Please select an item.");
+            alert(window.translate("PleaseSelectItem"));
             return;
         };
 
-        const confirmed = confirm("Are you sure");
+        const confirmed = confirm(window.translate("AreYouSure"));
 
         if (!confirmed) {
             return;

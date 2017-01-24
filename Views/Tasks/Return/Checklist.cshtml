@@ -13,7 +13,7 @@
 
     window.prepareChecklist({
         TranId: "@Model",
-        Title: "Purchase Return Checklist #@Model",
+        Title: window.translate("PurchaseReturnChecklist") + " #@Model",
         ViewText: window.translate("ViewPurchaseReturns"),
         ViewUrl: "/dashboard/purchase/tasks/return",
         ReportPath: "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_master_id=@Model"

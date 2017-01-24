@@ -24,9 +24,24 @@ namespace MixERP.Purchases
 		}
 
 		/// <summary>
+		///Access is denied.
+		/// </summary>
+		public static string AccessDenied => I18NResource.GetString(ResourceDirectory, "AccessDenied");
+
+		/// <summary>
 		///Actions
 		/// </summary>
 		public static string Actions => I18NResource.GetString(ResourceDirectory, "Actions");
+
+		/// <summary>
+		///Add New
+		/// </summary>
+		public static string AddNew => I18NResource.GetString(ResourceDirectory, "AddNew");
+
+		/// <summary>
+		///Add New Purchase Entry
+		/// </summary>
+		public static string AddNewPurchaseEntry => I18NResource.GetString(ResourceDirectory, "AddNewPurchaseEntry");
 
 		/// <summary>
 		///Add New Purchase Order
@@ -44,9 +59,19 @@ namespace MixERP.Purchases
 		public static string Amount => I18NResource.GetString(ResourceDirectory, "Amount");
 
 		/// <summary>
+		///Are you sure?
+		/// </summary>
+		public static string AreYouSure => I18NResource.GetString(ResourceDirectory, "AreYouSure");
+
+		/// <summary>
 		///Book Date
 		/// </summary>
 		public static string BookDate => I18NResource.GetString(ResourceDirectory, "BookDate");
+
+		/// <summary>
+		///Cannot add item because the price is zero.
+		/// </summary>
+		public static string CannotAddItemBecausePriceZero => I18NResource.GetString(ResourceDirectory, "CannotAddItemBecausePriceZero");
 
 		/// <summary>
 		///CheckList Window
@@ -57,6 +82,21 @@ namespace MixERP.Purchases
 		///Checklist
 		/// </summary>
 		public static string Checklist => I18NResource.GetString(ResourceDirectory, "Checklist");
+
+		/// <summary>
+		///Checkout
+		/// </summary>
+		public static string Checkout => I18NResource.GetString(ResourceDirectory, "Checkout");
+
+		/// <summary>
+		///Clear
+		/// </summary>
+		public static string Clear => I18NResource.GetString(ResourceDirectory, "Clear");
+
+		/// <summary>
+		///Cls
+		/// </summary>
+		public static string Cls => I18NResource.GetString(ResourceDirectory, "Cls");
 
 		/// <summary>
 		///Cost Center
@@ -79,9 +119,34 @@ namespace MixERP.Purchases
 		public static string CurrentBranchOffice => I18NResource.GetString(ResourceDirectory, "CurrentBranchOffice");
 
 		/// <summary>
+		///Delete
+		/// </summary>
+		public static string Delete => I18NResource.GetString(ResourceDirectory, "Delete");
+
+		/// <summary>
+		///Edit Price
+		/// </summary>
+		public static string EditPrice => I18NResource.GetString(ResourceDirectory, "EditPrice");
+
+		/// <summary>
+		///Enter Discount
+		/// </summary>
+		public static string EnterDiscount => I18NResource.GetString(ResourceDirectory, "EnterDiscount");
+
+		/// <summary>
+		///Enter Quantity
+		/// </summary>
+		public static string EnterQuantity => I18NResource.GetString(ResourceDirectory, "EnterQuantity");
+
+		/// <summary>
 		///Expected Date
 		/// </summary>
 		public static string ExpectedDate => I18NResource.GetString(ResourceDirectory, "ExpectedDate");
+
+		/// <summary>
+		///Expected Delivery Date
+		/// </summary>
+		public static string ExpectedDeliveryDate => I18NResource.GetString(ResourceDirectory, "ExpectedDeliveryDate");
 
 		/// <summary>
 		///Expected From
@@ -116,7 +181,7 @@ namespace MixERP.Purchases
 		/// <summary>
 		///Export PDF
 		/// </summary>
-		public static string ExportPDF => I18NResource.GetString(ResourceDirectory, "ExportPDF");
+		public static string ExportPdf => I18NResource.GetString(ResourceDirectory, "ExportPdf");
 
 		/// <summary>
 		///From
@@ -159,6 +224,16 @@ namespace MixERP.Purchases
 		public static string OfficeName => I18NResource.GetString(ResourceDirectory, "OfficeName");
 
 		/// <summary>
+		///Please select an item.
+		/// </summary>
+		public static string PleaseSelectItem => I18NResource.GetString(ResourceDirectory, "PleaseSelectItem");
+
+		/// <summary>
+		///Please select an item from the grid.
+		/// </summary>
+		public static string PleaseSelectItemFromGrid => I18NResource.GetString(ResourceDirectory, "PleaseSelectItemFromGrid");
+
+		/// <summary>
 		///Please Select Item From Grid.
 		/// </summary>
 		public static string PleaseSelectItemGrid => I18NResource.GetString(ResourceDirectory, "PleaseSelectItemGrid");
@@ -189,6 +264,11 @@ namespace MixERP.Purchases
 		public static string Purchase => I18NResource.GetString(ResourceDirectory, "Purchase");
 
 		/// <summary>
+		///Purchase Checklist
+		/// </summary>
+		public static string PurchaseChecklist => I18NResource.GetString(ResourceDirectory, "PurchaseChecklist");
+
+		/// <summary>
 		///Purchase Entries
 		/// </summary>
 		public static string PurchaseEntries => I18NResource.GetString(ResourceDirectory, "PurchaseEntries");
@@ -199,14 +279,39 @@ namespace MixERP.Purchases
 		public static string PurchaseEntryVerification => I18NResource.GetString(ResourceDirectory, "PurchaseEntryVerification");
 
 		/// <summary>
+		///Purchase Order
+		/// </summary>
+		public static string PurchaseOrder => I18NResource.GetString(ResourceDirectory, "PurchaseOrder");
+
+		/// <summary>
+		///Purchase Order Checklist
+		/// </summary>
+		public static string PurchaseOrderChecklist => I18NResource.GetString(ResourceDirectory, "PurchaseOrderChecklist");
+
+		/// <summary>
 		///Purchase Orders
 		/// </summary>
 		public static string PurchaseOrders => I18NResource.GetString(ResourceDirectory, "PurchaseOrders");
 
 		/// <summary>
+		///Purchase Quotation Checklist
+		/// </summary>
+		public static string PurchaseQuotationChecklist => I18NResource.GetString(ResourceDirectory, "PurchaseQuotationChecklist");
+
+		/// <summary>
 		///Purchase Quotations
 		/// </summary>
 		public static string PurchaseQuotations => I18NResource.GetString(ResourceDirectory, "PurchaseQuotations");
+
+		/// <summary>
+		///Purchase Return
+		/// </summary>
+		public static string PurchaseReturn => I18NResource.GetString(ResourceDirectory, "PurchaseReturn");
+
+		/// <summary>
+		///Purchase Return Checklist
+		/// </summary>
+		public static string PurchaseReturnChecklist => I18NResource.GetString(ResourceDirectory, "PurchaseReturnChecklist");
 
 		/// <summary>
 		///Purchase Return Verification
@@ -219,14 +324,19 @@ namespace MixERP.Purchases
 		public static string PurchaseReturns => I18NResource.GetString(ResourceDirectory, "PurchaseReturns");
 
 		/// <summary>
+		///Reference Number
+		/// </summary>
+		public static string ReferenceNumber => I18NResource.GetString(ResourceDirectory, "ReferenceNumber");
+
+		/// <summary>
 		///Ref#
 		/// </summary>
 		public static string ReferenceNumberAbbreviated => I18NResource.GetString(ResourceDirectory, "ReferenceNumberAbbreviated");
 
 		/// <summary>
-		///Reference Number
+		///Return
 		/// </summary>
-		public static string ReferenceNumber => I18NResource.GetString(ResourceDirectory, "ReferenceNumber");
+		public static string Return => I18NResource.GetString(ResourceDirectory, "Return");
 
 		/// <summary>
 		///Search
@@ -289,49 +399,9 @@ namespace MixERP.Purchases
 		public static string ViewOrder => I18NResource.GetString(ResourceDirectory, "ViewOrder");
 
 		/// <summary>
-		///View Quotation
+		///View Purchase Invoice
 		/// </summary>
-		public static string ViewQuotation => I18NResource.GetString(ResourceDirectory, "ViewQuotation");
-
-		/// <summary>
-		///You
-		/// </summary>
-		public static string You => I18NResource.GetString(ResourceDirectory, "You");
-
-		/// <summary>
-		///Clear
-		/// </summary>
-		public static string Clear => I18NResource.GetString(ResourceDirectory, "Clear");
-
-		/// <summary>
-		///CLS
-		/// </summary>
-		public static string CLS => I18NResource.GetString(ResourceDirectory, "CLS");
-
-		/// <summary>
-		///CHECKOUT
-		/// </summary>
-		public static string CHECKOUT => I18NResource.GetString(ResourceDirectory, "CHECKOUT");
-
-		/// <summary>
-		///View Purchases
-		/// </summary>
-		public static string ViewPurchases => I18NResource.GetString(ResourceDirectory, "ViewPurchases");
-
-		/// <summary>
-		///Add New Purchase Entry
-		/// </summary>
-		public static string AddNewPurchaseEntry => I18NResource.GetString(ResourceDirectory, "AddNewPurchaseEntry");
-
-		/// <summary>
-		///Add New
-		/// </summary>
-		public static string AddNew => I18NResource.GetString(ResourceDirectory, "AddNew");
-
-		/// <summary>
-		///Return
-		/// </summary>
-		public static string Return => I18NResource.GetString(ResourceDirectory, "Return");
+		public static string ViewPurchaseInvoice => I18NResource.GetString(ResourceDirectory, "ViewPurchaseInvoice");
 
 		/// <summary>
 		///View Purchase Orders
@@ -344,19 +414,29 @@ namespace MixERP.Purchases
 		public static string ViewPurchaseQuotation => I18NResource.GetString(ResourceDirectory, "ViewPurchaseQuotation");
 
 		/// <summary>
+		///View Purchase Return
+		/// </summary>
+		public static string ViewPurchaseReturn => I18NResource.GetString(ResourceDirectory, "ViewPurchaseReturn");
+
+		/// <summary>
 		///View Purchase Returns
 		/// </summary>
 		public static string ViewPurchaseReturns => I18NResource.GetString(ResourceDirectory, "ViewPurchaseReturns");
 
 		/// <summary>
-		///Purchase Return
+		///View Purchases
 		/// </summary>
-		public static string PurchaseReturn => I18NResource.GetString(ResourceDirectory, "PurchaseReturn");
+		public static string ViewPurchases => I18NResource.GetString(ResourceDirectory, "ViewPurchases");
 
 		/// <summary>
-		///Please select an item.
+		///View Quotation
 		/// </summary>
-		public static string PleaseSelectItem => I18NResource.GetString(ResourceDirectory, "PleaseSelectItem");
+		public static string ViewQuotation => I18NResource.GetString(ResourceDirectory, "ViewQuotation");
+
+		/// <summary>
+		///You
+		/// </summary>
+		public static string You => I18NResource.GetString(ResourceDirectory, "You");
 
 	}
 }
