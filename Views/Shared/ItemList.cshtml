@@ -2,7 +2,7 @@
 @model dynamic
 
 @{
-    ViewBag.Title = "Purchase";
+    ViewBag.Title = I18N.Purchase;
     Layout = ViewBag.PurchaseLayoutPath;
     var meta = AppUsers.GetCurrent();
 }
@@ -12,25 +12,25 @@
 
 <div class="ui attached inverted pos purchase segment">
     <div class="ui active inverted dimmer" id="POSDimmer">
-        <div class="ui large text loader">Loading items ...</div>
+        <div class="ui large text loader">@I18N.Loadingitems</div>
     </div>
     <div class="ui grid">
         <div class="eleven wide column">
             <div class="status head">
                 <div class="left">
                     <strong class="title info">
-                        Purchase
+                        @I18N.Purchase
                     </strong>
-                    <span class="office info" title="Current Branch Office">
+                    <span class="office info" title="@I18N.CurrentBranchOffice">
                         @meta.OfficeName
                     </span>
-                    <span class="user info" title="You">
+                    <span class="user info" title="@I18N.You">
                         @meta.Name
                     </span>
-                    <span class="area info" title="Current Area">
+                    <span class="area info" title="@I18N.CurrentArea">
                         @meta.OfficeCode
                     </span>
-                    <span class="office info" title="Office Name">
+                    <span class="office info" title="@I18N.OfficeName">
                         @meta.OfficeName
                     </span>
                 </div>
@@ -49,12 +49,12 @@
 
             <div class="category list">
                 <div class="cat filter" style="display: none;">
-                    Clear
+                    @I18N.Clear
                     <i class="delete icon"></i>
                 </div>
             </div>
             <div class="search panel">
-                <input type="search" placeholder="Search ..." />
+                <input type="search" placeholder="@I18N.Search" />
 
             </div>
             <div class="item list" id="POSItemList">
@@ -64,16 +64,16 @@
             <div id="PurchaseItems" class="purchase items">
             </div>
             <div class="tender info">
-                <div class="page title">Purchase</div>
+                <div class="page title">@I18N.Purchase</div>
                 <div id="SummaryItems" class="two summary items">
                     <div class="amount item">
-                        <div class="description">Amount</div>
+                        <div class="description">@I18N.Amount</div>
                         <div class="money">
                             <span></span>
                         </div>
                     </div>
                     <div class="store item">
-                        <div class="description">Store</div>
+                        <div class="description">@I18N.Store</div>
                         <div class="control">
                             <select id="StoreSelect"></select>
                         </div>
@@ -81,7 +81,7 @@
                 </div>
                 <div class="one summary items">
                     <div class="supplier item">
-                        <div class="description">Supplier</div>
+                        <div class="description">@I18N.Supplier</div>
                         <div class="control">
                             <select id="SupplierSelect"></select>
                         </div>
@@ -89,13 +89,13 @@
                 </div>
                 <div class="two summary items">
                     <div class="value date item">
-                        <div class="description">Value Date</div>
+                        <div class="description">@I18N.ValueDate</div>
                         <div class="control">
                             <input type="text" class="date" id="ValueDateInputDate" />
                         </div>
                     </div>
                     <div class="book date item">
-                        <div class="description">Book Date</div>
+                        <div class="description">@I18N.BookDate</div>
                         <div class="control">
                             <input type="text" class="date" id="BookDateInputDate" />
                         </div>
@@ -103,13 +103,13 @@
                 </div>
                 <div class="two summary items">
                     <div class="cost center item">
-                        <div class="description">Cost Center</div>
+                        <div class="description">@I18N.CostCenter</div>
                         <div class="control">
                             <select id="CostCenterSelect"></select>
                         </div>
                     </div>
                     <div class="shipping company item">
-                        <div class="description">Shipper</div>
+                        <div class="description">@I18N.Shipper</div>
                         <div class="control">
                             <select id="ShipperSelect"></select>
                         </div>
@@ -117,13 +117,13 @@
                 </div>
                 <div class="two summary items">
                     <div class="reference number item">
-                        <div class="description">Ref#</div>
+                        <div class="description">@I18N.ReferenceNumberAbbreviated</div>
                         <div class="control">
                             <input type="text" id="ReferenceNumberInputText" />
                         </div>
                     </div>
                     <div class="memo item">
-                        <div class="description">Memo</div>
+                        <div class="description">@I18N.Memo</div>
                         <div class="control">
                             <input type="text" id="StatementReferenceInputText" />
                         </div>
@@ -133,11 +133,11 @@
                     <div class="column">
                         <button id="CheckoutButton" class="ui green icon button">
                             <i class="cart icon"></i>
-                            CHECKOUT
+                            @I18N.CHECKOUT
                         </button>
                         <button id="ClearScreenButton" class="ui red icon button">
                             <i class="delete icon"></i>
-                            CLS
+                            @I18N.CLS
                         </button>
                     </div>
                 </div>

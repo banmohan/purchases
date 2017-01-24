@@ -2,7 +2,7 @@
 @model dynamic
 
 @{
-    ViewBag.Title = "Purchase Return Verification";
+    ViewBag.Title = I18N.PurchaseReturnVerification;
     Layout = ViewBag.PurchaseLayoutPath;
 }
 
@@ -10,8 +10,8 @@
 
 <script>
     window.prepareVerification({
-        Title: "Purchase Return Verification",
-        Book: "Purchase Return",
+        Title: window.translate("PurchaseReturnVerification"),
+        Book: window.translate("PurchaseReturn"),
         ChecklistUrl: "/dashboard/purchase/tasks/return/checklist/{tranId}",
         AdviceButtons: [
             {

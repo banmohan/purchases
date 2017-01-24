@@ -2,7 +2,7 @@
 @model long
 
 @{
-    ViewBag.Title = "Checklist";
+    ViewBag.Title = I18N.Checklist;
     Layout = ViewBag.PurchaseLayoutPath;
 }
 
@@ -14,9 +14,9 @@
     window.prepareChecklist({
         TranId: "@Model",
         Title: "Purchase Checklist #@Model",
-        ViewText: "View Purchases",
+        ViewText: window.translate("ViewPurchases"),
         ViewUrl: "/dashboard/purchase/tasks/entry",
-        AddNewText: "Add New Purchase Entry",
+        AddNewText: window.translate("AddNewPurchaseEntry"),
         AddNewUrl: "/dashboard/purchase/tasks/entry/new",
         ReportPath: "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Invoice.xml?transaction_master_id=@Model"
     });

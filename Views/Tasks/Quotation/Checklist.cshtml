@@ -2,7 +2,7 @@
 @model long
 
 @{
-    ViewBag.Title = "Checklist";
+    ViewBag.Title = I18N.Checklist;
     Layout = ViewBag.PurchaseLayoutPath;
 }
 
@@ -14,9 +14,9 @@
     window.prepareChecklist({
         TranId: "@Model",
         Title: "Purchase Quotation Checklist #@Model",
-        ViewText: "View Purchase Quotations",
+        ViewText: window.translate("ViewPurchaseQuotations"),
         ViewUrl: "/dashboard/purchase/tasks/quotation",
-        AddNewText: "Add New Purchase Quotation",
+        AddNewText: window.translate("AddNewPurchaseQuotation"),
         AddNewUrl: "/dashboard/purchase/tasks/quotation/new",
         ReportPath: "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Quotation.xml?quotation_id=@Model"
     });

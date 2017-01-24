@@ -2,7 +2,7 @@
 @model dynamic
 
 @{
-    ViewBag.Title = "Purchase Entry Verification";
+    ViewBag.Title = I18N.PurchaseEntryVerification;
     Layout = ViewBag.PurchaseLayoutPath;
 }
 
@@ -11,10 +11,10 @@
 
 <script>
     window.prepareVerification({
-        Title: "Purchase Entry Verification",
-        AddNewText: "Add New",
+        Title: window.translate("PurchaseEntryVerification"),
+        AddNewText: window.translate("AddNew"),
         AddNewUrl: "/dashboard/purchase/tasks/entry/new",
-        ReturnText: "Return",
+        ReturnText: window.translate("Return"),
         ReturnUrl: "javascript:void(0);",
         Book: "Purchase",
         ChecklistUrl: "/dashboard/purchase/tasks/entry/checklist/{tranId}",
@@ -47,7 +47,7 @@
             return;
         };
 
-        window.displayMessage("Please select an item from the grid.");
+        window.displayMessage(window.translate("PleaseSelectItemFromGrid."));
     });
 
     function showInvoice(tranId) {
