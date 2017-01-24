@@ -10,7 +10,7 @@
 
 
 <script>
-    $(".page.title").html("Purchase Return");
+    $(".page.title").html(window.translate("PurchaseReturn"));
     $("#CheckoutButton").off("click").on("click", function () {
 
         function request(model) {
@@ -77,7 +77,7 @@
         const model = getModel();
 
         if (!model.TransactionMasterId) {
-            alert("Access is denied.");
+            alert(window.translate("AccessDenied"));
             document.location = "/dashboard/purchase/tasks/entry";
             return;
         };
@@ -87,7 +87,7 @@
             return;
         };
 
-        const confirmed = confirm("Are you sure");
+        const confirmed = confirm(window.translate("AreYouSure"));
 
         if (!confirmed) {
             return;

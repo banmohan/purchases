@@ -11,11 +11,11 @@
 <script>
     window.prepareView({
         Title: window.translate("PurchaseReturns"),
-        Book: window.translate("PurchaseReturn"),
+        Book: "Purchase Return",
         ChecklistUrl: "/dashboard/purchase/tasks/return/checklist/{tranId}",
         AdviceButtons: [
             {
-                Title: "View Purchase Return",
+                Title: window.translate("ViewPurchaseReturn"),
                 Href: "javascript:void(0);",
                 OnClick: "showReturn({tranId});"
             }
@@ -23,7 +23,7 @@
     });
 
     function showReturn(tranId) {
-        $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_master_id=" + tranId);
+        $(".advice.modal iframe").attr("src", `/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_master_id=${tranId}`);
 
         setTimeout(function () {
             $(".advice.modal")

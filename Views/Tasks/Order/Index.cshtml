@@ -32,7 +32,7 @@
                     <i class="file excel outline green icon"></i> @I18N.ExportExcel
                 </a>
                 <a class="item" href="javascript:void(0);" onclick="createPDF();">
-                    <i class="file pdf outline red icon"></i> @I18N.ExportPDF
+                    <i class="file pdf outline red icon"></i> @I18N.ExportPdf
                 </a>
             </div>
         </div>
@@ -70,7 +70,7 @@
                 <input placeholder="@I18N.TermsConditions" id="TermsInputText" title="@I18N.TermsConditions" type="text">
             </div>
             <div class="field">
-                <input placeholder="@I18N.InternalMemo" id="InternalMemoInputText" title="@I18N.Internal Memo" type="text">
+                <input placeholder="@I18N.InternalMemo" id="InternalMemoInputText" title="@I18N.InternalMemo" type="text">
             </div>
             <div class="field">
                 <input placeholder="@I18N.PostedBy" id="PostedByInputText" title="@I18N.PostedBy" type="text">
@@ -140,12 +140,12 @@
         function getActionCell(id) {
             const cell = $("<td />");
 
-            const checklistAnchor = $("<a title='" + window.translate("ChecklistWindow") + "'><i class='list icon'></i></a>");
+            const checklistAnchor = $(`<a title='${window.translate("ChecklistWindow")}'><i class='list icon'></i></a>`);
             const checklistUrl = "/dashboard/purchase/tasks/order/checklist/{id}";
             checklistAnchor.attr("href", checklistUrl.replace("{id}", id));
 
 
-            const journalAdviceAnchor = $("<a title='" + window.translate("ViewOrder") + "'><i class='print icon'></i></a>");
+            const journalAdviceAnchor = $(`<a title='${window.translate("ViewOrder")}'><i class='print icon'></i></a>`);
             journalAdviceAnchor.attr("href", "javascript:void(0);");
             journalAdviceAnchor.attr("onclick", "showOrder(" + id + ");");
 
@@ -214,7 +214,7 @@
     });
 
     function showOrder(id) {
-        $(".modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?order_id=" + id);
+        $(".modal iframe").attr("src", `/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?order_id=${id}`);
 
         setTimeout(function () {
             $(".advice.modal")

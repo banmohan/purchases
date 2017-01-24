@@ -42,10 +42,10 @@ var itemTemplate =
 		</div>
 	</div>
 	<div class="number block">
-		<input type="text" class="price" title="Edit Price" value="{CostPrice}">
-		<input type="text" class="quantity" title="Enter Quantity" value="1">
-		<input type="text" class="discount" title="Enter Discount" value="">
-		<button class="ui red fluid button" onclick="removeItem(this);" style="display:none;">Delete</button>
+		<input type="text" class="price" title="${window.translate("EditPrice")}" value="{CostPrice}">
+		<input type="text" class="quantity" title="${window.translate("EnterQuantity")}" value="1">
+		<input type="text" class="discount" title="${window.translate("EnterDiscount")}" value="">
+		<button class="ui red fluid button" onclick="removeItem(this);" style="display:none;">${window.translate("Delete")}</button>
 	</div>
 </div>`;
 var products = [];
@@ -112,7 +112,7 @@ setTimeout(function() {
 }, 120000);
 
 function removeItem(el) {
-    const confirmed = confirm("Are you sure?");
+    const confirmed = confirm(window.translate("AreYouSure"));
 
     if (!confirmed) {
         return;
@@ -151,7 +151,7 @@ function initializeClickAndAction() {
         var taxRate = parseFloat($("#SalesTaxRateHidden").val());
 
         if (!price) {
-            alert("Cannot add item because the price is zero.");
+            alert(window.translate("CannotAddItemBecausePriceZero"));
             return;
         };
 

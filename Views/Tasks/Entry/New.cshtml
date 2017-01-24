@@ -75,11 +75,11 @@
         const model = getModel();
 
         if (!model.Details.length) {
-            alert("Please select an item.");
+            alert(window.translate("PleaseSelectItem"));
             return;
         };
 
-        const confirmed = confirm("Are you sure");
+        const confirmed = confirm(window.translate("AreYouSure"));
 
         if (!confirmed) {
             return;

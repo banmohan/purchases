@@ -20,7 +20,7 @@
         ChecklistUrl: "/dashboard/purchase/tasks/entry/checklist/{tranId}",
         AdviceButtons: [
             {
-                Title: "View Purchase Invoice",
+                Title: window.translate("ViewPurchaseInvoice"),
                 Href: "javascript:void(0);",
                 OnClick: "showInvoice({tranId});"
             }
@@ -47,7 +47,7 @@
             return;
         };
 
-        window.displayMessage(window.translate("PleaseSelectItemFromGrid."));
+        window.displayMessage(window.translate("PleaseSelectItemFromGrid"));
     });
 
     function showInvoice(tranId) {
