@@ -26,7 +26,7 @@ namespace MixERP.Purchases
 		/// <summary>
 		///Access is denied.
 		/// </summary>
-		public static string AccessDenied => I18NResource.GetString(ResourceDirectory, "AccessDenied");
+		public static string AccessIsDenied => I18NResource.GetString(ResourceDirectory, "AccessIsDenied");
 
 		/// <summary>
 		///Actions
@@ -49,7 +49,7 @@ namespace MixERP.Purchases
 		public static string AddNewPurchaseOrder => I18NResource.GetString(ResourceDirectory, "AddNewPurchaseOrder");
 
 		/// <summary>
-		///Add  New Purchase Quotation
+		///Add New Purchase Quotation
 		/// </summary>
 		public static string AddNewPurchaseQuotation => I18NResource.GetString(ResourceDirectory, "AddNewPurchaseQuotation");
 
@@ -109,7 +109,7 @@ namespace MixERP.Purchases
 		public static string CostPrices => I18NResource.GetString(ResourceDirectory, "CostPrices");
 
 		/// <summary>
-		///CurrentArea
+		///Current Area
 		/// </summary>
 		public static string CurrentArea => I18NResource.GetString(ResourceDirectory, "CurrentArea");
 
@@ -164,24 +164,24 @@ namespace MixERP.Purchases
 		public static string Export => I18NResource.GetString(ResourceDirectory, "Export");
 
 		/// <summary>
-		///Export Doc
+		///Export This Document
 		/// </summary>
-		public static string ExportDoc => I18NResource.GetString(ResourceDirectory, "ExportDoc");
+		public static string ExportThisDocument => I18NResource.GetString(ResourceDirectory, "ExportThisDocument");
 
 		/// <summary>
-		///Export Document
+		///Export to Doc
 		/// </summary>
-		public static string ExportDocument => I18NResource.GetString(ResourceDirectory, "ExportDocument");
+		public static string ExportToDoc => I18NResource.GetString(ResourceDirectory, "ExportToDoc");
 
 		/// <summary>
-		///Export Excel
+		///Export to Excel
 		/// </summary>
-		public static string ExportExcel => I18NResource.GetString(ResourceDirectory, "ExportExcel");
+		public static string ExportToExcel => I18NResource.GetString(ResourceDirectory, "ExportToExcel");
 
 		/// <summary>
-		///Export PDF
+		///Export to PDF
 		/// </summary>
-		public static string ExportPdf => I18NResource.GetString(ResourceDirectory, "ExportPdf");
+		public static string ExportToPDF => I18NResource.GetString(ResourceDirectory, "ExportToPDF");
 
 		/// <summary>
 		///From
@@ -201,7 +201,7 @@ namespace MixERP.Purchases
 		/// <summary>
 		///Loading items
 		/// </summary>
-		public static string Loadingitems => I18NResource.GetString(ResourceDirectory, "Loadingitems");
+		public static string LoadingItems => I18NResource.GetString(ResourceDirectory, "LoadingItems");
 
 		/// <summary>
 		///Memo
@@ -232,11 +232,6 @@ namespace MixERP.Purchases
 		///Please select an item from the grid.
 		/// </summary>
 		public static string PleaseSelectItemFromGrid => I18NResource.GetString(ResourceDirectory, "PleaseSelectItemFromGrid");
-
-		/// <summary>
-		///Please Select Item From Grid.
-		/// </summary>
-		public static string PleaseSelectItemGrid => I18NResource.GetString(ResourceDirectory, "PleaseSelectItemGrid");
 
 		/// <summary>
 		///Posted By

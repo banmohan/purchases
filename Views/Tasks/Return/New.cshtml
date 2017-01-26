@@ -77,7 +77,7 @@
         const model = getModel();
 
         if (!model.TransactionMasterId) {
-            alert(window.translate("AccessDenied"));
+            alert(window.translate("AccessIsDenied"));
             document.location = "/dashboard/purchase/tasks/entry";
             return;
         };
