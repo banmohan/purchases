@@ -533,6 +533,10 @@ select.inverted {
     margin: 0 !important;
 }
 
+.rtl .tabs .actions{
+    text-align: left;    
+}
+
     .tabs .actions .icon {
         cursor: pointer;
     }
