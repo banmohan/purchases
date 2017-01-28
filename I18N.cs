@@ -433,5 +433,180 @@ namespace MixERP.Purchases
 		/// </summary>
 		public static string You => I18NResource.GetString(ResourceDirectory, "You");
 
+		/// <summary>
+		///Bad Request
+		/// </summary>
+		public static string BadRequest => I18NResource.GetString(ResourceDirectory, "BadRequest");
+
+		/// <summary>
+		///Payment to Supplier
+		/// </summary>
+		public static string PaymentToSupplier => I18NResource.GetString(ResourceDirectory, "PaymentToSupplier");
+
+		/// <summary>
+		///Payment Verification
+		/// </summary>
+		public static string PaymentVerification => I18NResource.GetString(ResourceDirectory, "PaymentVerification");
+
+		/// <summary>
+		///View Payment
+		/// </summary>
+		public static string ViewPayment => I18NResource.GetString(ResourceDirectory, "ViewPayment");
+
+		/// <summary>
+		///Payment Checklist #
+		/// </summary>
+		public static string PaymentChecklist => I18NResource.GetString(ResourceDirectory, "PaymentChecklist");
+
+		/// <summary>
+		///View Payments
+		/// </summary>
+		public static string ViewPayments => I18NResource.GetString(ResourceDirectory, "ViewPayments");
+
+		/// <summary>
+		///Add a New Payment Entry
+		/// </summary>
+		public static string AddNewPaymentEntry => I18NResource.GetString(ResourceDirectory, "AddNewPaymentEntry");
+
+		/// <summary>
+		///Payments
+		/// </summary>
+		public static string Payments => I18NResource.GetString(ResourceDirectory, "Payments");
+
+		/// <summary>
+		///Select Supplier
+		/// </summary>
+		public static string SelectSupplier => I18NResource.GetString(ResourceDirectory, "SelectSupplier");
+
+		/// <summary>
+		///Total Due Amount (In Base Currency)
+		/// </summary>
+		public static string TotalDueAmountInBaseCurrency => I18NResource.GetString(ResourceDirectory, "TotalDueAmountInBaseCurrency");
+
+		/// <summary>
+		///Base Currency
+		/// </summary>
+		public static string BaseCurrency => I18NResource.GetString(ResourceDirectory, "BaseCurrency");
+
+		/// <summary>
+		///Paid Currency
+		/// </summary>
+		public static string PaidCurrency => I18NResource.GetString(ResourceDirectory, "PaidCurrency");
+
+		/// <summary>
+		///Paid Amount (In Above Currency)
+		/// </summary>
+		public static string PaidAmountInAboveCurrency => I18NResource.GetString(ResourceDirectory, "PaidAmountInAboveCurrency");
+
+		/// <summary>
+		///Debit Exchange Rate
+		/// </summary>
+		public static string DebitExchangeRate => I18NResource.GetString(ResourceDirectory, "DebitExchangeRate");
+
+		/// <summary>
+		///Converted to Home Currency
+		/// </summary>
+		public static string ConvertedToHomeCurrency => I18NResource.GetString(ResourceDirectory, "ConvertedToHomeCurrency");
+
+		/// <summary>
+		///Credit Exchange Rate
+		/// </summary>
+		public static string CreditExchangeRate => I18NResource.GetString(ResourceDirectory, "CreditExchangeRate");
+
+		/// <summary>
+		///Converted to Base Currency
+		/// </summary>
+		public static string ConvertedToBaseCurrency => I18NResource.GetString(ResourceDirectory, "ConvertedToBaseCurrency");
+
+		/// <summary>
+		///Final Due Amount (In Base Currency)
+		/// </summary>
+		public static string FinalDueAmountInBaseCurrency => I18NResource.GetString(ResourceDirectory, "FinalDueAmountInBaseCurrency");
+
+		/// <summary>
+		///Payment Type
+		/// </summary>
+		public static string PaymentType => I18NResource.GetString(ResourceDirectory, "PaymentType");
+
+		/// <summary>
+		///Cash
+		/// </summary>
+		public static string Cash => I18NResource.GetString(ResourceDirectory, "Cash");
+
+		/// <summary>
+		///Bank
+		/// </summary>
+		public static string Bank => I18NResource.GetString(ResourceDirectory, "Bank");
+
+		/// <summary>
+		///Cash Account Id
+		/// </summary>
+		public static string CashAccountId => I18NResource.GetString(ResourceDirectory, "CashAccountId");
+
+		/// <summary>
+		///Cash Repository
+		/// </summary>
+		public static string CashRepository => I18NResource.GetString(ResourceDirectory, "CashRepository");
+
+		/// <summary>
+		///Which Bank?
+		/// </summary>
+		public static string WhichBank => I18NResource.GetString(ResourceDirectory, "WhichBank");
+
+		/// <summary>
+		///Posted Date
+		/// </summary>
+		public static string PostedDate => I18NResource.GetString(ResourceDirectory, "PostedDate");
+
+		/// <summary>
+		///Instrument Code
+		/// </summary>
+		public static string InstrumentCode => I18NResource.GetString(ResourceDirectory, "InstrumentCode");
+
+		/// <summary>
+		///Bank Transaction Code
+		/// </summary>
+		public static string BankTransactionCode => I18NResource.GetString(ResourceDirectory, "BankTransactionCode");
+
+		/// <summary>
+		///Statement Reference
+		/// </summary>
+		public static string StatementReference => I18NResource.GetString(ResourceDirectory, "StatementReference");
+
+		/// <summary>
+		///Save
+		/// </summary>
+		public static string Save => I18NResource.GetString(ResourceDirectory, "Save");
+
+		/// <summary>
+		///Go
+		/// </summary>
+		public static string Go => I18NResource.GetString(ResourceDirectory, "Go");
+
+		/// <summary>
+		///Invalid Payment Mode
+		/// </summary>
+		public static string InvalidPaymentMode => I18NResource.GetString(ResourceDirectory, "InvalidPaymentMode");
+
+		/// <summary>
+		///A cash transaction cannot contain bank transaction details.
+		/// </summary>
+		public static string CashTransactionCannotContainBankTransactionDetails => I18NResource.GetString(ResourceDirectory, "CashTransactionCannotContainBankTransactionDetails");
+
+		/// <summary>
+		///This supplier does not have a default currency!
+		/// </summary>
+		public static string ThisSupplierDoesNotHaveDefaultCurrency => I18NResource.GetString(ResourceDirectory, "ThisSupplierDoesNotHaveDefaultCurrency");
+
+		/// <summary>
+		///Please select a supplier.
+		/// </summary>
+		public static string PleaseSelectSupplier => I18NResource.GetString(ResourceDirectory, "PleaseSelectSupplier");
+
+		/// <summary>
+		///Check
+		/// </summary>
+		public static string Cheque => I18NResource.GetString(ResourceDirectory, "Cheque");
+
 	}
 }

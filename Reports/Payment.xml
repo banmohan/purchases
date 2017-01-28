@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FrapidReport>
+  <Header />
+  <Title>{i18n.PaymentToSupplier}</Title>
+  <TopSection>
+    <table class="table horizontal">
+      <tr>
+        <td>{i18n.TranId}</td>
+        <td>
+          {DataSource[0].transaction_master_id}
+        </td>
+      </tr>
+      <tr>
+        <td>{i18n.TranCode}</td>
+        <td>
+          {DataSource[0].transaction_code}
+        </td>
+      </tr>
+      <tr>
+        <td>{i18n.OfficeCode}</td>
+        <td> {DataSource[0].office_code}</td>
+      </tr>
+      <tr>
+        <td>{i18n.TransactionDate}</td>
+        <td>{DataSource[0].transaction_ts}</td>
+      </tr>
+      <tr>
+        <td>{i18n.ValueDate}</td>
+        <td>{DataSource[0].value_date}</td>
+      </tr>
+      <tr>
+        <td>{i18n.EnteredBy}</td>
+        <td> {DataSource[0].entered_by}</td>
+      </tr>
+      <tr>
+        <td>{i18n.VerifiedBy}</td>
+        <td> {DataSource[0].verified_by}</td>
+      </tr>
+      <tr>
+        <td>{i18n.TransactionStatus}</td>
+        <td> {DataSource[0].status}</td>
+      </tr>
+      <tr>
+        <td>{i18n.VerificationReason}</td>
+        <td> {DataSource[0].verification_reason}</td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.ReferenceNumber}
+        </td>
+        <td>
+          {DataSource[0].reference_number}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.StatementReference}
+        </td>
+        <td>
+          {DataSource[0].statement_reference}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.SupplierCode}
+        </td>
+        <td>
+          {DataSource[0].supplier_code}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.SupplierName}
+        </td>
+        <td>
+          {DataSource[0].supplier_name}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.Address}
+        </td>
+        <td>
+          {DataSource[0].company_zipcode}
+          {DataSource[0].company_po_box}
+		  <br />
+          {DataSource[0].company_address_line_1}
+		  <br />
+          {DataSource[0].company_address_line_2}
+		  <br />
+          {DataSource[0].company_street}  {DataSource[0].company_city}
+	     <br />		  
+		 {DataSource[0].company_state}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.PaymentCurrency}
+        </td>
+        <td>
+          {DataSource[0].currency_code}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.PaymentAmount}
+        </td>
+        <td>
+          {DataSource[0].amount}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.ERToHomeCurrency}
+        </td>
+        <td>
+          {DataSource[0].er_debit}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.HomeCurrency}
+        </td>
+        <td>
+          {DataSource[0].home_currency_code}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.AmountInHomeCurrency}
+        </td>
+        <td>
+          {DataSource[0].amount_in_home_currency}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.ERToBaseCurrency}
+        </td>
+        <td>
+          {DataSource[0].er_credit}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.BaseCurrency}
+        </td>
+        <td>
+          {DataSource[0].base_currency_code}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.AmountInBaseCurrency}
+        </td>
+        <td>
+          {DataSource[0].amount_in_base_currency}
+        </td>
+      </tr>
+    </table>
+
+    <br />
+  </TopSection>
+  <Body>
+  </Body>
+  <BottomSection>
+    <strong>{i18n.ThankYouForYourBusiness}</strong>
+  </BottomSection>
+  <DataSources>
+    <DataSource>
+      <Query>
+        SELECT
+			finance.transaction_master.office_id,
+			core.offices.office_code,
+			finance.transaction_master.transaction_master_id,
+			finance.transaction_master.transaction_code,
+			finance.transaction_master.transaction_ts,
+			finance.transaction_master.value_date,
+			account.users.name AS entered_by,
+			finance.transaction_master.reference_number,
+			finance.transaction_master.statement_reference,
+			core.verification_statuses.verification_status_name AS status,
+			finance.transaction_master.verification_reason,
+			verified_by_user.name AS verified_by,
+			purchase.supplier_payments.supplier_id,
+			inventory.suppliers.supplier_code,
+			inventory.suppliers.supplier_name,
+			inventory.suppliers.company_zipcode, 
+			inventory.suppliers.company_po_box, 
+			inventory.suppliers.company_address_line_1, 
+			inventory.suppliers.company_address_line_2, 
+			inventory.suppliers.company_street, 
+			inventory.suppliers.company_city, 
+			inventory.suppliers.company_state,
+			purchase.supplier_payments.currency_code,
+			purchase.supplier_payments.amount,
+			purchase.supplier_payments.er_debit,
+			core.offices.currency_code AS home_currency_code,
+			purchase.supplier_payments.amount * purchase.supplier_payments.er_debit AS amount_in_home_currency,
+			purchase.supplier_payments.er_credit,
+			inventory.suppliers.currency_code AS base_currency_code,
+			purchase.supplier_payments.amount * purchase.supplier_payments.er_debit * purchase.supplier_payments.er_credit AS amount_in_base_currency
+        FROM purchase.supplier_payments
+        INNER JOIN finance.transaction_master
+        ON finance.transaction_master.transaction_master_id = purchase.supplier_payments.transaction_master_id
+        INNER JOIN inventory.suppliers
+        ON inventory.suppliers.supplier_id = purchase.supplier_payments.supplier_id
+        INNER JOIN core.verification_statuses
+        ON finance.transaction_master.verification_status_id = core.verification_statuses.verification_status_id
+        INNER JOIN account.users
+        ON finance.transaction_master.user_id = account.users.user_id
+        INNER JOIN core.offices
+        ON finance.transaction_master.office_id = core.offices.office_id
+        LEFT JOIN account.users AS verified_by_user
+        ON finance.transaction_master.verified_by_user_id = verified_by_user.user_id
+        WHERE finance.transaction_master.transaction_master_id=@transaction_master_id;
+      </Query>
+      <Parameters>
+        <Parameter Name="@transaction_master_id" Type="Number" />
+      </Parameters>
+    </DataSource>
+  </DataSources>
+</FrapidReport>

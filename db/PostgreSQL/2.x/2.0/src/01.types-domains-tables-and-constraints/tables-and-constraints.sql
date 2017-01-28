@@ -125,6 +125,45 @@ CREATE TABLE purchase.order_details
     quantity                                public.decimal_strict2 NOT NULL
 );
 
+CREATE TABLE purchase.supplier_payments
+(
+    payment_id                              BIGSERIAL PRIMARY KEY,
+    transaction_master_id                   bigint NOT NULL REFERENCES finance.transaction_master,
+    supplier_id                             integer NOT NULL REFERENCES inventory.suppliers,
+    currency_code                           national character varying(12) NOT NULL REFERENCES core.currencies,
+    er_debit                                decimal_strict NOT NULL,
+    er_credit                               decimal_strict NOT NULL,
+    cash_repository_id                      integer NULL REFERENCES finance.cash_repositories,
+    posted_date                             date NULL,
+    tender                                  public.money_strict2,
+    change                                  public.money_strict2,
+    amount                                  public.money_strict2,
+    bank_id					                integer REFERENCES finance.bank_accounts,
+	bank_instrument_code			        national character varying(500),
+	bank_transaction_code			        national character varying(500),
+	check_number                            national character varying(100),
+    check_date                              date,
+    check_bank_name                         national character varying(1000),
+    check_amount                            public.money_strict2
+);
+
+CREATE INDEX supplier_payments_transaction_master_id_inx
+ON purchase.supplier_payments(transaction_master_id);
+
+CREATE INDEX supplier_payments_supplier_id_inx
+ON purchase.supplier_payments(supplier_id);
+
+CREATE INDEX supplier_payments_currency_code_inx
+ON purchase.supplier_payments(currency_code);
+
+CREATE INDEX supplier_payments_cash_repository_id_inx
+ON purchase.supplier_payments(cash_repository_id);
+
+CREATE INDEX supplier_payments_posted_date_inx
+ON purchase.supplier_payments(posted_date);
+
+
+
 CREATE TYPE purchase.purchase_detail_type
 AS
 (

@@ -147,6 +147,7 @@
     <Compile Include="Controllers\Backend\Tasks\ItemController.cs" />
     <Compile Include="Controllers\Backend\Tasks\OrderController.cs" />
     <Compile Include="Controllers\Backend\Tasks\QuotationController.cs" />
+    <Compile Include="Controllers\Backend\Tasks\PaymentController.cs" />
     <Compile Include="Controllers\Backend\Tasks\ReturnController.cs" />
     <Compile Include="DAL\Backend\Service\Items.cs" />
     <Compile Include="Controllers\Backend\Setup\CostPriceController.cs" />
@@ -155,6 +156,9 @@
     <Compile Include="Controllers\Backend\Tasks\EntryController.cs" />
     <Compile Include="Controllers\PurchaseDashboardController.cs" />
     <Compile Include="DAL\Backend\Tasks\Orders.cs" />
+    <Compile Include="DAL\Backend\Tasks\PaymentEntry\IReceiptEntry.cs" />
+    <Compile Include="DAL\Backend\Tasks\PaymentEntry\PostgreSQL.cs" />
+    <Compile Include="DAL\Backend\Tasks\PaymentEntry\SqlServer.cs" />
     <Compile Include="DAL\Backend\Tasks\PurchaseEntry\IPurchaseEntry.cs" />
     <Compile Include="DAL\Backend\Tasks\PurchaseEntry\PostgreSQL.cs" />
     <Compile Include="DAL\Backend\Tasks\PurchaseEntry\SqlServer.cs" />
@@ -164,6 +168,7 @@
     <Compile Include="DAL\Backend\Tasks\PurchaseReturn\SqlServer.cs" />
     <Compile Include="DAL\Backend\Tasks\Purchases.cs" />
     <Compile Include="DAL\Backend\Tasks\Quotations.cs" />
+    <Compile Include="DAL\Backend\Tasks\Payments.cs" />
     <Compile Include="DTO\ItemView.cs" />
     <Compile Include="DTO\Order.cs" />
     <Compile Include="DTO\OrderDetail.cs" />
@@ -171,19 +176,31 @@
     <Compile Include="DTO\Quotation.cs" />
     <Compile Include="DTO\QuotationDetail.cs" />
     <Compile Include="DTO\QuotationResultview.cs" />
+    <Compile Include="DTO\SupplierTransactionSummary.cs" />
     <Compile Include="Extensions\PartialViewExtensions.cs" />
     <Compile Include="I18N.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryModels\OrderQueryModel.cs" />
     <Compile Include="QueryModels\QuotationQueryModel.cs" />
+    <Compile Include="ViewModels\Payment.cs" />
     <Compile Include="ViewModels\Purchase.cs" />
     <Compile Include="ViewModels\PurchaseDetailType.cs" />
     <Compile Include="ViewModels\PurchaseReturn.cs" />
+    <Compile Include="Views\Shared\ItemList.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ItemList.cshtml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="scripts\shared\item-list.js" />
+    <Content Include="scripts\tasks\payment\checklist.js" />
+    <Content Include="scripts\tasks\payment\index.js" />
+    <Content Include="scripts\tasks\payment\new.js" />
+    <Content Include="scripts\tasks\payment\verification.js" />
     <Content Include="Styles\checkout.css" />
     <Content Include="Views\web.config" />
   </ItemGroup>
@@ -211,6 +228,10 @@
     <Content Include="Views\Tasks\Order\Checklist.cshtml" />
     <Content Include="Views\Tasks\Order\Index.cshtml" />
     <Content Include="Views\Tasks\Order\New.cshtml" />
+    <Content Include="Views\Tasks\Payment\Checklist.cshtml" />
+    <Content Include="Views\Tasks\Payment\Index.cshtml" />
+    <Content Include="Views\Tasks\Payment\New.cshtml" />
+    <Content Include="Views\Tasks\Payment\Verification.cshtml" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

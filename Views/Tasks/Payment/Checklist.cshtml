@@ -1,0 +1,15 @@
+﻿@using MixERP.Purchases.Extensions
+@model long
+
+@{
+    ViewBag.Title = I18N.Checklist;
+    Layout = ViewBag.SalesLayoutPath;
+}
+@Html.FinancePartialView("Shared/Checklist.cshtml", TenantConvention.GetTenant())
+
+
+<script>
+    window.overridePath = "/dashboard/purchase/tasks/entry";
+    window.tranId = "@Model";
+</script>
+<script src="/Areas/MixERP.Purchases/scripts/tasks/payment/checklist.js"></script>

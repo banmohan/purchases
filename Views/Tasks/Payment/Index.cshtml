@@ -1,0 +1,12 @@
+﻿@using MixERP.Purchases.Extensions
+@model dynamic
+
+@{
+    ViewBag.Title = I18N.PaymentToSupplier;
+    Layout = ViewBag.SalesLayoutPath;
+}
+
+@Html.FinancePartialView("Shared/JournalView.cshtml", TenantConvention.GetTenant())
+
+<script src="/Areas/MixERP.Purchases/scripts/tasks/payment/index.js"></script>
+

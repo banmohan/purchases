@@ -1,0 +1,12 @@
+﻿@using MixERP.Purchases.Extensions
+@model dynamic
+
+@{
+    ViewBag.Title = I18N.PaymentVerification;
+    Layout = ViewBag.SalesLayoutPath;
+}
+
+
+@Html.FinancePartialView("Shared/Verification.cshtml", TenantConvention.GetTenant())
+
+<script src="/Areas/MixERP.Purchases/scripts/tasks/payment/verification.js"></script>
