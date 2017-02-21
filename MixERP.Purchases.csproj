@@ -201,7 +201,7 @@
     <Content Include="scripts\tasks\payment\index.js" />
     <Content Include="scripts\tasks\payment\new.js" />
     <Content Include="scripts\tasks\payment\verification.js" />
-    <Content Include="Styles\checkout.css" />
+    <Content Include="styles\checkout.css" />
     <Content Include="Views\web.config" />
   </ItemGroup>
   <ItemGroup>

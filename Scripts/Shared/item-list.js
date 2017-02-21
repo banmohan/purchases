@@ -526,27 +526,6 @@ function clearScreen() {
     window.updateTotal();
 };
 
-function displayFieldBinder(el, url) {
-    function request() {
-        return window.getAjaxRequest(url);
-    };
-
-    const ajax = request();
-
-    ajax.success(function(response) {
-        var options = "";
-
-        $.each(response, function() {
-            var option = "<option value='{key}'>{value}</option>";
-            option = option.replace("{key}", this.Key);
-            option = option.replace("{value}", this.Value);
-
-            options += option;
-        });
-
-        el.html(options);
-    });
-};
 
 function loadStores() {
     displayFieldBinder($("#StoreSelect"), "/api/forms/inventory/stores/display-fields");
