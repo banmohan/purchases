@@ -664,3 +664,7 @@ select.inverted {
     width: 100%;
     -moz-appearance: none; /* Firefox */
 }
+
+.summary.items select {
+    height:3em!important;
+}
