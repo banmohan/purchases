@@ -17,6 +17,7 @@
     scrudFactory.formTableName = "inventory.suppliers";
 
     scrudFactory.excludedColumns = ["AuditUserId", "AuditTs", "Deleted"];
+    scrudFactory.hiddenColumns = ["AccountId"];
     scrudFactory.uploadHanlder = "/dashboard/inventory/services/attachments";
 
 
@@ -49,13 +50,6 @@
         {
             property: "SupplierTypeId",
             url: '/api/forms/inventory/supplier-types/display-fields',
-            data: null,
-            valueField: "Key",
-            textField: "Value"
-        },
-        {
-            property: "AccountId",
-            url: '/api/forms/finance/accounts/display-fields',
             data: null,
             valueField: "Key",
             textField: "Value"
