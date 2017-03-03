@@ -10,6 +10,7 @@
 	"RealeasedOn": null,
 	"Description": "MixERP Purchase Management App",
 	"Category": "ERP",
+	"Hasi18N": true,
 	"Bundle": "MixERP 2.0",
     "IsMeta": false,
 	"DbSchema": "purchase",
