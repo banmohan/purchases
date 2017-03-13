@@ -196,6 +196,27 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Reports\AccountPayables.SqlServer.xml" />
+    <Content Include="Reports\AccountPayables.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Reports\Invoice.xml" />
+    <Content Include="Reports\LowInventory.SqlServer.xml" />
+    <Content Include="Reports\LowInventory.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Reports\Order.xml" />
+    <Content Include="Reports\OutOfStock.SqlServer.xml" />
+    <Content Include="Reports\OutOfStock.xml" />
+    <Content Include="Reports\Payment.xml" />
+    <Content Include="Reports\Quotation.xml" />
+    <Content Include="Reports\Return.xml" />
+    <Content Include="Reports\PurchaseDiscountStatus.SqlServer.xml" />
+    <Content Include="Reports\PurchaseDiscountStatus.xml" />
+    <Content Include="Reports\SupplierContacts.SqlServer.xml" />
+    <Content Include="Reports\SupplierContacts.xml" />
+    <Content Include="Reports\TopSuppliers.SqlServer.xml" />
+    <Content Include="Reports\TopSuppliers.xml" />
     <Content Include="scripts\shared\item-list.js" />
     <Content Include="scripts\tasks\payment\checklist.js" />
     <Content Include="scripts\tasks\payment\index.js" />

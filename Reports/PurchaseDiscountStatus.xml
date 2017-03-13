@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FrapidReport>
+  <Header />
+  <Title>Supplier discount Status Report</Title>
+  <TopSection>
+  </TopSection>
+  <Body>
+    <Content>
+      <div class='center aligned'>
+        <h4>As of {Query.From} and {Query.To}</h4>
+      </div>
+    </Content>
+    <GridViews>
+      <GridView>
+        <GridViewDataSource Index="0"></GridViewDataSource>
+      </GridView>
+    </GridViews>
+  </Body>
+  <BottomSection>
+  </BottomSection>
+  <DataSources>
+    <DataSource>
+      <Query>
+        WITH all_discount AS
+        (
+        SELECT 
+	        checkouts.value_date,
+	        suppliers.supplier_name,
+	        SUM(checkout_detail_view.total) + SUM(checkout_detail_view.discount) AS purchase_amount,
+	        SUM(checkout_detail_view.total - checkouts.discount) AS invoicing_amount
+        FROM purchase.purchases
+        LEFT JOIN inventory.checkouts
+        ON checkouts.checkout_id = purchases.checkout_id
+        LEFT JOIN inventory.checkout_detail_view
+        ON checkout_detail_view.checkout_id = checkouts.checkout_id
+        LEFT JOIN inventory.suppliers
+        ON suppliers.supplier_id = purchases.supplier_id
+        LEFT JOIN finance.transaction_master
+        ON  transaction_master.transaction_master_id = checkout_detail_view.transaction_master_id
+        WHERE NOT checkouts.deleted 
+        AND NOT suppliers.deleted
+        AND transaction_master.verification_status_id > 0
+        AND checkouts.value_date BETWEEN @From::date AND @To::date
+        AND COALESCE(@SupplierId::int, 0) = 0 OR purchases.supplier_id = @SupplierId::int
+        GROUP BY checkouts.checkout_id, checkouts.value_date, supplier_name, checkouts.discount
+        )
+        SELECT 
+	        value_date,
+	        supplier_name,
+	        purchase_amount,
+	        invoicing_amount,
+	        purchase_amount - invoicing_amount as difference_amount
+        FROM all_discount
+        ORDER BY value_date;
+      </Query>
+      <Parameters>
+        <Parameter Name="@SupplierId" FieldLabel="Supplier" Type="int" PopulateFrom="/api/views/inventory/suppliers/display-fields" KeyField="Key" ValueField="Value" Optional="true"/>
+        <Parameter Name="@From" FieldLabel="From Date" Type="System.DateTime" />
+        <Parameter Name="@To" FieldLabel="To Date" Type="System.DateTime" />
+      </Parameters>
+      <RunningTotalTextColumnIndex>1</RunningTotalTextColumnIndex>
+      <RunningTotalFieldIndices>2, 3, 4</RunningTotalFieldIndices>
+    </DataSource>
+  </DataSources>
+</FrapidReport>
