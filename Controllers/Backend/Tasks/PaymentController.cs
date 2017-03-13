@@ -7,6 +7,7 @@ using Frapid.Areas.CSRF;
 using Frapid.Dashboard;
 using MixERP.Purchases.DAL.Backend.Tasks;
 using MixERP.Purchases.ViewModels;
+using Frapid.DataAccess.Models;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
@@ -15,6 +16,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
     {
         [Route("dashboard/purchase/tasks/payment/checklist/{tranId}")]
         [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/payment")]
+        [AccessPolicy("purchase", "supplier_payments", AccessTypeEnum.Read)]
         public ActionResult CheckList(long tranId)
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Payment/CheckList.cshtml", this.Tenant), tranId);
@@ -22,6 +24,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/payment")]
         [MenuPolicy]
+        [AccessPolicy("purchase", "supplier_payments", AccessTypeEnum.Read)]
         public ActionResult Index()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Payment/Index.cshtml", this.Tenant));
@@ -29,6 +32,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/payment/verification")]
         [MenuPolicy]
+        [AccessPolicy("purchase", "supplier_payments", AccessTypeEnum.Verify)]
         public ActionResult Verification()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Payment/Verification.cshtml", this.Tenant));
@@ -36,6 +40,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/payment/new")]
         [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/payment")]
+        [AccessPolicy("purchase", "supplier_payments", AccessTypeEnum.Read)]
         public ActionResult New()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Payment/New.cshtml", this.Tenant));
@@ -71,6 +76,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/payment/supplier/transaction-summary/{supplierId}")]
         [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/payment")]
+        [AccessPolicy("purchase", "supplier_payments", AccessTypeEnum.Read)]
         public async Task<ActionResult> GetSupplierTransactionSummaryAsync(int supplierId)
         {
             if (supplierId <= 0)
@@ -85,6 +91,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [HttpPost]
         [Route("dashboard/purchase/tasks/payment/new")]
+        [AccessPolicy("purchase", "supplier_payments", AccessTypeEnum.Create)]
         public async Task<ActionResult> PostAsync(Payment model)
         {
             if (!this.ModelState.IsValid)

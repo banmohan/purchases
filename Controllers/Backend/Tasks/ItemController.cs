@@ -1,12 +1,15 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using MixERP.Purchases.DAL.Backend.Service;
+using Frapid.DataAccess.Models;
+using Frapid.Dashboard;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
     public class ItemController : PurchaseDashboardController
     {
         [Route("dashboard/purchase/tasks/items")]
+        [AccessPolicy("purchase", "item_view", AccessTypeEnum.Read)]
         public async Task<ActionResult> IndexAsync()
         {
             var model = await Items.GetItemsAsync(this.Tenant).ConfigureAwait(true);
