@@ -64,9 +64,3 @@ $$
 LANGUAGE plpgsql;
 
 
-
-REFRESH MATERIALIZED VIEW finance.trial_balance_view;
-REFRESH MATERIALIZED VIEW inventory.verified_checkout_view;
-REFRESH MATERIALIZED VIEW finance.verified_transaction_mat_view;
-REFRESH MATERIALIZED VIEW finance.verified_cash_transaction_mat_view;
-
