@@ -6,6 +6,7 @@ using Frapid.ApplicationState.Cache;
 using Frapid.Dashboard;
 using MixERP.Purchases.ViewModels;
 using Frapid.Areas.CSRF;
+using Frapid.DataAccess.Models;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
@@ -14,6 +15,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
     {
         [Route("dashboard/purchase/tasks/entry/checklist/{tranId}")]
         [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/entry")]
+        [AccessPolicy("purchase", "purchases", AccessTypeEnum.Read)]
         public ActionResult CheckList(long tranId)
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Entry/CheckList.cshtml", this.Tenant), tranId);
@@ -21,6 +23,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/entry")]
         [MenuPolicy]
+        [AccessPolicy("purchase", "purchases", AccessTypeEnum.Read)]
         public ActionResult Index()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Entry/Index.cshtml", this.Tenant));
@@ -28,6 +31,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/entry/verification")]
         [MenuPolicy]
+        [AccessPolicy("purchase", "purchases", AccessTypeEnum.Verify)]
         public ActionResult Verification()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Entry/Verification.cshtml", this.Tenant));
@@ -35,6 +39,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/entry/new")]
         [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/entry")]
+        [AccessPolicy("purchase", "purchases", AccessTypeEnum.Read)]
         public ActionResult New()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Entry/New.cshtml", this.Tenant));
@@ -42,6 +47,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/entry/new")]
         [HttpPost]
+        [AccessPolicy("purchase", "purchases", AccessTypeEnum.Create)]
         public async Task<ActionResult> PostAsync(Purchase model)
         {
             if (!this.ModelState.IsValid)

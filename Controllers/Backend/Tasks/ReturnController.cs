@@ -4,6 +4,7 @@ using Frapid.ApplicationState.Cache;
 using Frapid.Dashboard;
 using MixERP.Purchases.ViewModels;
 using Frapid.Areas.CSRF;
+using Frapid.DataAccess.Models;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
@@ -12,6 +13,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
     {
         [Route("dashboard/purchase/tasks/return/checklist/{tranId}")]
         [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/return")]
+        [AccessPolicy("purchase", "purchase_returns", AccessTypeEnum.Read)]
         public ActionResult CheckList(long tranId)
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Return/CheckList.cshtml", this.Tenant), tranId);
@@ -19,6 +21,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/return")]
         [MenuPolicy]
+        [AccessPolicy("purchase", "purchase_returns", AccessTypeEnum.Read)]
         public ActionResult Index()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Return/Index.cshtml", this.Tenant));
@@ -26,6 +29,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/return/verification")]
         [MenuPolicy]
+        [AccessPolicy("purchase", "purchase_returns", AccessTypeEnum.Read)]
         public ActionResult Verification()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Return/Verification.cshtml", this.Tenant));
@@ -33,6 +37,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/return/new")]
         [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/return")]
+        [AccessPolicy("purchase", "purchase_returns", AccessTypeEnum.Read)]
         public ActionResult New()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Return/New.cshtml", this.Tenant));
@@ -40,6 +45,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/return/new")]
         [HttpPost]
+        [AccessPolicy("purchase", "purchase_returns", AccessTypeEnum.Create)]
         public async Task<ActionResult> PostAsync(PurchaseReturn model)
         {
             if (!this.ModelState.IsValid)

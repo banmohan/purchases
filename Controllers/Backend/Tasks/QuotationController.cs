@@ -8,6 +8,7 @@ using MixERP.Purchases.DAL.Backend.Tasks;
 using MixERP.Purchases.DTO;
 using MixERP.Purchases.QueryModels;
 using Frapid.Areas.CSRF;
+using Frapid.DataAccess.Models;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
@@ -16,6 +17,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
     {
         [Route("dashboard/purchase/tasks/quotation/checklist/{tranId}")]
         [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/quotation")]
+        [AccessPolicy("purchase", "quotations", AccessTypeEnum.Read)]
         public ActionResult CheckList(long tranId)
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Quotation/CheckList.cshtml", this.Tenant), tranId);
@@ -23,6 +25,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/quotation/view")]
         [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/quotation")]
+        [AccessPolicy("purchase", "quotations", AccessTypeEnum.Read)]
         public async Task<ActionResult> ViewAsync(QuotationQueryModel query)
         {
             try
@@ -43,6 +46,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/quotation")]
         [MenuPolicy]
+        [AccessPolicy("purchase", "quotations", AccessTypeEnum.Read)]
         public ActionResult Index()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Quotation/Index.cshtml", this.Tenant));
@@ -57,6 +61,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/quotation/new")]
         [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/quotation")]
+        [AccessPolicy("purchase", "quotations", AccessTypeEnum.Read)]
         public ActionResult New()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Quotation/New.cshtml", this.Tenant));
@@ -64,6 +69,7 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
         [Route("dashboard/purchase/tasks/quotation/new")]
         [HttpPost]
+        [AccessPolicy("purchase", "quotations", AccessTypeEnum.Create)]
         public async Task<ActionResult> PostAsync(Quotation model)
         {
             if (!this.ModelState.IsValid)
