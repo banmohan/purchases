@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FrapidReport>
+  <Header />
+  <Title>Payment Journal Summary</Title>
+  <Body>
+    <Content>
+      <div class='center aligned'>
+        <h3>As of {Query.From} and {Query.To}</h3>
+      </div>
+    </Content>
+    <GridViews>
+      <GridView>
+        <GridViewDataSource Index="0">
+        </GridViewDataSource>
+      </GridView>
+    </GridViews>
+  </Body>
+  <BottomSection>
+  </BottomSection>
+  <DataSources>
+    <DataSource>
+      <Query>
+        WITH report_data AS
+        (
+            SELECT
+                supplier_payments.supplier_id,
+                transaction_master.value_date AS posted_date,
+                suppliers.supplier_name,
+                '' AS bank_name,
+                null::decimal AS bank,
+                supplier_payments.amount as cash,
+                supplier_payments.amount as total,
+                transaction_master.statement_reference
+            FROM purchase.supplier_payments
+            LEFT JOIN inventory.suppliers ON suppliers.supplier_id = supplier_payments.supplier_id
+            LEFT JOIN finance.transaction_master ON transaction_master.transaction_master_id = supplier_payments.transaction_master_id
+            WHERE transaction_master.verification_status_id &gt; 0
+            AND NOT transaction_master.deleted
+            AND NOT suppliers.deleted
+			      AND transaction_master.office_id IN (SELECT get_office_ids FROM core.get_office_ids(@OfficeId::int))
+            AND COALESCE(supplier_payments.cash_repository_id, 0) &gt; 0
+            AND COALESCE(supplier_payments.bank_id, 0) = 0
+            UNION ALL
+
+            SELECT
+                supplier_payments.supplier_id,
+                transaction_master.value_date AS posted_date,
+                suppliers.supplier_name,
+                bank_accounts.bank_account_name AS bank_name,
+                supplier_payments.amount AS bank,
+                null::decimal AS cash,
+                supplier_payments.amount AS total,
+                transaction_master.statement_reference
+            FROM purchase.supplier_payments
+            LEFT JOIN inventory.suppliers ON suppliers.supplier_id = supplier_payments.supplier_id
+            LEFT JOIN finance.transaction_master ON transaction_master.transaction_master_id = supplier_payments.transaction_master_id
+            LEFT JOIN finance.bank_accounts ON bank_accounts.bank_account_id = supplier_payments.bank_id
+            WHERE transaction_master.verification_status_id &gt; 0
+            AND NOT transaction_master.deleted
+            AND NOT suppliers.deleted
+			      AND transaction_master.office_id IN (SELECT get_office_ids FROM core.get_office_ids(@OfficeId))
+            AND COALESCE(supplier_payments.cash_repository_id, 0) = 0
+            AND COALESCE(supplier_payments.bank_id, 0) &gt; 0
+        )
+        SELECT * FROM report_data
+        WHERE COALESCE(@SupplierId::integer, 0) = 0 OR supplier_id = @SupplierId::integer
+        AND posted_date BETWEEN @From::date AND @To::date
+        ORDER BY posted_date;
+      </Query>
+      <Parameters>
+        <Parameter Name="@OfficeId" FieldLabel="Office Id" Type="int"  DefaultValue="{Meta.OfficeId}" />
+        <Parameter Name="@SupplierId" FieldLabel="Supplier" Type="int" PopulateFrom="/api/views/inventory/suppliers/display-fields" KeyField="Key" ValueField="Value" Optional="True"/>
+        <Parameter Name="@From" FieldLabel="From Date" Type="System.DateTime" />
+        <Parameter Name="@To" FieldLabel="To Date" Type="System.DateTime" />
+      </Parameters>
+      <RunningTotalTextColumnIndex>3</RunningTotalTextColumnIndex>
+      <RunningTotalFieldIndices>4, 5, 6</RunningTotalFieldIndices>
+    </DataSource>
+  </DataSources>
+</FrapidReport>

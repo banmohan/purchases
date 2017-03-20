@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FrapidReport>
+  <Header />
+  <Title>Account Payable Vendor</Title>
+  <Body>
+    <Content>
+      <div class='center aligned'>
+        <h3>As of {Query.From} and {Query.To}</h3>
+      </div>
+    </Content>
+    <GridViews>
+      <GridView>
+        <GridViewDataSource Index="0">
+        </GridViewDataSource>
+      </GridView>
+    </GridViews>
+  </Body>
+  <BottomSection>
+  </BottomSection>
+  <DataSources>
+    <DataSource>
+      <Query>
+       WITH invoice_purchases AS
+        (
+          SELECT
+            purchases.supplier_id,
+            SUM(checkout_detail_view.total) AS amount
+          FROM purchase.purchases
+		      LEFT JOIN inventory.checkout_detail_view
+		      ON checkout_detail_view.checkout_id = purchases.checkout_id
+          LEFT JOIN finance.transaction_master
+          ON transaction_master.transaction_master_id = checkout_detail_view.transaction_master_id
+          WHERE transaction_master.verification_status_id &gt; 0
+          AND NOT transaction_master.deleted
+			    AND transaction_master.office_id IN (SELECT get_office_ids FROM core.get_office_ids(@OfficeId::int))
+          AND transaction_master.value_date BETWEEN @From::date AND @To::date
+          GROUP BY supplier_id
+          ), bank AS
+          (
+          SELECT
+            supplier_payments.supplier_id,
+            SUM(supplier_payments.amount) AS amount
+          FROM purchase.supplier_payments
+          LEFT JOIN finance.transaction_master
+          ON transaction_master.transaction_master_id = supplier_payments.transaction_master_id
+          WHERE COALESCE(supplier_payments.cash_repository_id, 0) = 0
+          AND transaction_master.verification_status_id &gt; 0
+          AND NOT transaction_master.deleted
+			    AND transaction_master.office_id IN (SELECT get_office_ids FROM core.get_office_ids(@OfficeId::int))
+          AND transaction_master.value_date BETWEEN @From::date AND @To::date
+          GROUP BY supplier_id
+          ), cash AS
+          (
+          SELECT
+            supplier_payments.supplier_id,
+            SUM(supplier_payments.amount) AS amount
+          FROM purchase.supplier_payments
+          LEFT JOIN finance.transaction_master
+          ON transaction_master.transaction_master_id = supplier_payments.transaction_master_id
+          WHERE COALESCE(supplier_payments.cash_repository_id, 0) &gt; 0
+          AND COALESCE(supplier_payments.check_amount, 0) = 0
+          AND transaction_master.verification_status_id &gt; 0
+          AND NOT transaction_master.deleted
+			    AND transaction_master.office_id IN (SELECT get_office_ids FROM core.get_office_ids(@OfficeId::int))
+          AND transaction_master.value_date BETWEEN @From::date AND @To::date
+          GROUP BY supplier_payments.supplier_id
+          ), all_data AS
+          (
+          SELECT
+            supplier_id,
+            amount AS invoice_purchases,
+            null::decimal AS bank,
+            null::decimal AS cash
+          FROM invoice_purchases
+          UNION ALL
+
+          SELECT
+            supplier_id,
+            null::decimal AS total_payment,
+            amount AS bank,
+            null::decimal AS cash
+          FROM bank
+          UNION ALL
+
+          SELECT
+            supplier_id,
+            null::decimal AS total_payment,
+            null::decimal AS bank,
+            amount AS cash
+          FROM cash
+          )
+          SELECT
+            suppliers.supplier_code,
+            suppliers.supplier_name,
+            SUM(COALESCE(invoice_purchases, 0)) AS invoice_purchases,
+            SUM(COALESCE(cash, 0)) AS cash,
+            SUM(COALESCE(bank, 0)) AS bank,
+            SUM(COALESCE(cash, 0)) + sum(COALESCE(bank, 0)) AS total_sales,
+            SUM(COALESCE(invoice_purchases, 0)) - (SUM(COALESCE(cash, 0)) + sum(COALESCE(bank, 0))) AS balance
+          FROM all_data
+          LEFT JOIN inventory.suppliers
+          ON suppliers.supplier_id = all_data.supplier_id
+          WHERE NOT suppliers.deleted
+          AND COALESCE(@SupplierId::integer, 0) = 0 OR all_data.supplier_id = @SupplierId::integer
+          GROUP BY suppliers.supplier_code, suppliers.supplier_name;
+      </Query>
+      <Parameters>
+        <Parameter Name="@OfficeId" FieldLabel="Office Id" Type="int"  DefaultValue="{Meta.OfficeId}" />
+        <Parameter Name="@SupplierId" FieldLabel="Supplier" Type="int" PopulateFrom="/api/views/inventory/suppliers/display-fields" KeyField="Key" ValueField="Value" Optional="true" />
+        <Parameter Name="@From" FieldLabel="From Date" Type="System.DateTime" />
+        <Parameter Name="@To" FieldLabel="To Date" Type="System.DateTime" />
+      </Parameters>
+      <RunningTotalTextColumnIndex>1</RunningTotalTextColumnIndex>
+      <RunningTotalFieldIndices>2, 3, 4, 5, 6</RunningTotalFieldIndices>
+    </DataSource>
+  </DataSources>
+</FrapidReport>
