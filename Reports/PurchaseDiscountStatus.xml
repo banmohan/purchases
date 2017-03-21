@@ -27,7 +27,7 @@
 	        checkouts.value_date,
 	        suppliers.supplier_name,
 	        SUM(checkout_detail_view.total) + SUM(checkout_detail_view.discount) AS purchase_amount,
-	        SUM(checkout_detail_view.total - checkouts.discount) AS invoicing_amount
+	        SUM(checkout_detail_view.total) AS invoicing_amount
         FROM purchase.purchases
         LEFT JOIN inventory.checkouts
         ON checkouts.checkout_id = purchases.checkout_id
@@ -40,6 +40,7 @@
         WHERE NOT checkouts.deleted 
         AND NOT suppliers.deleted
         AND transaction_master.verification_status_id > 0
+			  AND transaction_master.office_id IN (SELECT get_office_ids FROM core.get_office_ids(@OfficeId::int))
         AND checkouts.value_date BETWEEN @From::date AND @To::date
         AND COALESCE(@SupplierId::int, 0) = 0 OR purchases.supplier_id = @SupplierId::int
         GROUP BY checkouts.checkout_id, checkouts.value_date, supplier_name, checkouts.discount
@@ -54,6 +55,7 @@
         ORDER BY value_date;
       </Query>
       <Parameters>
+        <Parameter Name="@OfficeId" FieldLabel="Office Id" Type="int"  DefaultValue="{Meta.OfficeId}" />
         <Parameter Name="@SupplierId" FieldLabel="Supplier" Type="int" PopulateFrom="/api/views/inventory/suppliers/display-fields" KeyField="Key" ValueField="Value" Optional="true"/>
         <Parameter Name="@From" FieldLabel="From Date" Type="System.DateTime" />
         <Parameter Name="@To" FieldLabel="To Date" Type="System.DateTime" />
