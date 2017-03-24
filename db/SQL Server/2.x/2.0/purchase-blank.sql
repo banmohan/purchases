@@ -1260,8 +1260,9 @@ RETURNS @results TABLE
 )
 AS
 BEGIN
-    INSERT INTO @results(office_id, office_name, account_id)
+    INSERT INTO @results(account_id, office_name, office_id)
     SELECT DISTINCT inventory.suppliers.account_id, core.get_office_name_by_office_id(@office_id), @office_id FROM inventory.suppliers;
+
 
     UPDATE @results
     SET
@@ -1294,6 +1295,7 @@ BEGIN
     )
 	FROM @results  results;
 
+
     UPDATE @results
     SET current_period = 
     (        
@@ -1318,6 +1320,11 @@ BEGIN
     UPDATE @results
     SET total_amount = COALESCE(results.previous_period, 0) + COALESCE(results.current_period, 0)
 	FROM @results AS results;
+
+	DELETE FROM @results
+	WHERE COALESCE(previous_period, 0) = 0
+	AND COALESCE(current_period, 0) = 0
+	AND COALESCE(total_amount, 0) = 0;
     
     RETURN;
 END
@@ -1325,6 +1332,7 @@ END
 GO
 
 --SELECT * FROM purchase.get_account_payables_report(1, '1-1-2000');
+
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/05.scrud-views/purchase.item_cost_price_scrud_view.sql --<--<--
