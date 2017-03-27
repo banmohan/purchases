@@ -71,6 +71,7 @@ BEGIN
         base_quantity                       decimal(30, 6),
         base_unit_id                        integer,                
         price                               public.money_strict,
+        discount_rate                       decimal(30, 6),
         discount                            public.money_strict2,
         tax                                 public.money_strict2,
         shipping_charge                     public.money_strict2,
@@ -115,8 +116,8 @@ BEGIN
 	WHERE inventory.checkouts.transaction_master_id = _transaction_master_id
 	AND NOT inventory.checkouts.deleted;
 
-    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge)
-	SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge
+    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
+	SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
 	FROM explode_array(_details);
 
     UPDATE temp_checkout_details 
@@ -125,7 +126,8 @@ BEGIN
         base_unit_id                    = inventory.get_root_unit_id(unit_id),
         purchase_account_id             = inventory.get_purchase_account_id(item_id),
         purchase_discount_account_id    = inventory.get_purchase_discount_account_id(item_id),
-        inventory_account_id            = inventory.get_inventory_account_id(item_id);    
+        inventory_account_id            = inventory.get_inventory_account_id(item_id),
+        discount                        = ROUND((price * quantity) * (discount_rate / 100), 2);
 
 
     IF EXISTS

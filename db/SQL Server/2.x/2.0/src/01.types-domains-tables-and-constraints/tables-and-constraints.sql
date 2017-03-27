@@ -176,7 +176,7 @@ AS TABLE
     quantity            decimal(30, 6),
     unit_id             integer,
     price               decimal(30, 6),
-    discount            decimal(30, 6),
+    discount_rate       decimal(30, 6),
     tax                 decimal(30, 6),
     shipping_charge     decimal(30, 6)
 );

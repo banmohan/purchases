@@ -177,7 +177,7 @@ AS TABLE
     quantity            decimal(30, 6),
     unit_id             integer,
     price               decimal(30, 6),
-    discount            decimal(30, 6),
+    discount_rate       decimal(30, 6),
     tax                 decimal(30, 6),
     shipping_charge     decimal(30, 6)
 );
@@ -562,6 +562,7 @@ BEGIN
         base_unit_id                        integer,
         price                               decimal(30, 6) NOT NULL DEFAULT(0),
         cost_of_goods_sold                  decimal(30, 6) NOT NULL DEFAULT(0),
+        discount_rate                       decimal(30, 6),
         discount                            decimal(30, 6) NOT NULL DEFAULT(0),
         tax                                 decimal(30, 6) NOT NULL DEFAULT(0),
         shipping_charge                     decimal(30, 6) NOT NULL DEFAULT(0),
@@ -612,8 +613,8 @@ BEGIN
 
 
 
-        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge)
-        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge
+        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
+        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
         FROM @details;
 
 
@@ -623,7 +624,8 @@ BEGIN
             base_unit_id                    = inventory.get_root_unit_id(unit_id),
             purchase_account_id             = inventory.get_purchase_account_id(item_id),
             purchase_discount_account_id    = inventory.get_purchase_discount_account_id(item_id),
-            inventory_account_id            = inventory.get_inventory_account_id(item_id);    
+            inventory_account_id            = inventory.get_inventory_account_id(item_id),
+            discount                        = ROUND((price * quantity) * (discount_rate / 100), 2);
         
         IF EXISTS
         (
@@ -792,6 +794,7 @@ BEGIN
         base_quantity                       decimal(30, 6),
         base_unit_id                        integer,                
         price                               decimal(30, 6),
+        discount_rate                       decimal(30, 6),
         discount                            decimal(30, 6),
         tax                                 decimal(30, 6),
         shipping_charge                     decimal(30, 6),
@@ -856,8 +859,8 @@ BEGIN
         WHERE inventory.checkouts.transaction_master_id = @transaction_master_id
         AND inventory.checkouts.deleted = 0;
 
-        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge)
-        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge
+        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
+        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
         FROM @details;
 
         UPDATE @checkout_details 
@@ -866,7 +869,8 @@ BEGIN
             base_unit_id                    = inventory.get_root_unit_id(unit_id),
             purchase_account_id             = inventory.get_purchase_account_id(item_id),
             purchase_discount_account_id    = inventory.get_purchase_discount_account_id(item_id),
-            inventory_account_id            = inventory.get_inventory_account_id(item_id);    
+            inventory_account_id            = inventory.get_inventory_account_id(item_id),
+            discount                        = ROUND((price * quantity) * (discount_rate / 100), 2);
 
         IF EXISTS
         (

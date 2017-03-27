@@ -61,7 +61,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
             table.Columns.Add("Quantity", typeof(decimal));
             table.Columns.Add("UnitId", typeof(int));
             table.Columns.Add("Price", typeof(decimal));
-            table.Columns.Add("Discount", typeof(decimal));
+            table.Columns.Add("DiscountRate", typeof(decimal));
             table.Columns.Add("Tax", typeof(decimal));
             table.Columns.Add("ShippingCharge", typeof(decimal));
 
@@ -74,7 +74,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
                 row["Quantity"] = detail.Quantity;
                 row["UnitId"] = detail.UnitId;
                 row["Price"] = detail.Price;
-                row["Discount"] = detail.Discount;
+                row["DiscountRate"] = detail.DiscountRate;
                 row["Tax"] = detail.Tax;
                 row["ShippingCharge"] = detail.ShippingCharge;
 

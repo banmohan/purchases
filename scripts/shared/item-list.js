@@ -364,22 +364,21 @@ function updateTotal() {
     var totalPrice = 0;
     //var totalQuantity = 0;
 
-    $.each(candidates, function() {
+    $.each(candidates, function () {
         const el = $(this);
         const quantityEl = el.find("input.quantity");
         const discountEl = el.find("input.discount");
 
-        const quantity = parseInt(quantityEl.val() || 0);
-        const discountRate = parseFloat(discountEl.val().replace("%", ""));
-        const price = parseFloat(el.find("input.price").val());
-        //var price = parseFloat(el.attr("data-price") || 0);
+        const quantity = parseFloat(quantityEl.val()) || 0;
+        const discountRate = parseFloat(discountEl.val()) || 0;
+        const price = parseFloat(el.find("input.price").val()) || 0;
 
         const amount = price * quantity;
         const discountedAmount = amount * ((100 - discountRate) / 100);
-
-        totalPrice += (discountedAmount || amount);
-        //totalQuantity += quantity;
+        const amountPlusTax = window.parseFloat2(el.find(".amount-plus-tax").html());
+        totalPrice += (amountPlusTax || discountedAmount || amount);
     });
+
 
     totalPrice = window.round(totalPrice, 2);
 

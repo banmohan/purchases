@@ -173,7 +173,7 @@ AS
     quantity            public.integer_strict,
     unit_id           	integer,
     price               public.money_strict,
-    discount            public.money_strict2,
+    discount_rate       public.money_strict2,
     tax                 public.money_strict2,
     shipping_charge     public.money_strict2
 );
