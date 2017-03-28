@@ -307,7 +307,7 @@ input.invoice.number.for.reprint {
 
     .purchase.items .item .block {
         display: inline-block;
-        height: 112px;
+        min-height: 112px;
         overflow: hidden;
     }
 

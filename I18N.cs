@@ -44,19 +44,14 @@ namespace MixERP.Purchases
 		public static string Tender => I18NResource.GetString(ResourceDirectory, "Tender");
 
 		/// <summary>
-		///Checkout Id
+		///Posted Date
 		/// </summary>
-		public static string CheckoutId => I18NResource.GetString(ResourceDirectory, "CheckoutId");
+		public static string PostedDate => I18NResource.GetString(ResourceDirectory, "PostedDate");
 
 		/// <summary>
 		///Unit Code
 		/// </summary>
 		public static string UnitCode => I18NResource.GetString(ResourceDirectory, "UnitCode");
-
-		/// <summary>
-		///Posted Date
-		/// </summary>
-		public static string PostedDate => I18NResource.GetString(ResourceDirectory, "PostedDate");
 
 		/// <summary>
 		///Supplier
@@ -144,11 +139,6 @@ namespace MixERP.Purchases
 		public static string CheckBankName => I18NResource.GetString(ResourceDirectory, "CheckBankName");
 
 		/// <summary>
-		///Purchase Return Id
-		/// </summary>
-		public static string PurchaseReturnId => I18NResource.GetString(ResourceDirectory, "PurchaseReturnId");
-
-		/// <summary>
 		///Shipper Id
 		/// </summary>
 		public static string ShipperId => I18NResource.GetString(ResourceDirectory, "ShipperId");
@@ -159,19 +149,24 @@ namespace MixERP.Purchases
 		public static string IsTaxableItem => I18NResource.GetString(ResourceDirectory, "IsTaxableItem");
 
 		/// <summary>
+		///Purchase Return Id
+		/// </summary>
+		public static string PurchaseReturnId => I18NResource.GetString(ResourceDirectory, "PurchaseReturnId");
+
+		/// <summary>
 		///Item
 		/// </summary>
 		public static string Item => I18NResource.GetString(ResourceDirectory, "Item");
 
 		/// <summary>
-		///Item Cost Price Id
-		/// </summary>
-		public static string ItemCostPriceId => I18NResource.GetString(ResourceDirectory, "ItemCostPriceId");
-
-		/// <summary>
 		///Terms
 		/// </summary>
 		public static string Terms => I18NResource.GetString(ResourceDirectory, "Terms");
+
+		/// <summary>
+		///Item Cost Price Id
+		/// </summary>
+		public static string ItemCostPriceId => I18NResource.GetString(ResourceDirectory, "ItemCostPriceId");
 
 		/// <summary>
 		///Supplier Id
@@ -214,14 +209,14 @@ namespace MixERP.Purchases
 		public static string Amount => I18NResource.GetString(ResourceDirectory, "Amount");
 
 		/// <summary>
-		///Price Type Id
-		/// </summary>
-		public static string PriceTypeId => I18NResource.GetString(ResourceDirectory, "PriceTypeId");
-
-		/// <summary>
 		///Value Date
 		/// </summary>
 		public static string ValueDate => I18NResource.GetString(ResourceDirectory, "ValueDate");
+
+		/// <summary>
+		///Price Type Id
+		/// </summary>
+		public static string PriceTypeId => I18NResource.GetString(ResourceDirectory, "PriceTypeId");
 
 		/// <summary>
 		///Brand Id
@@ -244,24 +239,24 @@ namespace MixERP.Purchases
 		public static string Photo => I18NResource.GetString(ResourceDirectory, "Photo");
 
 		/// <summary>
-		///Hot Item
-		/// </summary>
-		public static string HotItem => I18NResource.GetString(ResourceDirectory, "HotItem");
-
-		/// <summary>
 		///Bank Instrument Code
 		/// </summary>
 		public static string BankInstrumentCode => I18NResource.GetString(ResourceDirectory, "BankInstrumentCode");
 
 		/// <summary>
-		///Item Type Name
+		///Hot Item
 		/// </summary>
-		public static string ItemTypeName => I18NResource.GetString(ResourceDirectory, "ItemTypeName");
+		public static string HotItem => I18NResource.GetString(ResourceDirectory, "HotItem");
 
 		/// <summary>
 		///Transaction Master Id
 		/// </summary>
 		public static string TransactionMasterId => I18NResource.GetString(ResourceDirectory, "TransactionMasterId");
+
+		/// <summary>
+		///Item Type Name
+		/// </summary>
+		public static string ItemTypeName => I18NResource.GetString(ResourceDirectory, "ItemTypeName");
 
 		/// <summary>
 		///Reference Number
@@ -359,14 +354,14 @@ namespace MixERP.Purchases
 		public static string Quantity => I18NResource.GetString(ResourceDirectory, "Quantity");
 
 		/// <summary>
-		///Preferred Supplier Id
-		/// </summary>
-		public static string PreferredSupplierId => I18NResource.GetString(ResourceDirectory, "PreferredSupplierId");
-
-		/// <summary>
 		///Check Number
 		/// </summary>
 		public static string CheckNumber => I18NResource.GetString(ResourceDirectory, "CheckNumber");
+
+		/// <summary>
+		///Preferred Supplier Id
+		/// </summary>
+		public static string PreferredSupplierId => I18NResource.GetString(ResourceDirectory, "PreferredSupplierId");
 
 		/// <summary>
 		///Item Group Id
@@ -374,14 +369,19 @@ namespace MixERP.Purchases
 		public static string ItemGroupId => I18NResource.GetString(ResourceDirectory, "ItemGroupId");
 
 		/// <summary>
+		///Brand Name
+		/// </summary>
+		public static string BrandName => I18NResource.GetString(ResourceDirectory, "BrandName");
+
+		/// <summary>
 		///Quotation Detail Id
 		/// </summary>
 		public static string QuotationDetailId => I18NResource.GetString(ResourceDirectory, "QuotationDetailId");
 
 		/// <summary>
-		///Brand Name
+		///Checkout Id
 		/// </summary>
-		public static string BrandName => I18NResource.GetString(ResourceDirectory, "BrandName");
+		public static string CheckoutId => I18NResource.GetString(ResourceDirectory, "CheckoutId");
 
 		/// <summary>
 		///Tasks

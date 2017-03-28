@@ -38,7 +38,7 @@ BEGIN
     DECLARE @tax_total                      decimal(30, 6);
     DECLARE @tax_account_id                 integer;
     DECLARE @shipping_charge                decimal(30, 6);
-    DECLARE @book_name                      national character varying(100) = 'Purchase';
+    DECLARE @book_name                      national character varying(100) = 'Purchase Entry';
 
     DECLARE @can_post_transaction           bit;
     DECLARE @error_message                  national character varying(MAX);
