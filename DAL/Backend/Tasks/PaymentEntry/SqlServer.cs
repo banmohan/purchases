@@ -19,7 +19,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PaymentEntry
                                     @ExchangeRateDebit, @ExchangeRateCredit, 
                                     @ReferenceNumber, @StatementReference, 
                                     @CostCenterId, @CashRepositoryId, 
-                                    @PostedDate, @BankAccountId, @BankInstrumentCode, @BankTranCode,
+                                    @PostedDate, @BankId, @BankInstrumentCode, @BankTranCode,
                                     @TransactionMasterId OUTPUT
                                 ;";
 
@@ -45,7 +45,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PaymentEntry
                     command.Parameters.AddWithNullableValue("@CostCenterId", model.CostCenterId);
                     command.Parameters.AddWithNullableValue("@CashRepositoryId", model.CashRepositoryId);
                     command.Parameters.AddWithNullableValue("@PostedDate", model.PostedDate);
-                    command.Parameters.AddWithNullableValue("@BankAccountId", model.BankAccountId);
+                    command.Parameters.AddWithNullableValue("@BankId", model.BankAccountId);
 
                     command.Parameters.AddWithNullableValue("@BankInstrumentCode", model.BankInstrumentCode);
                     command.Parameters.AddWithNullableValue("@BankTranCode", model.BankTransactionCode);

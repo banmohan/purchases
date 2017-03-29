@@ -19,7 +19,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PaymentEntry
                                 @ExchangeRateDebit::public.decimal_strict, @ExchangeRateCredit::public.decimal_strict, 
                                 @ReferenceNumber::national character varying(24), @StatementReference::national character varying(128), 
                                 @CostCenterId::integer, @CashRepositoryId::integer, 
-                                @PostedDate::date, @BankAccountId::integer, @BankInstrumentCode::national character varying(128), @BankTranCode::national character varying(128)
+                                @PostedDate::date, @BankId::integer, @BankInstrumentCode::national character varying(128), @BankTranCode::national character varying(128)
                             );";
 
 
@@ -44,7 +44,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PaymentEntry
                     command.Parameters.AddWithNullableValue("@CostCenterId", model.CostCenterId);
                     command.Parameters.AddWithNullableValue("@CashRepositoryId", model.CashRepositoryId);
                     command.Parameters.AddWithNullableValue("@PostedDate", model.PostedDate);
-                    command.Parameters.AddWithNullableValue("@BankAccountId", model.BankAccountId);
+                    command.Parameters.AddWithNullableValue("@BankId", model.BankAccountId);
                     command.Parameters.AddWithNullableValue("@BankInstrumentCode", model.BankInstrumentCode);
                     command.Parameters.AddWithNullableValue("@BankTranCode", model.BankTransactionCode);
 
