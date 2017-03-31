@@ -31,7 +31,7 @@
                     const unitId = parseInt(el.find("select.unit").val());
                     const price = parseFloat(el.find("input.price").val() || 0);
                     const discountRate = parseFloat(el.find("input.discount").val() || 0);
-                    const tax = parseFloat(el.find(".tax-amount").html() || 0);
+                    const tax = window.parseFloat2(el.find(".tax-amount").html() || 0);
 
                     model.push({
                         StoreId: $("#StoreSelect").val(),
