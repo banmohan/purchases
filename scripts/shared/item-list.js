@@ -146,9 +146,9 @@ function initializeClickAndAction() {
         var itemName = el.attr("data-item-name");
         var itemCode = el.attr("data-item-code");
         var itemId = el.attr("data-item-id");
-        var price = parseFloat(costPrice || 0);
+        var price = window.parseFloat2(costPrice || 0);
         var isTaxableItem = el.attr("data-is-taxable-item") === "true";
-        var taxRate = parseFloat($("#SalesTaxRateHidden").val());
+        var taxRate = window.parseFloat2($("#SalesTaxRateHidden").val());
 
         if (!price) {
             alert(window.translate("CannotAddItemBecausePriceZero"));
@@ -164,7 +164,7 @@ function initializeClickAndAction() {
             var existingQuantitySpan = existingEl.find("span.quantity");
             var existingQuantityInput = existingEl.find("input.quantity");
 
-            var quantity = parseInt(existingQuantitySpan.text() || 0);
+            var quantity = window.parseInt2(existingQuantitySpan.text() || 0);
             quantity++;
 
             existingQuantitySpan.text(quantity);
@@ -224,9 +224,9 @@ function initializeClickAndAction() {
             const quantityEl = el.find("input.quantity");
             const discountEl = el.find("input.discount");
 
-            const quantity = parseInt(quantityEl.val() || 0);
-            const discountRate = parseFloat(discountEl.val().replace("%", ""));
-            const price = parseFloat(el.find("input.price").val());
+            const quantity = window.parseInt2(quantityEl.val() || 0);
+            const discountRate = window.parseFloat2(discountEl.val().replace("%", ""));
+            const price = window.parseFloat2(el.find("input.price").val());
 
             const amount = window.round(price * quantity, 2);
             const discountedAmount = window.round((price * quantity) * ((100 - discountRate) / 100), 2);
@@ -270,7 +270,7 @@ function initializeClickAndAction() {
         discountInput.on("keyup", function() {
             const el = $(this);
 
-            const rate = parseFloat(el.val());
+            const rate = window.parseFloat2(el.val());
             if (rate > 100) {
                 el.val("100");
                 return;
@@ -314,7 +314,7 @@ function initializeClickAndAction() {
             };
 
             const itemId = el.attr("data-item-id");
-            const supplierId = parseInt($("#SupplierSelect").val() || 0);
+            const supplierId = window.parseInt2($("#SupplierSelect").val() || 0);
             const unitId = el.val();
 
             $(".pos.purchase.segment").addClass("loading");
@@ -369,9 +369,9 @@ function updateTotal() {
         const quantityEl = el.find("input.quantity");
         const discountEl = el.find("input.discount");
 
-        const quantity = parseFloat(quantityEl.val()) || 0;
-        const discountRate = parseFloat(discountEl.val()) || 0;
-        const price = parseFloat(el.find("input.price").val()) || 0;
+        const quantity = window.parseFloat2(quantityEl.val()) || 0;
+        const discountRate = window.parseFloat2(discountEl.val()) || 0;
+        const price = window.parseFloat2(el.find("input.price").val()) || 0;
 
         const amount = price * quantity;
         const discountedAmount = amount * ((100 - discountRate) / 100);
@@ -553,7 +553,7 @@ loadCostCenters();
 loadShippers();
 
 setTimeout(function() {
-    $(".decimal").number(true, window.currencyDecimalPlaces, ".", "");
+    window.setRegionalFormat();
 }, 100);
 
 function getTaxRate() {
@@ -569,7 +569,7 @@ function getTaxRate() {
     const ajax = request();
 
     ajax.success(function(response) {
-        const salesTaxRate = parseFloat(response[0].SalesTaxRate);
+        const salesTaxRate = window.parseFloat2(response[0].SalesTaxRate);
         $("#SalesTaxRateHidden").val(salesTaxRate);
     });
 };
