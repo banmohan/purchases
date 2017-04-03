@@ -294,14 +294,14 @@ namespace MixERP.Purchases
 		public static string ErDebit => I18NResource.GetString(ResourceDirectory, "ErDebit");
 
 		/// <summary>
-		///User Id
-		/// </summary>
-		public static string UserId => I18NResource.GetString(ResourceDirectory, "UserId");
-
-		/// <summary>
 		///Order Id
 		/// </summary>
 		public static string OrderId => I18NResource.GetString(ResourceDirectory, "OrderId");
+
+		/// <summary>
+		///User Id
+		/// </summary>
+		public static string UserId => I18NResource.GetString(ResourceDirectory, "UserId");
 
 		/// <summary>
 		///Order Detail Id
