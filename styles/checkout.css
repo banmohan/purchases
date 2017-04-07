@@ -3,7 +3,6 @@
 }
 
 .pos.purchase.segment {
-    font-size: 0.8em;
 }
 
 @media screen and (min-width: 1200px) {
@@ -174,9 +173,8 @@ input.invoice.number.for.reprint {
         display: inline-flex;
         background: linear-gradient(to top, #222, #575553);
         margin: 4px;
-        height: 280px;
-        padding: 0.5em;
-        width: 200px;
+        width: 124px;
+        height: 194px;
         cursor: pointer;
     }
 
@@ -185,6 +183,7 @@ input.invoice.number.for.reprint {
         }
 
         .item.list .item .info {
+	        margin-top:-0.2em!important;
             overflow: hidden;
         }
 
@@ -192,8 +191,8 @@ input.invoice.number.for.reprint {
             position: relative;
             top: -16px;
             left: -2px;
-            width: 200px;
-            height: 280px;
+            width: 124px;
+            height: 194px;
         }
 
 
@@ -204,28 +203,30 @@ input.invoice.number.for.reprint {
 
 
         .item.list .item .info .photo img {
-            height: 300px;
-            filter: grayscale(50%);
+            height: 194px;
+            filter: grayscale(60%);
         }
 
         .item.list .item .info .name {
-            font-size: 1.4em;
-            font-weight: 800;
+            font-size: 1.2em;
+            font-weight: 600;
             position: relative;
             z-index: 1;
-            top: -6.5em;
+            top: -5em;
             line-height: 1.2em;
             text-align: center;
             text-shadow: 2px 2px 5px black;
+			padding: 0.5em;
         }
 
         .item.list .item .info .price {
-            font-size: 3em;
+            font-size: 2em;
             font-weight: 300;
             text-align: right;
             position: relative;
             z-index: 1;
             top: 0.7em;
+            right: 0.25em;
             text-shadow: 2px 2px 6px #000;
             color: #eee;
         }
@@ -306,7 +307,7 @@ input.invoice.number.for.reprint {
 
     .purchase.items .item .block {
         display: inline-block;
-        height: 112px;
+        min-height: 112px;
         overflow: hidden;
     }
 

@@ -14,7 +14,7 @@ namespace MixERP.Purchases.ViewModels
         public int UnitId { get; set; }
         [Required]
         public decimal Price { get; set; }
-        public decimal Discount { get; set; }
+        public decimal DiscountRate { get; set; }
         public decimal Tax { get; set; }
         public decimal ShippingCharge { get; set; }
     }

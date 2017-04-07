@@ -16,7 +16,7 @@
         AddNewUrl: "/dashboard/purchase/tasks/entry/new",
         ReturnText: window.translate("Return"),
         ReturnUrl: "javascript:void(0);",
-        Book: "Purchase",
+        Book: "Purchase Entry",
         ChecklistUrl: "/dashboard/purchase/tasks/entry/checklist/{tranId}",
         AdviceButtons: [
             {
@@ -34,7 +34,7 @@
             if (selected.length) {
                 const row = selected.parent().parent().parent();
                 const id = row.find("td:nth-child(3)").html();
-                return parseInt(id);
+                return window.parseInt2(id);
             };
 
             return 0;

@@ -29,7 +29,7 @@ BEGIN
         total_amount                numeric(30, 6)
     ) ON COMMIT DROP;
 
-    INSERT INTO _results(office_id, office_name, account_id)
+    INSERT INTO _results(account_id, office_name, office_id)
     SELECT DISTINCT inventory.suppliers.account_id, core.get_office_name_by_office_id(_office_id), _office_id FROM inventory.suppliers;
 
     UPDATE _results
@@ -85,6 +85,11 @@ BEGIN
     UPDATE _results
     SET total_amount = COALESCE(_results.previous_period, 0) + COALESCE(_results.current_period, 0);
     
+	DELETE FROM _results
+	WHERE COALESCE(previous_period, 0) = 0
+	AND COALESCE(current_period, 0) = 0
+	AND COALESCE(total_amount, 0) = 0;
+
     RETURN QUERY
     SELECT * FROM _results;
 END

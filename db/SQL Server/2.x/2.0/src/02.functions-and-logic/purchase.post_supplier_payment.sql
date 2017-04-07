@@ -19,7 +19,7 @@ CREATE PROCEDURE purchase.post_supplier_payment
     @cost_center_id                             integer,
     @cash_repository_id                         integer,
     @posted_date                                date,
-    @bank_account_id                            integer,
+    @bank_id									integer,
     @bank_instrument_code                       national character varying(128),
     @bank_tran_code                             national character varying(128),
 	@transaction_master_id						bigint OUTPUT
@@ -29,6 +29,7 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
+	DECLARE @bank_account_id					integer = finance.get_account_id_by_bank_account_id(@bank_id);
     DECLARE @value_date                         date = finance.get_value_date(@office_id);
     DECLARE @book_date                          date = @value_date;
     DECLARE @book                               national character varying(50);
@@ -40,8 +41,8 @@ BEGIN
     DECLARE @lc_debit                           numeric(30, 6);
     DECLARE @lc_credit                          numeric(30, 6);
     DECLARE @is_cash                            bit;
-    DECLARE @can_post_transaction           bit;
-    DECLARE @error_message                  national character varying(MAX);
+    DECLARE @can_post_transaction				bit;
+    DECLARE @error_message						national character varying(MAX);
 
     BEGIN TRY
         DECLARE @tran_count int = @@TRANCOUNT;
@@ -64,7 +65,7 @@ BEGIN
 
 		IF(@cash_repository_id > 0)
 		BEGIN
-			IF(@posted_date IS NOT NULL OR @bank_account_id IS NOT NULL OR COALESCE(@bank_instrument_code, '') != '' OR COALESCE(@bank_tran_code, '') != '')
+			IF(@posted_date IS NOT NULL OR @bank_id IS NOT NULL OR COALESCE(@bank_instrument_code, '') != '' OR COALESCE(@bank_tran_code, '') != '')
 			BEGIN
 				RAISERROR('Invalid bank transaction information provided.', 16, 1);
 			END;
@@ -181,7 +182,7 @@ GO
 --     1, --@cost_center_id                             integer,
 --     1, --@cash_repository_id                         integer,
 --     NULL, --@posted_date                                date,
---     NULL, --@bank_account_id                            bigint,
+--     NULL, --@bank_id                            bigint,
 --     NULL, -- @bank_instrument_code                       national character varying(128),
 --     NULL, -- @bank_tran_code                             national character varying(128),
 --	 NULL

@@ -177,7 +177,7 @@ AS TABLE
     quantity            decimal(30, 6),
     unit_id             integer,
     price               decimal(30, 6),
-    discount            decimal(30, 6),
+    discount_rate       decimal(30, 6),
     tax                 decimal(30, 6),
     shipping_charge     decimal(30, 6)
 );
@@ -544,7 +544,7 @@ BEGIN
     DECLARE @tax_total                      decimal(30, 6);
     DECLARE @tax_account_id                 integer;
     DECLARE @shipping_charge                decimal(30, 6);
-    DECLARE @book_name                      national character varying(100) = 'Purchase';
+    DECLARE @book_name                      national character varying(100) = 'Purchase Entry';
 
     DECLARE @can_post_transaction           bit;
     DECLARE @error_message                  national character varying(MAX);
@@ -562,6 +562,7 @@ BEGIN
         base_unit_id                        integer,
         price                               decimal(30, 6) NOT NULL DEFAULT(0),
         cost_of_goods_sold                  decimal(30, 6) NOT NULL DEFAULT(0),
+        discount_rate                       decimal(30, 6),
         discount                            decimal(30, 6) NOT NULL DEFAULT(0),
         tax                                 decimal(30, 6) NOT NULL DEFAULT(0),
         shipping_charge                     decimal(30, 6) NOT NULL DEFAULT(0),
@@ -612,8 +613,8 @@ BEGIN
 
 
 
-        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge)
-        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge
+        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
+        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
         FROM @details;
 
 
@@ -623,7 +624,8 @@ BEGIN
             base_unit_id                    = inventory.get_root_unit_id(unit_id),
             purchase_account_id             = inventory.get_purchase_account_id(item_id),
             purchase_discount_account_id    = inventory.get_purchase_discount_account_id(item_id),
-            inventory_account_id            = inventory.get_inventory_account_id(item_id);    
+            inventory_account_id            = inventory.get_inventory_account_id(item_id),
+            discount                        = ROUND((price * quantity) * (discount_rate / 100), 2);
         
         IF EXISTS
         (
@@ -792,6 +794,7 @@ BEGIN
         base_quantity                       decimal(30, 6),
         base_unit_id                        integer,                
         price                               decimal(30, 6),
+        discount_rate                       decimal(30, 6),
         discount                            decimal(30, 6),
         tax                                 decimal(30, 6),
         shipping_charge                     decimal(30, 6),
@@ -856,8 +859,8 @@ BEGIN
         WHERE inventory.checkouts.transaction_master_id = @transaction_master_id
         AND inventory.checkouts.deleted = 0;
 
-        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge)
-        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge
+        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
+        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
         FROM @details;
 
         UPDATE @checkout_details 
@@ -866,7 +869,8 @@ BEGIN
             base_unit_id                    = inventory.get_root_unit_id(unit_id),
             purchase_account_id             = inventory.get_purchase_account_id(item_id),
             purchase_discount_account_id    = inventory.get_purchase_discount_account_id(item_id),
-            inventory_account_id            = inventory.get_inventory_account_id(item_id);    
+            inventory_account_id            = inventory.get_inventory_account_id(item_id),
+            discount                        = ROUND((price * quantity) * (discount_rate / 100), 2);
 
         IF EXISTS
         (
@@ -1003,7 +1007,7 @@ CREATE PROCEDURE purchase.post_supplier_payment
     @cost_center_id                             integer,
     @cash_repository_id                         integer,
     @posted_date                                date,
-    @bank_account_id                            integer,
+    @bank_id									integer,
     @bank_instrument_code                       national character varying(128),
     @bank_tran_code                             national character varying(128),
 	@transaction_master_id						bigint OUTPUT
@@ -1013,6 +1017,7 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
+	DECLARE @bank_account_id					integer = finance.get_account_id_by_bank_account_id(@bank_id);
     DECLARE @value_date                         date = finance.get_value_date(@office_id);
     DECLARE @book_date                          date = @value_date;
     DECLARE @book                               national character varying(50);
@@ -1024,8 +1029,8 @@ BEGIN
     DECLARE @lc_debit                           numeric(30, 6);
     DECLARE @lc_credit                          numeric(30, 6);
     DECLARE @is_cash                            bit;
-    DECLARE @can_post_transaction           bit;
-    DECLARE @error_message                  national character varying(MAX);
+    DECLARE @can_post_transaction				bit;
+    DECLARE @error_message						national character varying(MAX);
 
     BEGIN TRY
         DECLARE @tran_count int = @@TRANCOUNT;
@@ -1048,7 +1053,7 @@ BEGIN
 
 		IF(@cash_repository_id > 0)
 		BEGIN
-			IF(@posted_date IS NOT NULL OR @bank_account_id IS NOT NULL OR COALESCE(@bank_instrument_code, '') != '' OR COALESCE(@bank_tran_code, '') != '')
+			IF(@posted_date IS NOT NULL OR @bank_id IS NOT NULL OR COALESCE(@bank_instrument_code, '') != '' OR COALESCE(@bank_tran_code, '') != '')
 			BEGIN
 				RAISERROR('Invalid bank transaction information provided.', 16, 1);
 			END;
@@ -1165,7 +1170,7 @@ GO
 --     1, --@cost_center_id                             integer,
 --     1, --@cash_repository_id                         integer,
 --     NULL, --@posted_date                                date,
---     NULL, --@bank_account_id                            bigint,
+--     NULL, --@bank_id                            bigint,
 --     NULL, -- @bank_instrument_code                       national character varying(128),
 --     NULL, -- @bank_tran_code                             national character varying(128),
 --	 NULL
@@ -1260,8 +1265,9 @@ RETURNS @results TABLE
 )
 AS
 BEGIN
-    INSERT INTO @results(office_id, office_name, account_id)
+    INSERT INTO @results(account_id, office_name, office_id)
     SELECT DISTINCT inventory.suppliers.account_id, core.get_office_name_by_office_id(@office_id), @office_id FROM inventory.suppliers;
+
 
     UPDATE @results
     SET
@@ -1294,6 +1300,7 @@ BEGIN
     )
 	FROM @results  results;
 
+
     UPDATE @results
     SET current_period = 
     (        
@@ -1318,6 +1325,11 @@ BEGIN
     UPDATE @results
     SET total_amount = COALESCE(results.previous_period, 0) + COALESCE(results.current_period, 0)
 	FROM @results AS results;
+
+	DELETE FROM @results
+	WHERE COALESCE(previous_period, 0) = 0
+	AND COALESCE(current_period, 0) = 0
+	AND COALESCE(total_amount, 0) = 0;
     
     RETURN;
 END
@@ -1325,6 +1337,7 @@ END
 GO
 
 --SELECT * FROM purchase.get_account_payables_report(1, '1-1-2000');
+
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/05.scrud-views/purchase.item_cost_price_scrud_view.sql --<--<--

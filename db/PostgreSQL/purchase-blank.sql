@@ -174,7 +174,7 @@ AS
     quantity            public.integer_strict,
     unit_id           	integer,
     price               public.money_strict,
-    discount            public.money_strict2,
+    discount_rate       public.money_strict2,
     tax                 public.money_strict2,
     shipping_charge     public.money_strict2
 );
@@ -573,6 +573,7 @@ BEGIN
         base_unit_id                    	integer,
         price                           	public.money_strict NOT NULL DEFAULT(0),
         cost_of_goods_sold              	public.money_strict2 NOT NULL DEFAULT(0),
+        discount_rate                       decimal(30, 6),
         discount                        	public.money_strict2 NOT NULL DEFAULT(0),
         tax                                 public.money_strict2 NOT NULL DEFAULT(0),
         shipping_charge                     public.money_strict2 NOT NULL DEFAULT(0),
@@ -583,8 +584,8 @@ BEGIN
 
 
 
-    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge)
-    SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge
+    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
+    SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
     FROM explode_array(_details);
 
 
@@ -594,7 +595,8 @@ BEGIN
         base_unit_id                    	= inventory.get_root_unit_id(unit_id),
         purchase_account_id             	= inventory.get_purchase_account_id(item_id),
         purchase_discount_account_id    	= inventory.get_purchase_discount_account_id(item_id),
-        inventory_account_id            	= inventory.get_inventory_account_id(item_id);    
+        inventory_account_id            	= inventory.get_inventory_account_id(item_id),
+        discount                            = ROUND((price * quantity) * (discount_rate / 100), 2);
     
     IF EXISTS
     (
@@ -779,6 +781,7 @@ BEGIN
         base_quantity                       decimal(30, 6),
         base_unit_id                        integer,                
         price                               public.money_strict,
+        discount_rate                       decimal(30, 6),
         discount                            public.money_strict2,
         tax                                 public.money_strict2,
         shipping_charge                     public.money_strict2,
@@ -823,8 +826,8 @@ BEGIN
 	WHERE inventory.checkouts.transaction_master_id = _transaction_master_id
 	AND NOT inventory.checkouts.deleted;
 
-    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge)
-	SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount, tax, shipping_charge
+    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
+	SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
 	FROM explode_array(_details);
 
     UPDATE temp_checkout_details 
@@ -833,7 +836,8 @@ BEGIN
         base_unit_id                    = inventory.get_root_unit_id(unit_id),
         purchase_account_id             = inventory.get_purchase_account_id(item_id),
         purchase_discount_account_id    = inventory.get_purchase_discount_account_id(item_id),
-        inventory_account_id            = inventory.get_inventory_account_id(item_id);    
+        inventory_account_id            = inventory.get_inventory_account_id(item_id),
+        discount                        = ROUND((price * quantity) * (discount_rate / 100), 2);
 
 
     IF EXISTS
@@ -965,7 +969,7 @@ DROP FUNCTION IF EXISTS purchase.post_supplier_payment
     _cost_center_id                             integer,
     _cash_repository_id                         integer,
     _posted_date                                date,
-    _bank_account_id                            integer,
+    _bank_id                                    integer,
     _bank_instrument_code                       national character varying(128),
     _bank_tran_code                             national character varying(128)
 );
@@ -986,7 +990,7 @@ CREATE FUNCTION purchase.post_supplier_payment
     _cost_center_id                             integer,
     _cash_repository_id                         integer,
     _posted_date                                date,
-    _bank_account_id                            integer,
+    _bank_id                                    integer,
     _bank_instrument_code                       national character varying(128),
     _bank_tran_code                             national character varying(128)
 )
@@ -1005,16 +1009,18 @@ $$
     DECLARE _lc_debit                           public.money_strict2;
     DECLARE _lc_credit                          public.money_strict2;
     DECLARE _is_cash                            boolean;
+	DECLARE _bank_account_id					integer;
 BEGIN
     _value_date                             := finance.get_value_date(_office_id);
     _book_date                              := _value_date;
+	_bank_account_id					    := finance.get_account_id_by_bank_account_id(_bank_id);    
 
     IF(finance.can_post_transaction(_login_id, _user_id, _office_id, _book, _value_date) = false) THEN
         RETURN 0;
     END IF;
 
     IF(_cash_repository_id > 0) THEN
-        IF(_posted_date IS NOT NULL OR _bank_account_id IS NOT NULL OR COALESCE(_bank_instrument_code, '') != '' OR COALESCE(_bank_tran_code, '') != '') THEN
+        IF(_posted_date IS NOT NULL OR _bank_id IS NOT NULL OR COALESCE(_bank_instrument_code, '') != '' OR COALESCE(_bank_tran_code, '') != '') THEN
             RAISE EXCEPTION 'Invalid bank transaction information provided.'
             USING ERRCODE='P5111';
         END IF;
@@ -1215,7 +1221,7 @@ BEGIN
         total_amount                numeric(30, 6)
     ) ON COMMIT DROP;
 
-    INSERT INTO _results(office_id, office_name, account_id)
+    INSERT INTO _results(account_id, office_name, office_id)
     SELECT DISTINCT inventory.suppliers.account_id, core.get_office_name_by_office_id(_office_id), _office_id FROM inventory.suppliers;
 
     UPDATE _results
@@ -1271,6 +1277,11 @@ BEGIN
     UPDATE _results
     SET total_amount = COALESCE(_results.previous_period, 0) + COALESCE(_results.current_period, 0);
     
+	DELETE FROM _results
+	WHERE COALESCE(previous_period, 0) = 0
+	AND COALESCE(current_period, 0) = 0
+	AND COALESCE(total_amount, 0) = 0;
+
     RETURN QUERY
     SELECT * FROM _results;
 END

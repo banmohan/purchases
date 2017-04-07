@@ -26,12 +26,12 @@
 
                 $.each(items, function () {
                     const el = $(this);
-                    const itemId = parseInt(el.attr("data-item-id"));
-                    const quantity = parseInt(el.find("input.quantity").val());
-                    const unitId = parseInt(el.find("select.unit").val());
-                    const price = parseFloat(el.find("input.price").val() || 0);
-                    const discount = parseFloat(el.find("input.discount").val() || 0);
-                    const tax = parseFloat(el.find(".tax-amount").html() || 0);
+                    const itemId = window.parseInt2(el.attr("data-item-id"));
+                    const quantity = window.parseInt2(el.find("input.quantity").val());
+                    const unitId = window.parseInt2(el.find("select.unit").val());
+                    const price = window.parseFloat2(el.find("input.price").val() || 0);
+                    const discountRate = window.parseFloat2(el.find("input.discount").val() || 0);
+                    const tax = window.parseFloat2(el.find(".tax-amount").html() || 0);
 
                     model.push({
                         StoreId: $("#StoreSelect").val(),
@@ -40,14 +40,14 @@
                         Tax: tax,
                         UnitId: unitId,
                         Price: price,
-                        Discount: discount
+                        DiscountRate: discountRate
                     });
                 });
 
                 return model;
             };
 
-            const transactionMasterId = parseInt(window.getQueryStringByName("TransactionMasterId") || 0);
+            const transactionMasterId = window.parseInt2(window.getQueryStringByName("TransactionMasterId") || 0);
             const valueDate = $("#ValueDateInputDate").datepicker("getDate");
             const bookDate = $("#BookDateInputDate").datepicker("getDate");
             const costCenterId = $("#CostCenterSelect").val();
