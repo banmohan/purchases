@@ -547,7 +547,7 @@ $$
     DECLARE _tax_total                      public.money_strict2;
     DECLARE _tax_account_id                 integer;
     DECLARE _shipping_charge                public.money_strict2;
-    DECLARE _book_name                      national character varying(100) = 'Purchase';
+    DECLARE _book_name                      national character varying(100) = 'Purchase Entry';
 BEGIN
     IF NOT finance.can_post_transaction(_login_id, _user_id, _office_id, _book_name, _value_date) THEN
         RETURN 0;
