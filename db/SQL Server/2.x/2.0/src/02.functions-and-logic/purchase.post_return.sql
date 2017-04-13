@@ -101,7 +101,39 @@ BEGIN
             RETURN;
         END;
 
+		DECLARE @original_supplier_id	integer;
+
+		SELECT @original_supplier_id = purchase.purchases.supplier_id
+		FROM purchase.purchases
+		INNER JOIN inventory.checkouts
+		ON inventory.checkouts.checkout_id = purchase.purchases.checkout_id
+		INNER JOIN finance.transaction_master
+		ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
+		AND finance.transaction_master.verification_status_id > 0
+		AND finance.transaction_master.transaction_master_id = @transaction_master_id;
+
+		IF(@original_supplier_id IS NULL)
+		BEGIN
+			RAISERROR('Invalid transaction.', 16, 1);
+		END;
+
+		IF(@original_supplier_id != @supplier_id)
+		BEGIN
+			RAISERROR('This supplier is not associated with the purchase you are trying to return.', 16, 1);
+		END;
        
+		DECLARE @is_valid_transaction	bit;
+		SELECT
+			@is_valid_transaction	=	is_valid,
+			@error_message			=	"error_message"
+		FROM purchase.validate_items_for_return(@transaction_master_id, @details);
+
+        IF(@is_valid_transaction = 0)
+        BEGIN
+            RAISERROR(@error_message, 16, 1);
+            RETURN;
+        END;
+
         SELECT @purchase_id = purchase.purchases.purchase_id
         FROM purchase.purchases
         INNER JOIN inventory.checkouts

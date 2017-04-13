@@ -18,12 +18,10 @@
 		SELECT 
 			supplier_code,
 			supplier_name,
-			currency_code, 
 			company_name,
+			pan_number,
 			company_address_line_1,
-			company_address_line_2,
-			contact_address_line_1,
-			contact_address_line_1,
+			COALESCE(contact_first_name || ' ', '') || COALESCE(contact_middle_name || ' ', '') || COALESCE(contact_last_name, '') AS contact_name,
 			contact_phone_numbers,
 			contact_fax
 		FROM inventory.suppliers

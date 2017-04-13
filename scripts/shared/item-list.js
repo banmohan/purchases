@@ -140,12 +140,12 @@ function initializeClickAndAction() {
 
         var barCode = el.attr("data-barcode");
         var brand = el.attr("data-brand");
-        var unitId = el.attr("data-unit-id");
+        var unitId = window.parseInt2(el.attr("data-unit-id"));
         var validUnits = el.attr("data-valid-units");
         var itemGroup = el.attr("data-item-group");
         var itemName = el.attr("data-item-name");
         var itemCode = el.attr("data-item-code");
-        var itemId = el.attr("data-item-id");
+        var itemId = window.parseInt2(el.attr("data-item-id"));
         var price = window.parseFloat2(costPrice || 0);
         var isTaxableItem = el.attr("data-is-taxable-item") === "true";
         var taxRate = window.parseFloat2($("#SalesTaxRateHidden").val());

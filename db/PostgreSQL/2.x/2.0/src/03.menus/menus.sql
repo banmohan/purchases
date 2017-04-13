@@ -36,6 +36,7 @@ SELECT * FROM core.create_menu('MixERP.Purchases', 'CostPrices', 'Cost Prices', 
 SELECT * FROM core.create_menu('MixERP.Purchases', 'Reports', 'Reports', '', 'block layout', '');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'AccountPayables', 'Account Payables', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/AccountPayables.xml', 'spy', 'Reports');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'TopSuppliers', 'Top Suppliers', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/TopSuppliers.xml', 'spy', 'Reports');
+SELECT * FROM core.create_menu('MixERP.Purchases', 'PurchasesByOffice', 'Purchases by Office', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/PurchasesByOffice.xml', 'building', 'Reports');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'LowInventoryProducts', 'Low Inventory Products', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/LowInventory.xml', 'warning', 'Reports');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'OutOfStockProducts', 'Out of Stock Products', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/OutOfStock.xml', 'remove circle', 'Reports');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'SupplierContacts', 'Supplier Contacts', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/SupplierContacts.xml', 'remove circle', 'Reports');
