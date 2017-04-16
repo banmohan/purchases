@@ -1834,6 +1834,239 @@ AND inventory.items.maintain_inventory = 1;
 GO
 
 
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/05.views/purchase.order_search_view.sql --<--<--
+IF OBJECT_ID('purchase.order_search_view') IS NOT NULL
+DROP VIEW purchase.order_search_view;
+
+GO
+
+CREATE VIEW purchase.order_search_view
+AS
+SELECT
+	purchase.orders.order_id,
+	inventory.get_supplier_name_by_supplier_id(purchase.orders.supplier_id) AS supplier,
+	SUM(
+
+        ROUND
+		(
+			(
+			(purchase.order_details.price * purchase.order_details.quantity)
+			* ((100 - purchase.order_details.discount_rate)/100)) 
+		, 4)  + purchase.order_details.tax		
+	) AS total_amount,
+	purchase.orders.value_date,
+	purchase.orders.expected_delivery_date AS expected_date,
+	COALESCE(purchase.orders.reference_number, '') AS reference_number,
+	COALESCE(purchase.orders.terms, '') AS terms,
+	COALESCE(purchase.orders.internal_memo, '') AS memo,
+	account.get_name_by_user_id(purchase.orders.user_id) AS posted_by,
+	core.get_office_name_by_office_id(purchase.orders.office_id) AS office,
+	purchase.orders.transaction_timestamp AS posted_on,
+	purchase.orders.office_id
+FROM purchase.orders
+INNER JOIN purchase.order_details
+ON purchase.orders.order_id = purchase.order_details.order_id
+GROUP BY
+	purchase.orders.order_id,
+	purchase.orders.supplier_id,
+	purchase.orders.value_date,
+	purchase.orders.expected_delivery_date,
+	purchase.orders.reference_number,
+	purchase.orders.terms,
+	purchase.orders.internal_memo,
+	purchase.orders.user_id,
+	purchase.orders.transaction_timestamp,
+	purchase.orders.office_id;
+
+GO
+
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/05.views/purchase.purchase_search_view.sql --<--<--
+IF OBJECT_ID('purchase.purchase_search_view') IS NOT NULL
+DROP VIEW purchase.purchase_search_view;
+
+GO
+
+CREATE VIEW purchase.purchase_search_view
+AS
+SELECT 
+    CAST(finance.transaction_master.transaction_master_id AS varchar(100)) AS tran_id, 
+    finance.transaction_master.transaction_code AS tran_code,
+    finance.transaction_master.value_date,
+    finance.transaction_master.book_date,
+    inventory.get_supplier_name_by_supplier_id(purchase.purchases.supplier_id) AS supplier,
+	SUM(CASE WHEN finance.transaction_details.tran_type = 'Dr' THEN finance.transaction_details.amount_in_local_currency ELSE 0 END) AS amount,
+    finance.transaction_master.reference_number,
+    finance.transaction_master.statement_reference,
+    account.get_name_by_user_id(finance.transaction_master.user_id) as posted_by,
+    core.get_office_name_by_office_id(finance.transaction_master.office_id) as office,
+    finance.get_verification_status_name_by_verification_status_id(finance.transaction_master.verification_status_id) as status,
+    account.get_name_by_user_id(finance.transaction_master.verified_by_user_id) as verified_by,
+    finance.transaction_master.last_verified_on AS verified_on,
+    finance.transaction_master.verification_reason AS reason,    
+    finance.transaction_master.transaction_ts AS posted_on,
+	finance.transaction_master.office_id
+FROM finance.transaction_master
+INNER JOIN inventory.checkouts
+ON inventory.checkouts.transaction_master_id = finance.transaction_master.transaction_master_id
+INNER JOIN purchase.purchases
+ON inventory.checkouts.checkout_id = purchase.purchases.checkout_id
+INNER JOIN finance.transaction_details
+ON finance.transaction_details.transaction_master_id = finance.transaction_master.transaction_master_id
+WHERE finance.transaction_master.deleted = 0
+GROUP BY
+finance.transaction_master.transaction_master_id,
+finance.transaction_master.transaction_code,
+purchase.purchases.supplier_id,
+finance.transaction_master.value_date,
+finance.transaction_master.book_date,
+finance.transaction_master.reference_number,
+finance.transaction_master.statement_reference,
+finance.transaction_master.user_id,
+finance.transaction_master.office_id,
+finance.transaction_master.verification_status_id,
+finance.transaction_master.verified_by_user_id,
+finance.transaction_master.last_verified_on,
+finance.transaction_master.verification_reason,
+finance.transaction_master.transaction_ts;
+
+
+GO
+
+
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/05.views/purchase.quotation_search_view.sql --<--<--
+IF OBJECT_ID('purchase.quotation_search_view') IS NOT NULL
+DROP VIEW purchase.quotation_search_view;
+
+GO
+
+CREATE VIEW purchase.quotation_search_view
+AS
+SELECT
+	purchase.quotations.quotation_id,
+	inventory.get_supplier_name_by_supplier_id(purchase.quotations.supplier_id) AS supplier,
+	SUM(
+
+        ROUND
+		(
+			(
+			(purchase.quotation_details.price * purchase.quotation_details.quantity)
+			* ((100 - purchase.quotation_details.discount_rate)/100)) 
+		, 4)  + purchase.quotation_details.tax		
+	) AS total_amount,
+	purchase.quotations.value_date,
+	purchase.quotations.expected_delivery_date AS expected_date,
+	COALESCE(purchase.quotations.reference_number, '') AS reference_number,
+	COALESCE(purchase.quotations.terms, '') AS terms,
+	COALESCE(purchase.quotations.internal_memo, '') AS memo,
+	account.get_name_by_user_id(purchase.quotations.user_id) AS posted_by,
+	core.get_office_name_by_office_id(purchase.quotations.office_id) AS office,
+	purchase.quotations.transaction_timestamp AS posted_on,
+	purchase.quotations.office_id
+FROM purchase.quotations
+INNER JOIN purchase.quotation_details
+ON purchase.quotations.quotation_id = purchase.quotation_details.quotation_id
+GROUP BY
+	purchase.quotations.quotation_id,
+	purchase.quotations.supplier_id,
+	purchase.quotations.value_date,
+	purchase.quotations.expected_delivery_date,
+	purchase.quotations.reference_number,
+	purchase.quotations.terms,
+	purchase.quotations.internal_memo,
+	purchase.quotations.user_id,
+	purchase.quotations.transaction_timestamp,
+	purchase.quotations.office_id;
+
+GO
+
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/05.views/purchase.return_search_view.sql --<--<--
+IF OBJECT_ID('purchase.return_search_view') IS NOT NULL
+DROP VIEW purchase.return_search_view;
+
+GO
+
+CREATE VIEW purchase.return_search_view
+AS
+SELECT
+	finance.transaction_master.transaction_master_id AS tran_id,
+	finance.transaction_master.transaction_code AS tran_code,
+	purchase.purchase_returns.supplier_id,
+	inventory.get_supplier_name_by_supplier_id(purchase.purchase_returns.supplier_id) AS supplier,
+	SUM(CASE WHEN finance.transaction_details.tran_type = 'Dr' THEN finance.transaction_details.amount_in_local_currency ELSE 0 END) AS amount,
+	finance.transaction_master.value_date,
+	finance.transaction_master.book_date,
+	COALESCE(finance.transaction_master.reference_number, '') AS reference_number,
+	COALESCE(finance.transaction_master.statement_reference, '') AS statement_reference,
+	account.get_name_by_user_id(finance.transaction_master.user_id) AS posted_by,
+	core.get_office_name_by_office_id(finance.transaction_master.office_id) AS office,
+	finance.get_verification_status_name_by_verification_status_id(finance.transaction_master.verification_status_id) AS status,
+	COALESCE(account.get_name_by_user_id(finance.transaction_master.verified_by_user_id), '') AS verified_by,
+	finance.transaction_master.last_verified_on,
+	finance.transaction_master.verification_reason AS reason,
+	finance.transaction_master.office_id
+FROM purchase.purchase_returns
+INNER JOIN inventory.checkouts
+ON inventory.checkouts.checkout_id = purchase.purchase_returns.checkout_id
+INNER JOIN finance.transaction_master
+ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
+INNER JOIN finance.transaction_details
+ON finance.transaction_details.transaction_master_id = finance.transaction_master.transaction_master_id
+WHERE finance.transaction_master.deleted = 0
+GROUP BY
+finance.transaction_master.transaction_master_id,
+finance.transaction_master.transaction_code,
+purchase.purchase_returns.supplier_id,
+finance.transaction_master.value_date,
+finance.transaction_master.book_date,
+finance.transaction_master.reference_number,
+finance.transaction_master.statement_reference,
+finance.transaction_master.user_id,
+finance.transaction_master.office_id,
+finance.transaction_master.verification_status_id,
+finance.transaction_master.verified_by_user_id,
+finance.transaction_master.last_verified_on,
+finance.transaction_master.verification_reason;
+
+GO
+
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/05.views/purchase.supplier_payment_search_view.sql --<--<--
+IF OBJECT_ID('purchase.supplier_payment_search_view') IS NOT NULL
+DROP VIEW purchase.supplier_payment_search_view;
+
+GO
+
+CREATE VIEW purchase.supplier_payment_search_view
+AS
+SELECT
+	purchase.supplier_payments.transaction_master_id AS tran_id,
+	finance.transaction_master.transaction_code AS tran_code,
+	purchase.supplier_payments.supplier_id,
+	inventory.get_supplier_name_by_supplier_id(purchase.supplier_payments.supplier_id) AS supplier,
+	COALESCE(purchase.supplier_payments.amount, purchase.supplier_payments.check_amount, COALESCE(purchase.supplier_payments.tender, 0) - COALESCE(purchase.supplier_payments.change, 0)) AS amount,
+	finance.transaction_master.value_date,
+	finance.transaction_master.book_date,
+	COALESCE(finance.transaction_master.reference_number, '') AS reference_number,
+	COALESCE(finance.transaction_master.statement_reference, '') AS statement_reference,
+	account.get_name_by_user_id(finance.transaction_master.user_id) AS posted_by,
+	core.get_office_name_by_office_id(finance.transaction_master.office_id) AS office,
+	finance.get_verification_status_name_by_verification_status_id(finance.transaction_master.verification_status_id) AS status,
+	COALESCE(account.get_name_by_user_id(finance.transaction_master.verified_by_user_id), '') AS verified_by,
+	finance.transaction_master.last_verified_on,
+	finance.transaction_master.verification_reason AS reason,
+	finance.transaction_master.office_id
+FROM purchase.supplier_payments
+INNER JOIN finance.transaction_master
+ON purchase.supplier_payments.transaction_master_id = finance.transaction_master.transaction_master_id
+WHERE finance.transaction_master.deleted = 0;
+
+GO
+
+
+
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/99.ownership.sql --<--<--
 EXEC sp_addrolemember  @rolename = 'db_owner', @membername  = 'frapid_db_user'
 

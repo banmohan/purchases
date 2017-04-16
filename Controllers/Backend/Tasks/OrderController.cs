@@ -3,12 +3,12 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Frapid.ApplicationState.Cache;
+using Frapid.Areas.CSRF;
 using Frapid.Dashboard;
+using Frapid.DataAccess.Models;
 using MixERP.Purchases.DAL.Backend.Tasks;
 using MixERP.Purchases.DTO;
 using MixERP.Purchases.QueryModels;
-using Frapid.Areas.CSRF;
-using Frapid.DataAccess.Models;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
@@ -37,6 +37,25 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
 
                 var model = await Orders.GetOrderResultViewAsync(this.Tenant, query).ConfigureAwait(true);
                 return this.Ok(model);
+            }
+            catch (Exception ex)
+            {
+                return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [Route("dashboard/purchase/tasks/order/search")]
+        [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/order")]
+        [AccessPolicy("purchase", "orders", AccessTypeEnum.Read)]
+        [HttpPost]
+        public async Task<ActionResult> SearchAsync(OrderSearch search)
+        {
+            var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
+
+            try
+            {
+                var result = await Orders.GetSearchViewAsync(this.Tenant, meta.OfficeId, search).ConfigureAwait(true);
+                return this.Ok(result);
             }
             catch (Exception ex)
             {

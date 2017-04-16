@@ -1,5 +1,5 @@
 ﻿var model = {
-    Title: window.translate("Payments"),
+    Title: window.translate("PurchaseEntries"),
     JournalAdviceExpression: function (data) {
         const tranId = data.TranId;
         if (!tranId) {
@@ -22,11 +22,11 @@
             return null;
         };
 
-        return "/dashboard/purchase/tasks/payment/checklist/" + tranId;
+        return "/dashboard/purchase/tasks/entry/checklist/" + tranId;
     },
     ExtraButtons: [
         {
-            Title: window.translate("ViewPayment"),
+            Title: window.translate("ViewPurchaseInvoice"),
             Icon: "zoom",
             ClickExpression: function (data) {
                 const tranId = data.TranId;
@@ -35,13 +35,14 @@
                 };
 
 
-                return "showPayment(" + tranId + ");";
+                return "showInvoice(" + tranId + ");";
             }
         }
     ],
     AddNewButtonText: window.translate("AddNew"),
-    AddNewUrl: "/dashboard/purchase/tasks/payment/new",
-    SearchApi: "/dashboard/purchase/tasks/payment/search",
+    AddNewUrl: "/dashboard/purchase/tasks/entry/new",
+    ReturnButtonText: "Return",
+    SearchApi: "/dashboard/purchase/tasks/entry/search",
     FormatExpression: function (cell, columnName, originalValue) {
         var value = originalValue;
         columnName = columnName.trim();
@@ -51,7 +52,8 @@
         };
 
         switch (columnName.trim()) {
-            case "LastVerifiedOn":
+            case "VerifiedOn":
+            case "PostedOn":
                 var date = new Date(value);
                 value = window.moment(date).format("LLL");
                 break;
@@ -161,8 +163,8 @@ function showDocumentModal(el) {
     container.modal("show");
 };
 
-function showPayment(tranId) {
-    $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Payment.xml?transaction_master_id=" + tranId);
+function showInvoice(tranId) {
+    $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Invoice.xml?transaction_master_id=" + tranId);
 
     setTimeout(function () {
         $(".advice.modal")
@@ -171,3 +173,26 @@ function showPayment(tranId) {
 
     }, 300);
 };
+
+$("#ReturnButton").click(function () {
+    function getSelectedItem() {
+        const selected = $("#JournalView").find("input:checked").first();
+
+        if (selected.length) {
+            const row = selected.parent().parent().parent();
+            const id = row.find("td:nth-child(3)").html();
+            return window.parseInt2(id);
+        };
+
+        return 0;
+    };
+
+    const selected = getSelectedItem();
+    if (selected) {
+        const url = "/dashboard/purchase/tasks/return/new?Type=Return&TransactionMasterId=" + selected;
+        document.location = url;
+        return;
+    };
+
+    window.displayMessage(window.translate("PleaseSelectItemFromGrid"));
+});

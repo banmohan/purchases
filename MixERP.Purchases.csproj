@@ -181,7 +181,12 @@
     <Compile Include="I18N.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryModels\OrderQueryModel.cs" />
+    <Compile Include="QueryModels\OrderSearch.cs" />
+    <Compile Include="QueryModels\ReturnSearch.cs" />
+    <Compile Include="QueryModels\PurchaseSearch.cs" />
     <Compile Include="QueryModels\QuotationQueryModel.cs" />
+    <Compile Include="QueryModels\QuotationSearch.cs" />
+    <Compile Include="QueryModels\SupplierPaymentSearch.cs" />
     <Compile Include="ViewModels\Payment.cs" />
     <Compile Include="ViewModels\Purchase.cs" />
     <Compile Include="ViewModels\PurchaseDetailType.cs" />
@@ -218,10 +223,13 @@
     <Content Include="Reports\TopSuppliers.SqlServer.xml" />
     <Content Include="Reports\TopSuppliers.xml" />
     <Content Include="scripts\shared\item-list.js" />
+    <Content Include="scripts\tasks\entry\index.js" />
+    <Content Include="scripts\tasks\order\index.js" />
     <Content Include="scripts\tasks\payment\checklist.js" />
     <Content Include="scripts\tasks\payment\index.js" />
     <Content Include="scripts\tasks\payment\new.js" />
-    <Content Include="scripts\tasks\payment\verification.js" />
+    <Content Include="scripts\tasks\quotation\index.js" />
+    <Content Include="scripts\tasks\return\index.js" />
     <Content Include="styles\checkout.css" />
     <Content Include="Views\web.config" />
   </ItemGroup>

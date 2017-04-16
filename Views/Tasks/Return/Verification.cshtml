@@ -2,34 +2,24 @@
 @model dynamic
 
 @{
-    ViewBag.Title = I18N.PurchaseReturnVerification;
-    Layout = ViewBag.PurchaseLayoutPath;
+    ViewBag.Title = I18N.PurchaseReturns;
+    Layout = ViewBag.SalesLayoutPath;
 }
 
-@Html.FinancePartialView("Shared/Verification.cshtml", TenantConvention.GetTenant())
+@Html.FinancePartialView("Shared/SearchView.cshtml", TenantConvention.GetTenant())
+
+
+<script src="/Areas/MixERP.Purchases/scripts/tasks/return/index.js"></script>
 
 <script>
-    window.prepareVerification({
-        Title: window.translate("PurchaseReturnVerification"),
-        Book: "Purchase Return",
-        ChecklistUrl: "/dashboard/purchase/tasks/return/checklist/{tranId}",
-        AdviceButtons: [
-            {
-                Title: window.translate("ViewPurchaseReturn"),
-                Href: "javascript:void(0);",
-                OnClick: "showReturn({tranId});"
-            }
-        ]
-    });
+    var annotationStatus = window.Enumerable.From(window.model.Annotation).Where(function(x) {
+        return x.Id === "Status";
+    }).FirstOrDefault();
 
-    function showReturn(tranId) {
-        $(".advice.modal iframe").attr("src", `/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_master_id=${tranId}`);
+    annotationStatus.DefaultValue = "Unverified";
+    window.model.HasVerification = true;
+    window.model.Title = window.translate("PurchaseReturnVerification");
 
-        setTimeout(function () {
-            $(".advice.modal")
-                .modal('setting', 'transition', 'horizontal flip')
-                .modal("show");
-
-        }, 300);
-    };
+    prepareView(model);
 </script>
+

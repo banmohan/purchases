@@ -8,6 +8,7 @@ using Frapid.Dashboard;
 using MixERP.Purchases.DAL.Backend.Tasks;
 using MixERP.Purchases.ViewModels;
 using Frapid.DataAccess.Models;
+using MixERP.Purchases.QueryModels;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
@@ -28,6 +29,25 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
         public ActionResult Index()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Payment/Index.cshtml", this.Tenant));
+        }
+
+        [Route("dashboard/purchase/tasks/payment/search")]
+        [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/payment")]
+        [AccessPolicy("purchase", "supplier_payments", AccessTypeEnum.Read)]
+        [HttpPost]
+        public async Task<ActionResult> SearchAsync(SupplierPaymentSearch search)
+        {
+            var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
+
+            try
+            {
+                var result = await Payments.GetSearchViewAsync(this.Tenant, meta.OfficeId, search).ConfigureAwait(true);
+                return this.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
+            }
         }
 
         [Route("dashboard/purchase/tasks/payment/verification")]

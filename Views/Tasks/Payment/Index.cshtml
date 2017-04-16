@@ -6,7 +6,11 @@
     Layout = ViewBag.SalesLayoutPath;
 }
 
-@Html.FinancePartialView("Shared/JournalView.cshtml", TenantConvention.GetTenant())
+@Html.FinancePartialView("Shared/SearchView.cshtml", TenantConvention.GetTenant())
 
 <script src="/Areas/MixERP.Purchases/scripts/tasks/payment/index.js"></script>
+
+<script>
+    prepareView(model);
+</script>
 

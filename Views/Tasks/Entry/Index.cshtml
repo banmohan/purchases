@@ -3,61 +3,13 @@
 
 @{
     ViewBag.Title = I18N.PurchaseEntries;
-    Layout = ViewBag.PurchaseLayoutPath;
+    Layout = ViewBag.SalesLayoutPath;
 }
 
+@Html.FinancePartialView("Shared/SearchView.cshtml", TenantConvention.GetTenant())
 
-@Html.FinancePartialView("Shared/JournalView.cshtml", TenantConvention.GetTenant())
+<script src="/Areas/MixERP.Purchases/scripts/tasks/entry/index.js"></script>
 
 <script>
-    window.prepareView({
-        Title: window.translate("PurchaseEntries"),
-        AddNewText: window.translate("AddNew"),
-        AddNewUrl: "/dashboard/purchase/tasks/entry/new",
-        ReturnText: window.translate("Return"),
-        ReturnUrl: "javascript:void(0);",
-        Book: "Purchase Entry",
-        ChecklistUrl: "/dashboard/purchase/tasks/entry/checklist/{tranId}",
-        AdviceButtons: [
-            {
-                Title: window.translate("ViewPurchaseInvoice"),
-                Href: "javascript:void(0);",
-                OnClick: "showInvoice({tranId});"
-            }
-        ]
-    });
-
-    $("#ReturnButton").click(function () {
-        function getSelectedItem() {
-            const selected = $("#JournalView").find("input:checked").first();
-
-            if (selected.length) {
-                const row = selected.parent().parent().parent();
-                const id = row.find("td:nth-child(3)").html();
-                return window.parseInt2(id);
-            };
-
-            return 0;
-        };
-
-        const selected = getSelectedItem();
-        if (selected) {
-            const url = "/dashboard/purchase/tasks/return/new?TransactionMasterId=" + selected;
-            document.location = url;
-            return;
-        };
-
-        window.displayMessage(window.translate("PleaseSelectItemFromGrid"));
-    });
-
-    function showInvoice(tranId) {
-        $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Invoice.xml?transaction_master_id=" + tranId);
-
-        setTimeout(function () {
-            $(".advice.modal")
-                .modal('setting', 'transition', 'horizontal flip')
-                .modal("show");
-
-        }, 300);
-    };
+    prepareView(model);
 </script>

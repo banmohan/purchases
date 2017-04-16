@@ -1,5 +1,5 @@
 ﻿var model = {
-    Title: window.translate("Payments"),
+    Title: window.translate("PurchaseReturns"),
     JournalAdviceExpression: function (data) {
         const tranId = data.TranId;
         if (!tranId) {
@@ -22,11 +22,11 @@
             return null;
         };
 
-        return "/dashboard/purchase/tasks/payment/checklist/" + tranId;
+        return "/dashboard/purchase/tasks/return/checklist/" + tranId;
     },
     ExtraButtons: [
         {
-            Title: window.translate("ViewPayment"),
+            Title: window.translate("ViewReturnInvoice"),
             Icon: "zoom",
             ClickExpression: function (data) {
                 const tranId = data.TranId;
@@ -35,13 +35,13 @@
                 };
 
 
-                return "showPayment(" + tranId + ");";
+                return "showReturn(" + tranId + ");";
             }
         }
     ],
     AddNewButtonText: window.translate("AddNew"),
-    AddNewUrl: "/dashboard/purchase/tasks/payment/new",
-    SearchApi: "/dashboard/purchase/tasks/payment/search",
+    AddNewUrl: "/dashboard/purchase/tasks/return/new",
+    SearchApi: "/dashboard/purchase/tasks/return/search",
     FormatExpression: function (cell, columnName, originalValue) {
         var value = originalValue;
         columnName = columnName.trim();
@@ -60,7 +60,7 @@
                 var date = new Date(value);
                 value = window.moment(date).format("LL");
                 break;
-            case "Amount":
+            case "TotalAmount":
                 value = window.getFormattedCurrency(value);
                 break;
         };
@@ -161,8 +161,8 @@ function showDocumentModal(el) {
     container.modal("show");
 };
 
-function showPayment(tranId) {
-    $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Payment.xml?transaction_master_id=" + tranId);
+function showReturn(tranId) {
+    $(".advice.modal iframe").attr("src", `/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_master_id=${tranId}`);
 
     setTimeout(function () {
         $(".advice.modal")

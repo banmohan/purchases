@@ -1,5 +1,5 @@
 ﻿var model = {
-    Title: window.translate("Payments"),
+    Title: window.translate("PurchaseOrders"),
     JournalAdviceExpression: function (data) {
         const tranId = data.TranId;
         if (!tranId) {
@@ -17,31 +17,31 @@
         return documents;
     },
     ChecklistUrlExpression: function (data) {
-        const tranId = data.TranId;
-        if (!tranId) {
+        const orderId = data.OrderId;
+        if (!orderId) {
             return null;
         };
 
-        return "/dashboard/purchase/tasks/payment/checklist/" + tranId;
+        return "/dashboard/purchase/tasks/order/checklist/" + orderId;
     },
     ExtraButtons: [
         {
-            Title: window.translate("ViewPayment"),
+            Title: window.translate("ViewPurchaseOrder"),
             Icon: "zoom",
             ClickExpression: function (data) {
-                const tranId = data.TranId;
-                if (!tranId) {
+                const orderId = data.OrderId;
+                if (!orderId) {
                     return null;
                 };
 
 
-                return "showPayment(" + tranId + ");";
+                return "showOrder(" + orderId + ");";
             }
         }
     ],
     AddNewButtonText: window.translate("AddNew"),
-    AddNewUrl: "/dashboard/purchase/tasks/payment/new",
-    SearchApi: "/dashboard/purchase/tasks/payment/search",
+    AddNewUrl: "/dashboard/purchase/tasks/order/new",
+    SearchApi: "/dashboard/purchase/tasks/order/search",
     FormatExpression: function (cell, columnName, originalValue) {
         var value = originalValue;
         columnName = columnName.trim();
@@ -51,16 +51,16 @@
         };
 
         switch (columnName.trim()) {
-            case "LastVerifiedOn":
+            case "PostedOn":
                 var date = new Date(value);
                 value = window.moment(date).format("LLL");
                 break;
             case "ValueDate":
-            case "BookDate":
+            case "ExpectedDate":
                 var date = new Date(value);
                 value = window.moment(date).format("LL");
                 break;
-            case "Amount":
+            case "TotalAmount":
                 value = window.getFormattedCurrency(value);
                 break;
         };
@@ -92,8 +92,18 @@
             CssClass: "date"
         },
         {
-            Text: "Tran Id",
-            Id: "TranId"
+            Text: "Expected From",
+            Id: "ExpectedFrom",
+            CssClass: "date"
+        },
+        {
+            Text: "Expected To",
+            Id: "ExpectedTo",
+            CssClass: "date"
+        },
+        {
+            Text: "Id",
+            Id: "Id"
         },
         {
             Text: "Transaction Code",
@@ -104,8 +114,12 @@
             Id: "ReferenceNumber"
         },
         {
-            Text: "Statement Reference",
-            Id: "StatementReference"
+            Text: "Terms",
+            Id: "Terms"
+        },
+        {
+            Text: "Memo",
+            Id: "Memo"
         },
         {
             Text: "Posted By",
@@ -116,33 +130,19 @@
             Id: "Office"
         },
         {
-            Text: "Status",
-            Id: "Status"
-            //DefaultValue: "Unverified"
-        },
-        {
-            Text: "Verified By",
-            Id: "VerifiedBy"
-        },
-        {
-            Text: "Reason",
-            Id: "Reason"
-        },
-        {
             Text: "Amount",
             Id: "Amount",
             CssClass: "currency"
         },
         {
-            Text: "Supplier",
-            Id: "Supplier"
+            Text: "Customer",
+            Id: "Customer"
         }
     ]
 };
 
-function showJournalAdvice(tranId) {
-    $(".modal iframe").attr("src",
-        `/dashboard/reports/source/Areas/MixERP.Finance/Reports/JournalEntry.xml?transaction_master_id=${tranId}`);
+function showOrder(id) {
+    $(".modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Order.xml?order_id=" + id);
 
     setTimeout(function () {
         $(".advice.modal")
@@ -152,22 +152,4 @@ function showJournalAdvice(tranId) {
     }, 300);
 };
 
-function showDocumentModal(el) {
-    el = $(el).closest("a");
-    const documents = el.attr("data-documents");
-    const container = $(".documents.modal");
-    window.showDocuments(container, documents);
-
-    container.modal("show");
-};
-
-function showPayment(tranId) {
-    $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Payment.xml?transaction_master_id=" + tranId);
-
-    setTimeout(function () {
-        $(".advice.modal")
-            .modal('setting', 'transition', 'horizontal flip')
-            .modal("show");
-
-    }, 300);
-};
+prepareView(model);
