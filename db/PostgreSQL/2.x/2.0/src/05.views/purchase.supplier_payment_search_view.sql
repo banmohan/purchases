@@ -3,7 +3,7 @@
 CREATE VIEW purchase.supplier_payment_search_view
 AS
 SELECT
-	purchase.supplier_payments.transaction_master_id AS tran_id,
+	purchase.supplier_payments.transaction_master_id::text AS tran_id,
 	finance.transaction_master.transaction_code AS tran_code,
 	purchase.supplier_payments.supplier_id,
 	inventory.get_supplier_name_by_supplier_id(purchase.supplier_payments.supplier_id) AS supplier,

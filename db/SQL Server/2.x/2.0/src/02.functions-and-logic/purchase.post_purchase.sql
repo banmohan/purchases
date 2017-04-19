@@ -18,6 +18,7 @@ CREATE PROCEDURE purchase.post_purchase
     @price_type_id                          integer,
     @shipper_id                             integer,
     @details                                purchase.purchase_detail_type READONLY,
+	@invoice_discount						numeric(30, 6) = 0,
 	@transaction_master_id					bigint OUTPUT
 )
 AS
@@ -39,9 +40,12 @@ BEGIN
     DECLARE @tax_account_id                 integer;
     DECLARE @shipping_charge                decimal(30, 6);
     DECLARE @book_name                      national character varying(100) = 'Purchase Entry';
+	DECLARE @sales_tax_rate					numeric(30, 6);
 
     DECLARE @can_post_transaction           bit;
     DECLARE @error_message                  national character varying(MAX);
+	DECLARE @taxable_total					numeric(30, 6);
+	DECLARE @nontaxable_total				numeric(30, 6);
 
     DECLARE @checkout_details TABLE
     (
@@ -58,7 +62,8 @@ BEGIN
         cost_of_goods_sold                  decimal(30, 6) NOT NULL DEFAULT(0),
         discount_rate                       decimal(30, 6),
         discount                            decimal(30, 6) NOT NULL DEFAULT(0),
-        tax                                 decimal(30, 6) NOT NULL DEFAULT(0),
+		is_taxable_item						bit,
+        amount								decimal(30, 6),
         shipping_charge                     decimal(30, 6) NOT NULL DEFAULT(0),
         purchase_account_id                 integer, 
         purchase_discount_account_id        integer, 
@@ -106,11 +111,14 @@ BEGIN
         
 
 
+		SELECT @sales_tax_rate = finance.tax_setups.sales_tax_rate
+		FROM finance.tax_setups
+		WHERE finance.tax_setups.deleted = 0
+		AND finance.tax_setups.office_id = @office_id;
 
-        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
-        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
+        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge)
+        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge
         FROM @details;
-
 
         UPDATE @checkout_details 
         SET
@@ -121,6 +129,17 @@ BEGIN
             inventory_account_id            = inventory.get_inventory_account_id(item_id),
             discount                        = ROUND((price * quantity) * (discount_rate / 100), 2);
         
+
+		UPDATE @checkout_details 
+		SET 
+			is_taxable_item = inventory.items.is_taxable_item
+		FROM @checkout_details AS checkout_details
+		INNER JOIN inventory.items
+		ON inventory.items.item_id = checkout_details.item_id;
+
+		UPDATE @checkout_details
+		SET amount = (COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0);
+
         IF EXISTS
         (
             SELECT TOP 1 0 FROM @checkout_details AS details
@@ -130,10 +149,16 @@ BEGIN
             RAISERROR('Item/unit mismatch.', 13, 1);
         END;
 
+		SELECT 
+			@taxable_total		= COALESCE(SUM(CASE WHEN is_taxable_item = 1 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0),
+			@nontaxable_total	= COALESCE(SUM(CASE WHEN is_taxable_item = 0 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0)
+		FROM @checkout_details;
+
         SELECT @discount_total              = SUM(COALESCE(discount, 0)) FROM @checkout_details;
         SELECT @grand_total                 = SUM(COALESCE(price, 0) * COALESCE(quantity, 0)) FROM @checkout_details;
         SELECT @shipping_charge             = SUM(COALESCE(shipping_charge, 0)) FROM @checkout_details;
-        SELECT @tax_total                   = SUM(COALESCE(tax, 0)) FROM @checkout_details;
+        SELECT @tax_total					= ROUND(@taxable_total * (@sales_tax_rate / 100), 2);
+
 
 
 
@@ -190,15 +215,15 @@ BEGIN
         ORDER BY tran_type DESC;
 
 
-        INSERT INTO inventory.checkouts(value_date, book_date, transaction_master_id, transaction_book, posted_by, shipper_id, office_id)
-        SELECT @value_date, @book_date, @transaction_master_id, @book_name, @user_id, @shipper_id, @office_id;
+        INSERT INTO inventory.checkouts(value_date, book_date, transaction_master_id, transaction_book, posted_by, shipper_id, office_id, discount, taxable_total, tax_rate, tax, nontaxable_total)
+        SELECT @value_date, @book_date, @transaction_master_id, @book_name, @user_id, @shipper_id, @office_id, @invoice_discount, @taxable_total, @sales_tax_rate, @tax_total, @nontaxable_total;
         SET @checkout_id                = SCOPE_IDENTITY();
 
         INSERT INTO purchase.purchases(checkout_id, supplier_id, price_type_id)
         SELECT @checkout_id, @supplier_id, @price_type_id;
 
-        INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, tax, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
-        SELECT @checkout_id, @value_date, @book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, tax, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
+        INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
+        SELECT @checkout_id, @value_date, @book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
         FROM @checkout_details;
         
 

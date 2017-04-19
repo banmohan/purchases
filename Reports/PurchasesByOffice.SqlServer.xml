@@ -36,8 +36,7 @@
 				checkout_details.price,
 				checkout_details.discount,
 				ROUND((inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount, 4) AS sub_total,
-				inventory.checkout_details.tax,
-				ROUND((inventory.checkout_details.price * inventory.checkout_details.quantity) + inventory.checkout_details.tax - inventory.checkout_details.discount, 4) AS total
+				ROUND((inventory.checkout_details.price * inventory.checkout_details.quantity) + inventory.checkout_details.discount, 4) AS total
 			FROM purchase.purchases
 			JOIN inventory.checkouts 
 			ON purchase.purchases.checkout_id = checkouts.checkout_id

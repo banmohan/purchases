@@ -11,14 +11,16 @@
 <script src="/Areas/MixERP.Purchases/scripts/tasks/payment/index.js"></script>
 
 <script>
-    var annotationStatus = window.Enumerable.From(window.model.Annotation).Where(function(x) {
-        return x.Id === "Status";
-    }).FirstOrDefault();
+	setTimeout(function(){
+	    var annotationStatus = window.Enumerable.From(window.model.Annotation).Where(function(x) {
+	        return x.Id === "Status";
+	    }).FirstOrDefault();
 
-    annotationStatus.DefaultValue = "Unverified";
-    window.model.HasVerification = true;
-    window.model.Title = window.translate("PaymentVerification");
+	    annotationStatus.DefaultValue = "Unverified";
+	    window.model.HasVerification = true;
+	    window.model.Title = window.translate("PaymentVerification");
 
-    prepareView(model);
+	    prepareView(model);
+	}, 500);
 </script>
 

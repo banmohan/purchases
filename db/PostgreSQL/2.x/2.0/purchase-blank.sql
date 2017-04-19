@@ -72,6 +72,11 @@ CREATE TABLE purchase.quotations
     reference_number                        national character varying(24),
 	terms									national character varying(500),
     internal_memo                           national character varying(500),
+	taxable_total 							numeric(30, 6) NOT NULL DEFAULT(0),
+	discount 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
+	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
@@ -84,8 +89,8 @@ CREATE TABLE purchase.quotation_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
-    discount_rate                           public.decimal_strict2 NOT NULL DEFAULT(0),    
-    tax                                     public.money_strict2 NOT NULL DEFAULT(0),    
+    discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
+	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                public.decimal_strict2 NOT NULL
@@ -107,6 +112,11 @@ CREATE TABLE purchase.orders
     reference_number                        national character varying(24),
     terms                                   national character varying(500),
     internal_memo                           national character varying(500),
+	taxable_total 							numeric(30, 6) NOT NULL DEFAULT(0),
+	discount 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
+	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
@@ -119,8 +129,8 @@ CREATE TABLE purchase.order_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
-    discount_rate                           public.decimal_strict2 NOT NULL DEFAULT(0),    
-    tax                                     public.money_strict2 NOT NULL DEFAULT(0),    
+    discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
+	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                public.decimal_strict2 NOT NULL
@@ -511,7 +521,8 @@ DROP FUNCTION IF EXISTS purchase.post_purchase
     _supplier_id                            integer,
     _price_type_id                          integer,
     _shipper_id                             integer,
-    _details                                purchase.purchase_detail_type[]
+    _details                                purchase.purchase_detail_type[],
+    _invoice_discount				        numeric(30, 6)
 );
 
 
@@ -528,7 +539,8 @@ CREATE FUNCTION purchase.post_purchase
     _supplier_id                            integer,
     _price_type_id                          integer,
     _shipper_id                             integer,
-    _details                                purchase.purchase_detail_type[]
+    _details                                purchase.purchase_detail_type[],
+    _invoice_discount				        numeric(30, 6) DEFAULT(0)
 )
 RETURNS bigint
 AS
@@ -544,9 +556,12 @@ $$
     DECLARE _is_periodic                    boolean = inventory.is_periodic_inventory(_office_id);
     DECLARE _tran_counter                   integer;
     DECLARE _transaction_code               text;
+	DECLARE _taxable_total					numeric(30, 6);
     DECLARE _tax_total                      public.money_strict2;
+	DECLARE _nontaxable_total				numeric(30, 6);
     DECLARE _tax_account_id                 integer;
     DECLARE _shipping_charge                public.money_strict2;
+    DECLARE _sales_tax_rate                 numeric(30, 6);
     DECLARE _book_name                      national character varying(100) = 'Purchase Entry';
 BEGIN
     IF NOT finance.can_post_transaction(_login_id, _user_id, _office_id, _book_name, _value_date) THEN
@@ -559,6 +574,12 @@ BEGIN
         RAISE EXCEPTION '%', 'Invalid supplier';
     END IF;
     
+    SELECT finance.tax_setups.sales_tax_rate
+    INTO _sales_tax_rate 
+    FROM finance.tax_setups
+    WHERE NOT finance.tax_setups.deleted
+    AND finance.tax_setups.office_id = _office_id;
+
     DROP TABLE IF EXISTS temp_checkout_details CASCADE;
     CREATE TEMPORARY TABLE temp_checkout_details
     (
@@ -575,7 +596,8 @@ BEGIN
         cost_of_goods_sold              	public.money_strict2 NOT NULL DEFAULT(0),
         discount_rate                       decimal(30, 6),
         discount                        	public.money_strict2 NOT NULL DEFAULT(0),
-        tax                                 public.money_strict2 NOT NULL DEFAULT(0),
+        is_taxable_item                     boolean,
+        amount                              public.money_strict2,
         shipping_charge                     public.money_strict2 NOT NULL DEFAULT(0),
         purchase_account_id             	integer, 
         purchase_discount_account_id    	integer, 
@@ -584,8 +606,8 @@ BEGIN
 
 
 
-    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
-    SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
+    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge)
+    SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge
     FROM explode_array(_details);
 
 
@@ -598,6 +620,14 @@ BEGIN
         inventory_account_id            	= inventory.get_inventory_account_id(item_id),
         discount                            = ROUND((price * quantity) * (discount_rate / 100), 2);
     
+    UPDATE temp_checkout_details 
+    SET is_taxable_item = inventory.items.is_taxable_item
+    FROM inventory.items
+    WHERE inventory.items.item_id = temp_checkout_details.item_id;
+
+    UPDATE temp_checkout_details
+    SET amount = (COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0);
+
     IF EXISTS
     (
             SELECT 1 FROM temp_checkout_details AS details
@@ -608,10 +638,19 @@ BEGIN
         USING ERRCODE='P3201';
     END IF;
 
-    SELECT SUM(COALESCE(discount, 0))                               INTO _discount_total FROM temp_checkout_details;
-    SELECT SUM(COALESCE(price, 0) * COALESCE(quantity, 0))          INTO _grand_total FROM temp_checkout_details;
-    SELECT SUM(COALESCE(shipping_charge, 0))                        INTO _shipping_charge FROM temp_checkout_details;
-   SELECT SUM(COALESCE(tax, 0))                                     INTO _tax_total FROM temp_checkout_details;
+    SELECT 
+        COALESCE(SUM(CASE WHEN is_taxable_item = true THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0),
+        COALESCE(SUM(CASE WHEN is_taxable_item = false THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0)
+    INTO
+        _taxable_total,
+        _nontaxable_total
+    FROM temp_checkout_details;
+
+    SELECT ROUND(SUM(COALESCE(discount, 0)), 2)                         INTO _discount_total FROM temp_checkout_details;
+    SELECT ROUND(SUM(COALESCE(price, 0) * COALESCE(quantity, 0)), 2)    INTO _grand_total FROM temp_checkout_details;
+    SELECT ROUND(SUM(COALESCE(shipping_charge, 0)), 2)                  INTO _shipping_charge FROM temp_checkout_details;
+
+    _tax_total := ROUND(_taxable_total * (_sales_tax_rate / 100), 2);
 
 
     DROP TABLE IF EXISTS temp_transaction_details;
@@ -681,14 +720,14 @@ BEGIN
     ORDER BY tran_type DESC;
 
 
-    INSERT INTO inventory.checkouts(value_date, book_date, checkout_id, transaction_master_id, transaction_book, posted_by, shipper_id, office_id)
-    SELECT _value_date, _book_date, _checkout_id, _transaction_master_id, _book_name, _user_id, _shipper_id, _office_id;
+    INSERT INTO inventory.checkouts(value_date, book_date, checkout_id, transaction_master_id, transaction_book, posted_by, shipper_id, office_id, discount, taxable_total, tax_rate, tax, nontaxable_total)
+    SELECT _value_date, _book_date, _checkout_id, _transaction_master_id, _book_name, _user_id, _shipper_id, _office_id, _invoice_discount, _taxable_total, _sales_tax_rate, _tax_total, _nontaxable_total;
 
     INSERT INTO purchase.purchases(checkout_id, supplier_id, price_type_id)
     SELECT _checkout_id, _supplier_id, _price_type_id;
 
-    INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, tax, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
-    SELECT _checkout_id, _value_date, _book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, tax, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
+    INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
+    SELECT _checkout_id, _value_date, _book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
     FROM temp_checkout_details;
     
     PERFORM finance.auto_verify(_transaction_master_id, _office_id);
@@ -1663,17 +1702,12 @@ AS
 SELECT
 	purchase.orders.order_id,
 	inventory.get_supplier_name_by_supplier_id(purchase.orders.supplier_id) AS supplier,
-	SUM(
-
-        ROUND
-		(
-			(
-			(purchase.order_details.price * purchase.order_details.quantity)
-			* ((100 - purchase.order_details.discount_rate)/100)) 
-		, 4)  + purchase.order_details.tax		
-	) AS total_amount,
 	purchase.orders.value_date,
 	purchase.orders.expected_delivery_date AS expected_date,
+	COALESCE(purchase.orders.taxable_total, 0) + 
+	COALESCE(purchase.orders.tax, 0) + 
+	COALESCE(purchase.orders.nontaxable_total, 0) - 
+	COALESCE(purchase.orders.discount, 0) AS total_amount,
 	COALESCE(purchase.orders.reference_number, '') AS reference_number,
 	COALESCE(purchase.orders.terms, '') AS terms,
 	COALESCE(purchase.orders.internal_memo, '') AS memo,
@@ -1681,22 +1715,7 @@ SELECT
 	core.get_office_name_by_office_id(purchase.orders.office_id) AS office,
 	purchase.orders.transaction_timestamp AS posted_on,
 	purchase.orders.office_id
-FROM purchase.orders
-INNER JOIN purchase.order_details
-ON purchase.orders.order_id = purchase.order_details.order_id
-GROUP BY
-	purchase.orders.order_id,
-	purchase.orders.supplier_id,
-	purchase.orders.value_date,
-	purchase.orders.expected_delivery_date,
-	purchase.orders.reference_number,
-	purchase.orders.terms,
-	purchase.orders.internal_memo,
-	purchase.orders.user_id,
-	purchase.orders.transaction_timestamp,
-	purchase.orders.office_id
-ORDER BY purchase.orders.order_id;
-
+FROM purchase.orders;
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.views/purchase.purchase_search_view.sql --<--<--
@@ -1755,17 +1774,12 @@ AS
 SELECT
 	purchase.quotations.quotation_id,
 	inventory.get_supplier_name_by_supplier_id(purchase.quotations.supplier_id) AS supplier,
-	SUM(
-
-        ROUND
-		(
-			(
-			(purchase.quotation_details.price * purchase.quotation_details.quantity)
-			* ((100 - purchase.quotation_details.discount_rate)/100)) 
-		, 4)  + purchase.quotation_details.tax		
-	) AS total_amount,
 	purchase.quotations.value_date,
 	purchase.quotations.expected_delivery_date AS expected_date,
+	COALESCE(purchase.quotations.taxable_total, 0) + 
+	COALESCE(purchase.quotations.tax, 0) + 
+	COALESCE(purchase.quotations.nontaxable_total, 0) - 
+	COALESCE(purchase.quotations.discount, 0) AS total_amount,
 	COALESCE(purchase.quotations.reference_number, '') AS reference_number,
 	COALESCE(purchase.quotations.terms, '') AS terms,
 	COALESCE(purchase.quotations.internal_memo, '') AS memo,
@@ -1773,22 +1787,7 @@ SELECT
 	core.get_office_name_by_office_id(purchase.quotations.office_id) AS office,
 	purchase.quotations.transaction_timestamp AS posted_on,
 	purchase.quotations.office_id
-FROM purchase.quotations
-INNER JOIN purchase.quotation_details
-ON purchase.quotations.quotation_id = purchase.quotation_details.quotation_id
-GROUP BY
-	purchase.quotations.quotation_id,
-	purchase.quotations.supplier_id,
-	purchase.quotations.value_date,
-	purchase.quotations.expected_delivery_date,
-	purchase.quotations.reference_number,
-	purchase.quotations.terms,
-	purchase.quotations.internal_memo,
-	purchase.quotations.user_id,
-	purchase.quotations.transaction_timestamp,
-	purchase.quotations.office_id
-ORDER BY purchase.quotations.quotation_id;
-
+FROM purchase.quotations;
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.views/purchase.return_search_view.sql --<--<--
@@ -1797,7 +1796,7 @@ DROP VIEW IF EXISTS purchase.return_search_view;
 CREATE VIEW purchase.return_search_view
 AS
 SELECT
-	finance.transaction_master.transaction_master_id AS tran_id,
+	finance.transaction_master.transaction_master_id::text AS tran_id,
 	finance.transaction_master.transaction_code AS tran_code,
 	purchase.purchase_returns.supplier_id,
 	inventory.get_supplier_name_by_supplier_id(purchase.purchase_returns.supplier_id) AS supplier,
@@ -1843,7 +1842,7 @@ DROP VIEW IF EXISTS purchase.supplier_payment_search_view;
 CREATE VIEW purchase.supplier_payment_search_view
 AS
 SELECT
-	purchase.supplier_payments.transaction_master_id AS tran_id,
+	purchase.supplier_payments.transaction_master_id::text AS tran_id,
 	finance.transaction_master.transaction_code AS tran_code,
 	purchase.supplier_payments.supplier_id,
 	inventory.get_supplier_name_by_supplier_id(purchase.supplier_payments.supplier_id) AS supplier,

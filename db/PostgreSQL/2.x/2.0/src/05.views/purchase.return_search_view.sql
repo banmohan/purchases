@@ -3,7 +3,7 @@
 CREATE VIEW purchase.return_search_view
 AS
 SELECT
-	finance.transaction_master.transaction_master_id AS tran_id,
+	finance.transaction_master.transaction_master_id::text AS tran_id,
 	finance.transaction_master.transaction_code AS tran_code,
 	purchase.purchase_returns.supplier_id,
 	inventory.get_supplier_name_by_supplier_id(purchase.purchase_returns.supplier_id) AS supplier,

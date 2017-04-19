@@ -66,19 +66,24 @@ CREATE TABLE purchase.quotations
 (
     quotation_id                            bigint IDENTITY PRIMARY KEY,
     value_date                              date NOT NULL,
-    expected_delivery_date                    date NOT NULL,
+    expected_delivery_date                  date NOT NULL,
     transaction_timestamp                   DATETIMEOFFSET NOT NULL DEFAULT(GETUTCDATE()),
     supplier_id                             integer NOT NULL REFERENCES inventory.customers,
     price_type_id                           integer NOT NULL REFERENCES purchase.price_types,
-    shipper_id                                integer REFERENCES inventory.shippers,
+    shipper_id                              integer REFERENCES inventory.shippers,
     user_id                                 integer NOT NULL REFERENCES account.users,
     office_id                               integer NOT NULL REFERENCES core.offices,
     reference_number                        national character varying(24),
-    terms                                    national character varying(500),
+    terms                                   national character varying(500),
     internal_memo                           national character varying(500),
-    audit_user_id                           integer REFERENCES account.users,
+ 	taxable_total 							numeric(30, 6) NOT NULL DEFAULT(0),
+	discount 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
+	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
-    deleted                                    bit DEFAULT(0)
+    deleted                                 bit DEFAULT(0)
 );
 
 CREATE TABLE purchase.quotation_details
@@ -88,8 +93,8 @@ CREATE TABLE purchase.quotation_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   decimal(30, 6) NOT NULL,
-    discount_rate                           decimal(30, 6) NOT NULL DEFAULT(0),    
-    tax                                     decimal(30, 6) NOT NULL DEFAULT(0),    
+    discount                           		decimal(30, 6) NOT NULL DEFAULT(0),    
+	is_taxed 								bit NOT NULL,
     shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                decimal(30, 6) NOT NULL
@@ -101,19 +106,24 @@ CREATE TABLE purchase.orders
     order_id                                bigint IDENTITY PRIMARY KEY,
     quotation_id                            bigint REFERENCES purchase.quotations,
     value_date                              date NOT NULL,
-    expected_delivery_date                    date NOT NULL,
+    expected_delivery_date                  date NOT NULL,
     transaction_timestamp                   DATETIMEOFFSET NOT NULL DEFAULT(GETUTCDATE()),
     supplier_id                             integer NOT NULL REFERENCES inventory.suppliers,
     price_type_id                           integer NOT NULL REFERENCES purchase.price_types,
-    shipper_id                                integer REFERENCES inventory.shippers,
+    shipper_id                              integer REFERENCES inventory.shippers,
     user_id                                 integer NOT NULL REFERENCES account.users,
     office_id                               integer NOT NULL REFERENCES core.offices,
     reference_number                        national character varying(24),
     terms                                   national character varying(500),
     internal_memo                           national character varying(500),
+	taxable_total 							numeric(30, 6) NOT NULL DEFAULT(0),
+	discount 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
+	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
-    deleted                                    bit DEFAULT(0)
+    deleted                                 bit DEFAULT(0)
 );
 
 CREATE TABLE purchase.order_details
@@ -123,8 +133,8 @@ CREATE TABLE purchase.order_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   decimal(30, 6) NOT NULL,
-    discount_rate                           decimal(30, 6) NOT NULL DEFAULT(0),    
-    tax                                     decimal(30, 6) NOT NULL DEFAULT(0),    
+    discount                          		decimal(30, 6) NOT NULL DEFAULT(0),    
+	is_taxed 								bit NOT NULL,
     shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                decimal(30, 6) NOT NULL

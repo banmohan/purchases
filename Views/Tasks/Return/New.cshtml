@@ -31,13 +31,11 @@
                     const unitId = window.parseInt2(el.find("select.unit").val());
                     const price = window.parseFloat2(el.find("input.price").val() || 0);
                     const discountRate = window.parseFloat2(el.find("input.discount").val() || 0);
-                    const tax = window.parseFloat2(el.find(".tax-amount").html() || 0);
 
                     model.push({
                         StoreId: $("#StoreSelect").val(),
                         ItemId: itemId,
                         Quantity: quantity,
-                        Tax: tax,
                         UnitId: unitId,
                         Price: price,
                         DiscountRate: discountRate

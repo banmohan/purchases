@@ -9,7 +9,7 @@
 });
 
 var itemTemplate =
-    `<div class="item" id="pos-{ItemId}" data-cost-price="{CostPrice}" data-photo="{Photo}" data-unit-id="{UnitId}" data-valid-units="{ValidUnits}" data-brand="{BrandName}" data-item-group="{ItemGroupName}" data-item-name="{ItemName}" data-item-code="{ItemCode}" data-item-id="{ItemId}" data-price="{Price}">
+    `<div class="item" id="pos-{ItemId}" data-cost-price="{CostPrice}" data-photo="{Photo}" data-unit-id="{UnitId}" data-valid-units="{ValidUnits}" data-brand="{BrandName}" data-item-group="{ItemGroupName}" data-item-name="{ItemName}" data-item-code="{ItemCode}" data-item-id="{ItemId}" data-price="{Price}" data-is-taxable-item="{IsTaxableItem}">
 	<div class="photo block">
 		<img src="{Photo}">
 	</div>
@@ -27,14 +27,6 @@ var itemTemplate =
 			<span class="discount rate"></span>
 			<span>&nbsp; =&nbsp; </span>
 			<span class="discounted amount"></span>
-		</div>
-		<div class ="tax info" style="display:none;">
-			<span>Add Tax </span>
-			<span class ="tax-amount"></span>
-			<span> (</span>
-			<span class ="tax-rate"></span>
-			<span>%) = </span>
-			<span class ="amount-plus-tax"></span>
 		</div>
 		<div>
 			<select class="unit inverted" data-item-id="{ItemId}">
@@ -187,6 +179,7 @@ function initializeClickAndAction() {
         template = template.replace(/{Price}/g, price);
         template = template.replace(/{UnitId}/g, unitId);
         template = template.replace(/{ValidUnits}/g, validUnits);
+        template = template.replace(/{IsTaxableItem}/g, isTaxableItem.toString());
 
         var item = $(template);
         var quantityInput = item.find("input.quantity");
@@ -243,19 +236,6 @@ function initializeClickAndAction() {
                 el.find("span.discounted.amount").html(window.getFormattedNumber(discountedAmount));
             } else {
                 el.find(".discount.info").hide();
-            };
-
-            if (isTaxableItem) {
-                const tax = window.round((discountedAmount || amount) * taxRate / 100, 2);
-                const amountPlusTax = window.round((discountedAmount || amount) + tax, 2);
-
-                //alert(discountedAmount);
-                //alert(amount);
-
-                el.find(".tax.info .tax-amount").html(window.getFormattedNumber(tax));
-                el.find(".tax.info .tax-rate").html(window.getFormattedNumber(window.round(taxRate, 2)));
-                el.find(".tax.info .amount-plus-tax").html(window.getFormattedNumber(amountPlusTax));
-                el.find(".tax.info").show();
             };
 
             window.updateTotal();
@@ -362,12 +342,15 @@ function updateTotal() {
     const amountEl = $("#SummaryItems div.amount .money");
 
     var totalPrice = 0;
+    var taxableTotal = 0;
+    var nonTaxableTotal = 0;
     //var totalQuantity = 0;
 
     $.each(candidates, function () {
         const el = $(this);
         const quantityEl = el.find("input.quantity");
         const discountEl = el.find("input.discount");
+        const isTaxable = el.attr("data-is-taxable-item") === "true";
 
         const quantity = window.parseFloat2(quantityEl.val()) || 0;
         const discountRate = window.parseFloat2(discountEl.val()) || 0;
@@ -375,10 +358,18 @@ function updateTotal() {
 
         const amount = price * quantity;
         const discountedAmount = amount * ((100 - discountRate) / 100);
-        const amountPlusTax = window.parseFloat2(el.find(".amount-plus-tax").html());
-        totalPrice += (amountPlusTax || discountedAmount || amount);
+
+        if (isTaxable) {
+            taxableTotal += discountedAmount;
+        } else {
+            nonTaxableTotal += discountedAmount;
+        };
+
+        totalPrice += discountedAmount;
     });
 
+    const tax = taxableTotal * (taxRate / 100);
+    totalPrice += tax;
 
     totalPrice = window.round(totalPrice, 2);
 

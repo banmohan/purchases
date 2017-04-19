@@ -67,19 +67,24 @@ CREATE TABLE purchase.quotations
 (
     quotation_id                            bigint IDENTITY PRIMARY KEY,
     value_date                              date NOT NULL,
-    expected_delivery_date                    date NOT NULL,
+    expected_delivery_date                  date NOT NULL,
     transaction_timestamp                   DATETIMEOFFSET NOT NULL DEFAULT(GETUTCDATE()),
     supplier_id                             integer NOT NULL REFERENCES inventory.customers,
     price_type_id                           integer NOT NULL REFERENCES purchase.price_types,
-    shipper_id                                integer REFERENCES inventory.shippers,
+    shipper_id                              integer REFERENCES inventory.shippers,
     user_id                                 integer NOT NULL REFERENCES account.users,
     office_id                               integer NOT NULL REFERENCES core.offices,
     reference_number                        national character varying(24),
-    terms                                    national character varying(500),
+    terms                                   national character varying(500),
     internal_memo                           national character varying(500),
-    audit_user_id                           integer REFERENCES account.users,
+ 	taxable_total 							numeric(30, 6) NOT NULL DEFAULT(0),
+	discount 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
+	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
-    deleted                                    bit DEFAULT(0)
+    deleted                                 bit DEFAULT(0)
 );
 
 CREATE TABLE purchase.quotation_details
@@ -89,8 +94,8 @@ CREATE TABLE purchase.quotation_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   decimal(30, 6) NOT NULL,
-    discount_rate                           decimal(30, 6) NOT NULL DEFAULT(0),    
-    tax                                     decimal(30, 6) NOT NULL DEFAULT(0),    
+    discount                           		decimal(30, 6) NOT NULL DEFAULT(0),    
+	is_taxed 								bit NOT NULL,
     shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                decimal(30, 6) NOT NULL
@@ -102,19 +107,24 @@ CREATE TABLE purchase.orders
     order_id                                bigint IDENTITY PRIMARY KEY,
     quotation_id                            bigint REFERENCES purchase.quotations,
     value_date                              date NOT NULL,
-    expected_delivery_date                    date NOT NULL,
+    expected_delivery_date                  date NOT NULL,
     transaction_timestamp                   DATETIMEOFFSET NOT NULL DEFAULT(GETUTCDATE()),
     supplier_id                             integer NOT NULL REFERENCES inventory.suppliers,
     price_type_id                           integer NOT NULL REFERENCES purchase.price_types,
-    shipper_id                                integer REFERENCES inventory.shippers,
+    shipper_id                              integer REFERENCES inventory.shippers,
     user_id                                 integer NOT NULL REFERENCES account.users,
     office_id                               integer NOT NULL REFERENCES core.offices,
     reference_number                        national character varying(24),
     terms                                   national character varying(500),
     internal_memo                           national character varying(500),
+	taxable_total 							numeric(30, 6) NOT NULL DEFAULT(0),
+	discount 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
+	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
-    deleted                                    bit DEFAULT(0)
+    deleted                                 bit DEFAULT(0)
 );
 
 CREATE TABLE purchase.order_details
@@ -124,8 +134,8 @@ CREATE TABLE purchase.order_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   decimal(30, 6) NOT NULL,
-    discount_rate                           decimal(30, 6) NOT NULL DEFAULT(0),    
-    tax                                     decimal(30, 6) NOT NULL DEFAULT(0),    
+    discount                          		decimal(30, 6) NOT NULL DEFAULT(0),    
+	is_taxed 								bit NOT NULL,
     shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                decimal(30, 6) NOT NULL
@@ -524,6 +534,7 @@ CREATE PROCEDURE purchase.post_purchase
     @price_type_id                          integer,
     @shipper_id                             integer,
     @details                                purchase.purchase_detail_type READONLY,
+	@invoice_discount						numeric(30, 6) = 0,
 	@transaction_master_id					bigint OUTPUT
 )
 AS
@@ -545,9 +556,12 @@ BEGIN
     DECLARE @tax_account_id                 integer;
     DECLARE @shipping_charge                decimal(30, 6);
     DECLARE @book_name                      national character varying(100) = 'Purchase Entry';
+	DECLARE @sales_tax_rate					numeric(30, 6);
 
     DECLARE @can_post_transaction           bit;
     DECLARE @error_message                  national character varying(MAX);
+	DECLARE @taxable_total					numeric(30, 6);
+	DECLARE @nontaxable_total				numeric(30, 6);
 
     DECLARE @checkout_details TABLE
     (
@@ -564,7 +578,8 @@ BEGIN
         cost_of_goods_sold                  decimal(30, 6) NOT NULL DEFAULT(0),
         discount_rate                       decimal(30, 6),
         discount                            decimal(30, 6) NOT NULL DEFAULT(0),
-        tax                                 decimal(30, 6) NOT NULL DEFAULT(0),
+		is_taxable_item						bit,
+        amount								decimal(30, 6),
         shipping_charge                     decimal(30, 6) NOT NULL DEFAULT(0),
         purchase_account_id                 integer, 
         purchase_discount_account_id        integer, 
@@ -612,11 +627,14 @@ BEGIN
         
 
 
+		SELECT @sales_tax_rate = finance.tax_setups.sales_tax_rate
+		FROM finance.tax_setups
+		WHERE finance.tax_setups.deleted = 0
+		AND finance.tax_setups.office_id = @office_id;
 
-        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
-        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
+        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge)
+        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge
         FROM @details;
-
 
         UPDATE @checkout_details 
         SET
@@ -627,6 +645,17 @@ BEGIN
             inventory_account_id            = inventory.get_inventory_account_id(item_id),
             discount                        = ROUND((price * quantity) * (discount_rate / 100), 2);
         
+
+		UPDATE @checkout_details 
+		SET 
+			is_taxable_item = inventory.items.is_taxable_item
+		FROM @checkout_details AS checkout_details
+		INNER JOIN inventory.items
+		ON inventory.items.item_id = checkout_details.item_id;
+
+		UPDATE @checkout_details
+		SET amount = (COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0);
+
         IF EXISTS
         (
             SELECT TOP 1 0 FROM @checkout_details AS details
@@ -636,10 +665,16 @@ BEGIN
             RAISERROR('Item/unit mismatch.', 13, 1);
         END;
 
+		SELECT 
+			@taxable_total		= COALESCE(SUM(CASE WHEN is_taxable_item = 1 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0),
+			@nontaxable_total	= COALESCE(SUM(CASE WHEN is_taxable_item = 0 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0)
+		FROM @checkout_details;
+
         SELECT @discount_total              = SUM(COALESCE(discount, 0)) FROM @checkout_details;
         SELECT @grand_total                 = SUM(COALESCE(price, 0) * COALESCE(quantity, 0)) FROM @checkout_details;
         SELECT @shipping_charge             = SUM(COALESCE(shipping_charge, 0)) FROM @checkout_details;
-        SELECT @tax_total                   = SUM(COALESCE(tax, 0)) FROM @checkout_details;
+        SELECT @tax_total					= ROUND(@taxable_total * (@sales_tax_rate / 100), 2);
+
 
 
 
@@ -696,15 +731,15 @@ BEGIN
         ORDER BY tran_type DESC;
 
 
-        INSERT INTO inventory.checkouts(value_date, book_date, transaction_master_id, transaction_book, posted_by, shipper_id, office_id)
-        SELECT @value_date, @book_date, @transaction_master_id, @book_name, @user_id, @shipper_id, @office_id;
+        INSERT INTO inventory.checkouts(value_date, book_date, transaction_master_id, transaction_book, posted_by, shipper_id, office_id, discount, taxable_total, tax_rate, tax, nontaxable_total)
+        SELECT @value_date, @book_date, @transaction_master_id, @book_name, @user_id, @shipper_id, @office_id, @invoice_discount, @taxable_total, @sales_tax_rate, @tax_total, @nontaxable_total;
         SET @checkout_id                = SCOPE_IDENTITY();
 
         INSERT INTO purchase.purchases(checkout_id, supplier_id, price_type_id)
         SELECT @checkout_id, @supplier_id, @price_type_id;
 
-        INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, tax, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
-        SELECT @checkout_id, @value_date, @book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, tax, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
+        INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
+        SELECT @checkout_id, @value_date, @book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
         FROM @checkout_details;
         
 
@@ -1845,17 +1880,12 @@ AS
 SELECT
 	purchase.orders.order_id,
 	inventory.get_supplier_name_by_supplier_id(purchase.orders.supplier_id) AS supplier,
-	SUM(
-
-        ROUND
-		(
-			(
-			(purchase.order_details.price * purchase.order_details.quantity)
-			* ((100 - purchase.order_details.discount_rate)/100)) 
-		, 4)  + purchase.order_details.tax		
-	) AS total_amount,
 	purchase.orders.value_date,
 	purchase.orders.expected_delivery_date AS expected_date,
+	COALESCE(purchase.orders.taxable_total, 0) + 
+	COALESCE(purchase.orders.tax, 0) + 
+	COALESCE(purchase.orders.nontaxable_total, 0) - 
+	COALESCE(purchase.orders.discount, 0) AS total_amount,
 	COALESCE(purchase.orders.reference_number, '') AS reference_number,
 	COALESCE(purchase.orders.terms, '') AS terms,
 	COALESCE(purchase.orders.internal_memo, '') AS memo,
@@ -1863,20 +1893,7 @@ SELECT
 	core.get_office_name_by_office_id(purchase.orders.office_id) AS office,
 	purchase.orders.transaction_timestamp AS posted_on,
 	purchase.orders.office_id
-FROM purchase.orders
-INNER JOIN purchase.order_details
-ON purchase.orders.order_id = purchase.order_details.order_id
-GROUP BY
-	purchase.orders.order_id,
-	purchase.orders.supplier_id,
-	purchase.orders.value_date,
-	purchase.orders.expected_delivery_date,
-	purchase.orders.reference_number,
-	purchase.orders.terms,
-	purchase.orders.internal_memo,
-	purchase.orders.user_id,
-	purchase.orders.transaction_timestamp,
-	purchase.orders.office_id;
+FROM purchase.orders;
 
 GO
 
@@ -1946,17 +1963,12 @@ AS
 SELECT
 	purchase.quotations.quotation_id,
 	inventory.get_supplier_name_by_supplier_id(purchase.quotations.supplier_id) AS supplier,
-	SUM(
-
-        ROUND
-		(
-			(
-			(purchase.quotation_details.price * purchase.quotation_details.quantity)
-			* ((100 - purchase.quotation_details.discount_rate)/100)) 
-		, 4)  + purchase.quotation_details.tax		
-	) AS total_amount,
 	purchase.quotations.value_date,
 	purchase.quotations.expected_delivery_date AS expected_date,
+	COALESCE(purchase.quotations.taxable_total, 0) + 
+	COALESCE(purchase.quotations.tax, 0) + 
+	COALESCE(purchase.quotations.nontaxable_total, 0) - 
+	COALESCE(purchase.quotations.discount, 0) AS total_amount,
 	COALESCE(purchase.quotations.reference_number, '') AS reference_number,
 	COALESCE(purchase.quotations.terms, '') AS terms,
 	COALESCE(purchase.quotations.internal_memo, '') AS memo,
@@ -1964,20 +1976,7 @@ SELECT
 	core.get_office_name_by_office_id(purchase.quotations.office_id) AS office,
 	purchase.quotations.transaction_timestamp AS posted_on,
 	purchase.quotations.office_id
-FROM purchase.quotations
-INNER JOIN purchase.quotation_details
-ON purchase.quotations.quotation_id = purchase.quotation_details.quotation_id
-GROUP BY
-	purchase.quotations.quotation_id,
-	purchase.quotations.supplier_id,
-	purchase.quotations.value_date,
-	purchase.quotations.expected_delivery_date,
-	purchase.quotations.reference_number,
-	purchase.quotations.terms,
-	purchase.quotations.internal_memo,
-	purchase.quotations.user_id,
-	purchase.quotations.transaction_timestamp,
-	purchase.quotations.office_id;
+FROM purchase.quotations;
 
 GO
 
