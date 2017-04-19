@@ -26,6 +26,7 @@ BEGIN
     DECLARE @item_in_stock                  decimal(30, 6) = 0;
     DECLARE @error_item_id                  integer;
     DECLARE @error_quantity                 decimal(30, 6);
+    DECLARE @error_unit						national character varying(500);
     DECLARE @error_amount                   decimal(30, 6);
     DECLARE @error_message                  national character varying(MAX);
 
@@ -287,13 +288,14 @@ BEGIN
 
     SELECT TOP 1
         @error_item_id = item_id,
-        @error_quantity = returned_quantity        
+        @error_quantity = returned_quantity,
+		@error_unit = inventory.get_unit_name_by_unit_id(root_unit_id)
     FROM @item_summary
     WHERE returned_quantity + returned_in_previous_batch + in_verification_queue > actual_quantity;
 
     IF(@error_item_id IS NOT NULL)
     BEGIN
-        SET @error_message = FORMATMESSAGE('The returned quantity (%s) of %s is greater than actual quantity.', CAST(@error_quantity AS varchar(30)), inventory.get_item_name_by_item_id(@error_item_id));
+        SET @error_message = FORMATMESSAGE('The returned quantity (%s %s) of %s is greater than actual quantity.', CAST(@error_quantity AS varchar(30)), @error_unit, inventory.get_item_name_by_item_id(@error_item_id));
 
         UPDATE @result 
         SET 
@@ -304,6 +306,7 @@ BEGIN
 
 
     SELECT @total_rows = MAX(id) FROM @details_temp;
+	
 
     WHILE @counter <= @total_rows
     BEGIN
@@ -316,6 +319,7 @@ BEGIN
         FROM @details_temp
         WHERE id >= @counter
         ORDER BY id;
+
 
         IF(@loop_id IS NOT NULL)
         BEGIN
@@ -335,6 +339,7 @@ BEGIN
         AND base_price <  @loop_price
         AND allowed_returns >= @loop_base_quantity;
         
+
         IF (@error_item_id IS NOT NULL)
         BEGIN
             SET @error_message = FORMATMESSAGE

@@ -19,7 +19,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
             string sql = @"EXECUTE purchase.post_purchase
                                 @OfficeId, @UserId, @LoginId, @ValueDate, @BookDate, 
                                 @CostCenterId, @ReferenceNumber, @StatementReference, 
-                                @SupplierId, @PriceTypeId, @ShipperId, @Details,
+                                @SupplierId, @PriceTypeId, @ShipperId, @StoreId, @Details, @InvoiceDiscount,
                                 @TransactionMasterId OUTPUT
                             ;";
 
@@ -38,12 +38,14 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
                     command.Parameters.AddWithNullableValue("@SupplierId", model.SupplierId);
                     command.Parameters.AddWithNullableValue("@PriceTypeId", model.PriceTypeId);
                     command.Parameters.AddWithNullableValue("@ShipperId", model.ShipperId);
+                    command.Parameters.AddWithNullableValue("@StoreId", model.StoreId);
 
                     using (var details = this.GetDetails(model.Details))
                     {
                         command.Parameters.AddWithNullableValue("@Details", details, "purchase.purchase_detail_type");
                     }
 
+                    command.Parameters.AddWithNullableValue("@InvoiceDiscount", model.Discount);
                     command.Parameters.Add("@TransactionMasterId", SqlDbType.BigInt).Direction = ParameterDirection.Output;
 
                     connection.Open();

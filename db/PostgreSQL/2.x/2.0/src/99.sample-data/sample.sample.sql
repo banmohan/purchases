@@ -43,21 +43,22 @@ BEGIN
         FROM inventory.items
     ) INTO _details;
 
-    PERFORM purchase.post_purchase
-    (
-        _office_id,
-        _user_id,
-        _login_id,
-        _value_date,
-        _book_date,
-        _cost_center_id,
-        _reference_number,
-        _statement_reference,
-        _supplier_id,
-        _price_type_id,
-        _shipper_id,
-        _details
-    );    
+    --TODO
+    -- PERFORM purchase.post_purchase
+    -- (
+    --     _office_id,
+    --     _user_id,
+    --     _login_id,
+    --     _value_date,
+    --     _book_date,
+    --     _cost_center_id,
+    --     _reference_number,
+    --     _statement_reference,
+    --     _supplier_id,
+    --     _price_type_id,
+    --     _shipper_id,
+    --     _details
+    -- );    
 END
 $$
 LANGUAGE plpgsql;

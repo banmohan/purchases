@@ -17,6 +17,7 @@ CREATE PROCEDURE purchase.post_purchase
     @supplier_id                            integer,
     @price_type_id                          integer,
     @shipper_id                             integer,
+    @store_id								integer,
     @details                                purchase.purchase_detail_type READONLY,
 	@invoice_discount						numeric(30, 6) = 0,
 	@transaction_master_id					bigint OUTPUT
@@ -127,7 +128,7 @@ BEGIN
             purchase_account_id             = inventory.get_purchase_account_id(item_id),
             purchase_discount_account_id    = inventory.get_purchase_discount_account_id(item_id),
             inventory_account_id            = inventory.get_inventory_account_id(item_id),
-            discount                        = ROUND((price * quantity) * (discount_rate / 100), 2);
+            discount                        = ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2);
         
 
 		UPDATE @checkout_details 
@@ -154,15 +155,13 @@ BEGIN
 			@nontaxable_total	= COALESCE(SUM(CASE WHEN is_taxable_item = 0 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0)
 		FROM @checkout_details;
 
-        SELECT @discount_total              = SUM(COALESCE(discount, 0)) FROM @checkout_details;
-        SELECT @grand_total                 = SUM(COALESCE(price, 0) * COALESCE(quantity, 0)) FROM @checkout_details;
-        SELECT @shipping_charge             = SUM(COALESCE(shipping_charge, 0)) FROM @checkout_details;
-        SELECT @tax_total					= ROUND(@taxable_total * (@sales_tax_rate / 100), 2);
+        SELECT @discount_total				= SUM(COALESCE(discount, 0)) FROM @checkout_details;
 
+        SELECT @shipping_charge				= SUM(COALESCE(shipping_charge, 0)) FROM @checkout_details;
+        SELECT @tax_total					= ROUND((COALESCE(@taxable_total, 0) - COALESCE(@invoice_discount, 0)) * (@sales_tax_rate / 100), 2);
+        SELECT @grand_total					= COALESCE(@taxable_total, 0) + COALESCE(@nontaxable_total, 0) + COALESCE(@tax_total, 0) - COALESCE(@discount_total, 0)  - COALESCE(@invoice_discount, 0);
+        SET @payable						= @grand_total;
 
-
-
-        SET @payable                        = @grand_total - COALESCE(@discount_total, 0) + COALESCE(@shipping_charge, 0) + COALESCE(@tax_total, 0);
         SET @default_currency_code          = core.get_currency_code_by_office_id(@office_id);
         SET @tran_counter                   = finance.get_new_transaction_counter(@value_date);
         SET @transaction_code               = finance.get_transaction_code(@value_date, @office_id, @user_id, @login_id);
@@ -170,7 +169,11 @@ BEGIN
         IF(@is_periodic = 1)
         BEGIN
             INSERT INTO @temp_transaction_details(tran_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
-            SELECT 'Dr', purchase_account_id, @statement_reference, @default_currency_code, SUM(COALESCE(price, 0) * COALESCE(quantity, 0)), 1, @default_currency_code, SUM(COALESCE(price, 0) * COALESCE(quantity, 0))
+            SELECT 
+				'Dr', purchase_account_id, @statement_reference, @default_currency_code, 
+				SUM((COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0)), 
+				1, @default_currency_code, 
+				SUM((COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0))
             FROM @checkout_details
             GROUP BY purchase_account_id;
         END
@@ -178,7 +181,11 @@ BEGIN
         BEGIN
             --Perpetutal Inventory Accounting System
             INSERT INTO @temp_transaction_details(tran_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
-            SELECT 'Dr', inventory_account_id, @statement_reference, @default_currency_code, SUM(COALESCE(price, 0) * COALESCE(quantity, 0)), 1, @default_currency_code, SUM(COALESCE(price, 0) * COALESCE(quantity, 0))
+            SELECT 
+				'Dr', inventory_account_id, @statement_reference, @default_currency_code, 
+				SUM((COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0)), 
+				1, @default_currency_code, 
+				SUM((COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0))
             FROM @checkout_details
             GROUP BY inventory_account_id;
         END;
@@ -192,11 +199,25 @@ BEGIN
             GROUP BY purchase_discount_account_id;
         END;
 
+        IF(@invoice_discount > 0)
+        BEGIN
+			DECLARE @purchase_discount_account_id integer;
+
+			SELECT @purchase_discount_account_id = inventory.stores.purchase_discount_account_id
+			FROM inventory.stores
+			WHERE inventory.stores.store_id = @store_id;
+
+            INSERT INTO @temp_transaction_details(tran_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
+            SELECT 'Cr', @purchase_discount_account_id, @statement_reference, @default_currency_code, @invoice_discount, 1, @default_currency_code, @invoice_discount;
+        END;
+
+
         IF(COALESCE(@tax_total, 0) > 0)
         BEGIN
             INSERT INTO @temp_transaction_details(tran_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
             SELECT 'Dr', @tax_account_id, @statement_reference, @default_currency_code, @tax_total, 1, @default_currency_code, @tax_total;
         END;    
+
 
         INSERT INTO @temp_transaction_details(tran_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
         SELECT 'Cr', inventory.get_account_id_by_supplier_id(@supplier_id), @statement_reference, @default_currency_code, @payable, 1, @default_currency_code, @payable;
@@ -205,6 +226,17 @@ BEGIN
         UPDATE @temp_transaction_details SET transaction_master_id = @transaction_master_id;        
         UPDATE @checkout_details SET checkout_id = @checkout_id;
         
+
+		IF
+		(
+			SELECT SUM(CASE WHEN tran_type = 'Cr' THEN 1 ELSE -1 END * amount_in_local_currency)
+			FROM @temp_transaction_details
+		) != 0
+		BEGIN
+			--SELECT finance.get_account_name_by_account_id(account_id), * FROM @temp_transaction_details ORDER BY tran_type;
+			RAISERROR('Could not balance the Journal Entry. Nothing was saved.', 16, 1);		
+		END;
+
         INSERT INTO finance.transaction_master(transaction_counter, transaction_code, book, value_date, book_date, user_id, login_id, office_id, cost_center_id, reference_number, statement_reference) 
         SELECT @tran_counter, @transaction_code, @book_name, @value_date, @book_date, @user_id, @login_id, @office_id, @cost_center_id, @reference_number, @statement_reference;
         SET @transaction_master_id = SCOPE_IDENTITY();
@@ -222,8 +254,8 @@ BEGIN
         INSERT INTO purchase.purchases(checkout_id, supplier_id, price_type_id)
         SELECT @checkout_id, @supplier_id, @price_type_id;
 
-        INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
-        SELECT @checkout_id, @value_date, @book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
+        INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount_rate, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
+        SELECT @checkout_id, @value_date, @book_date, store_id, transaction_type, item_id, price, discount_rate, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
         FROM @checkout_details;
         
 
@@ -248,4 +280,40 @@ BEGIN
 END;
 
 GO
+--DECLARE @office_id								integer 							= (SELECT TOP 1 office_id FROM core.offices);
+--DECLARE @user_id                                integer 							= (SELECT TOP 1 user_id FROM account.users);
+--DECLARE @login_id                               bigint  							= (SELECT TOP 1 login_id FROM account.logins WHERE user_id = @user_id);
+--DECLARE @value_date                             date								= finance.get_value_date(@office_id);
+--DECLARE @book_date                              date								= finance.get_value_date(@office_id);
+--DECLARE @cost_center_id                         integer								= (SELECT TOP 1 cost_center_id FROM finance.cost_centers);
+--DECLARE @reference_number                       national character varying(24)		= 'N/A';
+--DECLARE @statement_reference                    national character varying(2000)	= 'Test';
+--DECLARE @supplier_id                            integer								= (SELECT TOP 1 supplier_id FROM inventory.suppliers);
+--DECLARE @price_type_id                          integer								= (SELECT TOP 1 price_type_id FROM sales.price_types);
+--DECLARE @shipper_id                             integer								= (SELECT TOP 1 shipper_id FROM inventory.shippers);
+--DECLARE @store_id                               integer								= (SELECT TOP 1 store_id FROM inventory.stores WHERE store_name='Cold Room FG');
+--DECLARE @details								purchase.purchase_detail_type;
+--DECLARE @invoice_discount						numeric(30, 6)						= 0.00;
+--DECLARE @transaction_master_id					bigint;
 
+--INSERT INTO @details
+--SELECT @store_id, 'Cr', item_id, 20, unit_id, cost_price, 0, CASE WHEN is_taxable_item = 1 THEN 1 ELSE 0 END * cost_price * 0.13, 0
+--FROM inventory.items
+--WHERE inventory.items.item_code IN('SHS0003', 'SHS0004');
+
+--EXECUTE purchase.post_purchase
+--    @office_id,
+--    @user_id,
+--    @login_id,
+--    @value_date,
+--    @book_date,
+--    @cost_center_id,
+--    @reference_number,
+--    @statement_reference,
+--    @supplier_id,
+--    @price_type_id,
+--    @shipper_id,
+--    @store_id,
+--    @details,
+--	@invoice_discount,
+--	@transaction_master_id OUTPUT;

@@ -54,6 +54,7 @@
             const priceTypeId = $("#PriceTypeSelect").val();
             const shipperId = $("#ShipperSelect").val();
             const storeId = $("#StoreSelect").val();
+            const discount = window.parseFloat2($("#DiscountInputText").val());
             const details = getDetails();
 
             return {
@@ -66,6 +67,7 @@
                 PriceTypeId: priceTypeId,
                 ShipperId: shipperId,
                 StoreId: storeId,
+                Discount: discount,
                 Details: details
             };
         };

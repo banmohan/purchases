@@ -333,18 +333,21 @@ function initializeClickAndAction() {
 };
 
 $("#SummaryItems div.discount .money input, " +
-    "#ReceiptSummary div.tender .money input").keyup(function() {
+    "#ReceiptSummary div.tender .money input, #DiscountInputText").keyup(function() {
     window.updateTotal();
 });
 
 function updateTotal() {
     const candidates = $("#PurchaseItems div.item");
     const amountEl = $("#SummaryItems div.amount .money");
+    var taxRate = window.parseFloat2($("#SalesTaxRateHidden").val());
 
+    window.setRegionalFormat();
+
+    var discount = window.parseFloat2($("#DiscountInputText").val());
     var totalPrice = 0;
     var taxableTotal = 0;
     var nonTaxableTotal = 0;
-    //var totalQuantity = 0;
 
     $.each(candidates, function () {
         const el = $(this);
@@ -367,6 +370,12 @@ function updateTotal() {
 
         totalPrice += discountedAmount;
     });
+
+    taxableTotal = window.parseFloat2(window.round(taxableTotal, 2)) || 0;
+    nonTaxableTotal = window.parseFloat2(window.round(nonTaxableTotal, 2)) || 0;
+
+    totalPrice -= discount;
+    taxableTotal -= discount;
 
     const tax = taxableTotal * (taxRate / 100);
     totalPrice += tax;
@@ -518,23 +527,23 @@ function clearScreen() {
 
 
 function loadStores() {
-    displayFieldBinder($("#StoreSelect"), "/api/forms/inventory/stores/display-fields");
+    window.displayFieldBinder($("#StoreSelect"), "/api/forms/inventory/stores/display-fields", true);
 };
 
 function loadShippers() {
-    displayFieldBinder($("#ShipperSelect"), "/api/forms/inventory/shippers/display-fields");
+    window.displayFieldBinder($("#ShipperSelect"), "/api/forms/inventory/shippers/display-fields", true);
 };
 
 function loadCostCenters() {
-    displayFieldBinder($("#CostCenterSelect"), "/api/forms/finance/cost-centers/display-fields");
+    window.displayFieldBinder($("#CostCenterSelect"), "/api/forms/finance/cost-centers/display-fields", true);
 };
 
 function loadPriceTypes() {
-    displayFieldBinder($("#PriceTypeSelect"), "/api/forms/purchase/price-types/display-fields");
+    window.displayFieldBinder($("#PriceTypeSelect"), "/api/forms/purchase/price-types/display-fields", true);
 };
 
 function loadSuppliers() {
-    displayFieldBinder($("#SupplierSelect"), "/api/forms/inventory/suppliers/display-fields");
+    window.displayFieldBinder($("#SupplierSelect"), "/api/forms/inventory/suppliers/display-fields");
 };
 
 loadStores();

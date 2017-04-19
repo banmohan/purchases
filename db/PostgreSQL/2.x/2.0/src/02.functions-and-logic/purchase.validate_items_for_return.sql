@@ -23,6 +23,7 @@ $$
     DECLARE _item_in_stock                  public.decimal_strict2 = 0;
     DECLARE _error_item_id                  integer;
     DECLARE _error_quantity                 decimal(30, 6);
+    DECLARE _error_unit                     text;
     DECLARE _error_amount                   decimal(30, 6);
     DECLARE _original_purchase_id           bigint;
     DECLARE this                            RECORD; 
@@ -240,16 +241,18 @@ BEGIN
 
     SELECT 
         item_id,
-        returned_quantity
+        returned_quantity,
+        inventory.get_unit_name_by_unit_id(root_unit_id)
     INTO
         _error_item_id,
-        _error_quantity
+        _error_quantity,
+        _error_unit
     FROM item_summary_temp
     WHERE returned_quantity + returned_in_previous_batch + in_verification_queue > actual_quantity
     LIMIT 1;
 
     IF(_error_item_id IS NOT NULL) THEN    
-        RAISE EXCEPTION 'The returned quantity (%) of % is greater than actual quantity.', _error_quantity, inventory.get_item_name_by_item_id(_error_item_id)
+        RAISE EXCEPTION 'The returned quantity (% %) of % is greater than actual quantity.', _error_quantity, _error_unit, inventory.get_item_name_by_item_id(_error_item_id)
         USING ERRCODE='P5203';
     END IF;
 

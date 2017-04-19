@@ -11,6 +11,7 @@
     _supplier_id                            integer,
     _price_type_id                          integer,
     _shipper_id                             integer,
+    _store_id                               integer,
     _details                                purchase.purchase_detail_type[],
     _invoice_discount				        numeric(30, 6)
 );
@@ -29,6 +30,7 @@ CREATE FUNCTION purchase.post_purchase
     _supplier_id                            integer,
     _price_type_id                          integer,
     _shipper_id                             integer,
+    _store_id                               integer,
     _details                                purchase.purchase_detail_type[],
     _invoice_discount				        numeric(30, 6) DEFAULT(0)
 )
@@ -108,7 +110,7 @@ BEGIN
         purchase_account_id             	= inventory.get_purchase_account_id(item_id),
         purchase_discount_account_id    	= inventory.get_purchase_discount_account_id(item_id),
         inventory_account_id            	= inventory.get_inventory_account_id(item_id),
-        discount                            = ROUND((price * quantity) * (discount_rate / 100), 2);
+        discount                            = ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2);
     
     UPDATE temp_checkout_details 
     SET is_taxable_item = inventory.items.is_taxable_item
@@ -140,7 +142,9 @@ BEGIN
     SELECT ROUND(SUM(COALESCE(price, 0) * COALESCE(quantity, 0)), 2)    INTO _grand_total FROM temp_checkout_details;
     SELECT ROUND(SUM(COALESCE(shipping_charge, 0)), 2)                  INTO _shipping_charge FROM temp_checkout_details;
 
-    _tax_total := ROUND(_taxable_total * (_sales_tax_rate / 100), 2);
+    _tax_total := ROUND((COALESCE(_taxable_total, 0) - COALESCE(_invoice_discount, 0)) * (_sales_tax_rate / 100), 2);
+    _grand_total := COALESCE(_taxable_total, 0) + COALESCE(_nontaxable_total, 0) + COALESCE(_tax_total, 0) - COALESCE(_discount_total, 0)  - COALESCE(_invoice_discount, 0);
+    _payable := _grand_total;
 
 
     DROP TABLE IF EXISTS temp_transaction_details;
@@ -157,7 +161,6 @@ BEGIN
         amount_in_local_currency    		public.money_strict
     ) ON COMMIT DROP;
 
-    _payable                                := _grand_total - COALESCE(_discount_total, 0) + COALESCE(_shipping_charge, 0) + COALESCE(_tax_total, 0);
     _default_currency_code              	:= core.get_currency_code_by_office_id(_office_id);
     _transaction_master_id  				:= nextval(pg_get_serial_sequence('finance.transaction_master', 'transaction_master_id'));
     _checkout_id            				:= nextval(pg_get_serial_sequence('inventory.checkouts', 'checkout_id'));
@@ -190,6 +193,7 @@ BEGIN
         SELECT 'Dr', _tax_account_id, _statement_reference, _default_currency_code, _tax_total, 1, _default_currency_code, _tax_total;
     END IF;	
 
+ 
     INSERT INTO temp_transaction_details(tran_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
     SELECT 'Cr', inventory.get_account_id_by_supplier_id(_supplier_id), _statement_reference, _default_currency_code, _payable, 1, _default_currency_code, _payable;
 
@@ -200,6 +204,14 @@ BEGIN
     UPDATE temp_transaction_details     SET transaction_master_id   = _transaction_master_id;
     UPDATE temp_checkout_details           SET checkout_id         = _checkout_id;
     
+    IF
+    (
+        SELECT SUM(CASE WHEN tran_type = 'Cr' THEN 1 ELSE -1 END * amount_in_local_currency)
+        FROM temp_transaction_details
+    ) != 0 THEN
+        RAISE EXCEPTION 'Could not balance the Journal Entry. Nothing was saved.';
+    END IF;
+
     INSERT INTO finance.transaction_master(transaction_master_id, transaction_counter, transaction_code, book, value_date, book_date, user_id, login_id, office_id, cost_center_id, reference_number, statement_reference) 
     SELECT _transaction_master_id, _tran_counter, _transaction_code, _book_name, _value_date, _book_date, _user_id, _login_id, _office_id, _cost_center_id, _reference_number, _statement_reference;
 
@@ -216,8 +228,8 @@ BEGIN
     INSERT INTO purchase.purchases(checkout_id, supplier_id, price_type_id)
     SELECT _checkout_id, _supplier_id, _price_type_id;
 
-    INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
-    SELECT _checkout_id, _value_date, _book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
+    INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount_rate, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
+    SELECT _checkout_id, _value_date, _book_date, store_id, transaction_type, item_id, price, discount_rate, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
     FROM temp_checkout_details;
     
     PERFORM finance.auto_verify(_transaction_master_id, _office_id);
@@ -228,9 +240,9 @@ LANGUAGE plpgsql;
 
 
 
--- SELECT * FROM purchase.post_purchase(1, 1, 1, finance.get_value_date(1), finance.get_value_date(1), 1, '', '', 1, 1, NULL,
+-- SELECT * FROM purchase.post_purchase(1, 1, 11, finance.get_value_date(1), finance.get_value_date(1), 1, '', '', 1, 1, NULL, 1,
 -- ARRAY[
--- ROW(1, 'Dr', 1, 1, 1,180000, 0, 10, 200)::purchase.purchase_detail_type,
+-- ROW(1, 'Dr', 1, 1, 1,180000, 1, 10, 200)::purchase.purchase_detail_type,
 -- ROW(1, 'Dr', 2, 1, 7,130000, 300, 10, 30)::purchase.purchase_detail_type,
 -- ROW(1, 'Dr', 3, 1, 1,110000, 5000, 10, 50)::purchase.purchase_detail_type]);
 -- 

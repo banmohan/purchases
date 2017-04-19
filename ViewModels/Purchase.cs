@@ -23,6 +23,9 @@ namespace MixERP.Purchases.ViewModels
         public int ShipperId { get; set; }
         [Required]
         public int StoreId { get; set; }
+
+        public decimal Discount { get; set; }
+
         [Required]
         public List<PurchaseDetailType> Details { get; set; }
     }
