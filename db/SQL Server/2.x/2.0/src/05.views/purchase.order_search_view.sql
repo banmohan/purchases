@@ -20,7 +20,9 @@ SELECT
 	account.get_name_by_user_id(purchase.orders.user_id) AS posted_by,
 	core.get_office_name_by_office_id(purchase.orders.office_id) AS office,
 	purchase.orders.transaction_timestamp AS posted_on,
-	purchase.orders.office_id
+	purchase.orders.office_id,
+	purchase.orders.discount,
+	purchase.orders.tax	
 FROM purchase.orders;
 
 GO
