@@ -62,7 +62,7 @@ BEGIN
 
     _tax_account_id                         := finance.get_sales_tax_account_id_by_office_id(_office_id);
 
-    IF(_supplier_id IS NULL) THEN
+    IF(COALESCE(_supplier_id, 0) = 0) THEN
         RAISE EXCEPTION '%', 'Invalid supplier';
     END IF;
     
@@ -98,8 +98,8 @@ BEGIN
 
 
 
-    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge)
-    SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge
+    INSERT INTO temp_checkout_details(store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge)
+    SELECT store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge
     FROM explode_array(_details);
 
 
@@ -109,9 +109,18 @@ BEGIN
         base_unit_id                    	= inventory.get_root_unit_id(unit_id),
         purchase_account_id             	= inventory.get_purchase_account_id(item_id),
         purchase_discount_account_id    	= inventory.get_purchase_discount_account_id(item_id),
-        inventory_account_id            	= inventory.get_inventory_account_id(item_id),
-        discount                            = ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2);
+        inventory_account_id            	= inventory.get_inventory_account_id(item_id);
     
+    UPDATE temp_checkout_details
+    SET
+        discount                        = COALESCE(ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2), 0)
+    WHERE COALESCE(discount, 0) = 0;
+
+    UPDATE temp_checkout_details
+    SET
+        discount_rate                   = COALESCE(ROUND(100 * discount / ((price * quantity) + shipping_charge), 2), 0)
+    WHERE COALESCE(discount_rate, 0) = 0;
+
     UPDATE temp_checkout_details 
     SET is_taxable_item = inventory.items.is_taxable_item
     FROM inventory.items
@@ -119,6 +128,15 @@ BEGIN
 
     UPDATE temp_checkout_details
     SET amount = (COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0);
+
+    IF EXISTS
+    (
+        SELECT 1
+        FROM temp_checkout_details
+        WHERE amount < 0
+    ) THEN
+        RAISE EXCEPTION '%', 'A line amount cannot be less than zero.';
+    END IF;
 
     IF EXISTS
     (
@@ -137,6 +155,10 @@ BEGIN
         _taxable_total,
         _nontaxable_total
     FROM temp_checkout_details;
+
+    IF(_invoice_discount > _taxable_total) THEN
+        RAISE EXCEPTION 'The invoice discount cannot be greater than total taxable amount.';
+    END IF;
 
     SELECT ROUND(SUM(COALESCE(discount, 0)), 2)                         INTO _discount_total FROM temp_checkout_details;
     SELECT ROUND(SUM(COALESCE(price, 0) * COALESCE(quantity, 0)), 2)    INTO _grand_total FROM temp_checkout_details;

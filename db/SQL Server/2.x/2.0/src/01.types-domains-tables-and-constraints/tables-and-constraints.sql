@@ -37,12 +37,25 @@ CREATE TABLE purchase.item_cost_prices
     price                                   decimal(30, 6) NOT NULL,
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
-    deleted                                    bit DEFAULT(0)
+    deleted                                 bit DEFAULT(0)
 );
 
 CREATE UNIQUE INDEX item_cost_prices_item_id_unit_id_supplier_id
 ON purchase.item_cost_prices(item_id, unit_id, supplier_id)
 WHERE deleted = 0;
+
+
+
+CREATE TABLE purchase.supplierwise_cost_prices
+(
+	cost_price_id							bigint IDENTITY PRIMARY KEY,
+	supplier_id								integer NOT NULL REFERENCES inventory.suppliers,
+	unit_id									integer NOT NULL REFERENCES inventory.units,
+	price									numeric(30, 6),
+    audit_user_id                           integer REFERENCES account.users,
+    audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
+    deleted                                 bit DEFAULT(0)
+);
 
 CREATE TABLE purchase.purchases
 (
@@ -189,8 +202,9 @@ AS TABLE
     unit_id             integer,
     price               decimal(30, 6),
     discount_rate       decimal(30, 6),
-    tax                 decimal(30, 6),
-    shipping_charge     decimal(30, 6)
+    discount       		decimal(30, 6),
+    shipping_charge     decimal(30, 6),
+	is_taxed			bit
 );
 
 

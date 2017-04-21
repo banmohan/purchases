@@ -156,7 +156,7 @@ function initializeClickAndAction() {
             var existingQuantitySpan = existingEl.find("span.quantity");
             var existingQuantityInput = existingEl.find("input.quantity");
 
-            var quantity = window.parseInt2(existingQuantitySpan.text() || 0);
+            var quantity = window.parseFloat2(existingQuantitySpan.text() || 0);
             quantity++;
 
             existingQuantitySpan.text(quantity);
@@ -217,7 +217,7 @@ function initializeClickAndAction() {
             const quantityEl = el.find("input.quantity");
             const discountEl = el.find("input.discount");
 
-            const quantity = window.parseInt2(quantityEl.val() || 0);
+            const quantity = window.parseFloat2(quantityEl.val() || 0);
             const discountRate = window.parseFloat2(discountEl.val().replace("%", ""));
             const price = window.parseFloat2(el.find("input.price").val());
 
@@ -367,20 +367,17 @@ function updateTotal() {
         } else {
             nonTaxableTotal += discountedAmount;
         };
-
-        totalPrice += discountedAmount;
     });
 
-    taxableTotal = window.parseFloat2(window.round(taxableTotal, 2)) || 0;
-    nonTaxableTotal = window.parseFloat2(window.round(nonTaxableTotal, 2)) || 0;
 
-    totalPrice -= discount;
+    //Discount applies before tax
     taxableTotal -= discount;
-
-    const tax = taxableTotal * (taxRate / 100);
-    totalPrice += tax;
+    const tax = taxableTotal * (taxRate/100);
+    totalPrice = taxableTotal + tax + nonTaxableTotal;
 
     totalPrice = window.round(totalPrice, 2);
+    taxableTotal = window.round(taxableTotal, 2);
+    nonTaxableTotal = window.round(nonTaxableTotal, 2);
 
     amountEl.html(window.getFormattedNumber(totalPrice));
 };

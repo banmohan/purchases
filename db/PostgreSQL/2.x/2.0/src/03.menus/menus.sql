@@ -32,6 +32,7 @@ SELECT * FROM core.create_menu('MixERP.Purchases', 'Setup', 'Setup', 'square out
 SELECT * FROM core.create_menu('MixERP.Purchases', 'Suppliers', 'Suppliers', '/dashboard/purchase/setup/suppliers', 'users', 'Setup');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'PriceTypes', 'Price Types', '/dashboard/purchase/setup/price-types', 'dollar', 'Setup');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'CostPrices', 'Cost Prices', '/dashboard/purchase/setup/cost-prices', 'rupee', 'Setup');
+SELECT * FROM core.create_menu('MixERP.Purchases', 'SupplierwiseCostPrices', 'Supplierwise Cost Prices', '/dashboard/purchase/setup/cost-prices/supplier', 'rupee', 'Setup');
 
 SELECT * FROM core.create_menu('MixERP.Purchases', 'Reports', 'Reports', '', 'block layout', '');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'AccountPayables', 'Account Payables', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/AccountPayables.xml', 'spy', 'Reports');

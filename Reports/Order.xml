@@ -71,7 +71,7 @@
 			<td>
 				{i18n.Tax} ({DataSource[0].tax_rate}%)
 			</td>
-			<td data-remove-row-on-zero="">
+			<td>
 				{DataSource[0].tax}
 			</td>
 		</tr>

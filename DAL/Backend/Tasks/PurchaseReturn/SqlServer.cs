@@ -38,7 +38,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
                     command.Parameters.AddWithNullableValue("@PriceTypeId", model.PriceTypeId);
                     command.Parameters.AddWithNullableValue("@ShipperId", model.ShipperId);
 
-                    using (var details = new PurchaseEntry.SqlServer().GetDetails(model.Details))
+                    using (var details = PurchaseEntry.SqlServer.GetDetails(model.Details))
                     {
                         command.Parameters.AddWithNullableValue("@Details", details, "purchase.purchase_detail_type");
                     }

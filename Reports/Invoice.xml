@@ -189,8 +189,9 @@
 			inventory.units.unit_name,
 			inventory.checkout_details.price,
 			inventory.checkout_details.price * inventory.checkout_details.quantity AS amount,
+			inventory.checkout_details.shipping_charge,
 			inventory.checkout_details.discount,
-			(inventory.checkout_details.price * inventory.checkout_details.quantity) - COALESCE(inventory.checkout_details.discount, 0) AS total
+			(inventory.checkout_details.price * inventory.checkout_details.quantity) - COALESCE(inventory.checkout_details.discount, 0) + COALESCE(inventory.checkout_details.shipping_charge, 0) AS total
 		FROM inventory.checkout_details
 		INNER JOIN inventory.stores
 		ON inventory.stores.store_id = inventory.checkout_details.store_id

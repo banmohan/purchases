@@ -39,6 +39,18 @@ CREATE UNIQUE INDEX item_cost_prices_item_id_unit_id_supplier_id_uix
 ON purchase.item_cost_prices(item_id, unit_id, supplier_id)
 WHERE NOT deleted;
 
+
+CREATE TABLE purchase.supplierwise_selling_prices
+(
+	selling_price_id						BIGSERIAL PRIMARY KEY,
+	supplier_id								integer NOT NULL REFERENCES inventory.suppliers,
+	unit_id									integer NOT NULL REFERENCES inventory.units,
+	price									numeric(30, 6),
+    audit_user_id                           integer REFERENCES account.users,
+    audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
+	deleted									boolean DEFAULT(false)
+);
+
 CREATE TABLE purchase.purchases
 (
     purchase_id                             BIGSERIAL PRIMARY KEY,
@@ -186,7 +198,8 @@ AS
     unit_id           	integer,
     price               public.money_strict,
     discount_rate       public.money_strict2,
-    tax                 public.money_strict2,
-    shipping_charge     public.money_strict2
+    discount       		public.money_strict2,
+    shipping_charge     public.money_strict2,
+	is_taxed			boolean
 );
 

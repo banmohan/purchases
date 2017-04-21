@@ -1,15 +1,18 @@
-﻿@using MixERP.Purchases.Extensions
+﻿@using Frapid.ApplicationState.Cache
+@using MixERP.Purchases.Extensions
 @model dynamic
 
 @{
     ViewBag.Title = I18N.Purchase;
     Layout = ViewBag.PurchaseLayoutPath;
+    var meta = AppUsers.GetCurrent(TenantConvention.GetTenant());
+    var setup = MixERP.Inventory.Cache.Setup.Get(TenantConvention.GetTenant(), meta.OfficeId);
 }
 
-@Html.PartialView("Shared/ItemList.cshtml", TenantConvention.GetTenant())
-
-
-<script>
+@if (setup.UsePosCheckoutScreen)
+{
+    @Html.PartialView("Shared/ItemList.cshtml", TenantConvention.GetTenant())
+    <script>
     function initializeUI() {
         const template = `<div class="one summary items">
                             <div class="terms item">
@@ -52,6 +55,7 @@
         function request(model) {
             const url = "/dashboard/purchase/tasks/order/new";
             const data = JSON.stringify(model);
+
             return window.getAjaxRequest(url, "POST", data);
         };
 
@@ -115,7 +119,6 @@
                     const price = window.parseFloat2(el.find("input.price").val()) || 0;
                     const discountRate = window.parseFloat2(el.find("input.discount").val()) || 0;
                     const isTaxableItem = el.attr("data-is-taxable-item") === "true";
-                    var discount = 0;
                     const amount = price * quantity;
                     const discountedAmount = amount * ((100 - discountRate) / 100);
 
@@ -124,20 +127,15 @@
                     } else {
                         nonTaxableTotal += discountedAmount;
                     };
-
-                    totalPrice += discountedAmount;
                 });
 
-                taxableTotal = window.parseFloat2(window.round(taxableTotal, 2)) || 0;
-                nonTaxableTotal = window.parseFloat2(window.round(nonTaxableTotal, 2)) || 0;
-
                 totalBeforeDiscount = taxableTotal;
-                totalPrice -= discount;
+                //Discount applies before tax
                 taxableTotal -= discount;
 
                 tax = taxableTotal * (taxRate / 100);
-                totalPrice += tax;
 
+                totalPrice = taxableTotal + tax + nonTaxableTotal;
                 totalPrice = window.round(totalPrice, 2);
             })();
 
@@ -188,4 +186,9 @@
         });
     });
     window.overridePath = "/dashboard/purchase/tasks/order";
-</script>
+    </script>
+}
+else
+{
+    @Html.PartialView("Tasks/Order/ClassicCheckout.cshtml", TenantConvention.GetTenant())
+}

@@ -20,7 +20,8 @@ CREATE PROCEDURE purchase.post_purchase
     @store_id								integer,
     @details                                purchase.purchase_detail_type READONLY,
 	@invoice_discount						numeric(30, 6) = 0,
-	@transaction_master_id					bigint OUTPUT
+	@transaction_master_id					bigint OUTPUT,
+	@book_name								national character varying(48) = 'Purchase Entry'
 )
 AS
 BEGIN
@@ -40,7 +41,6 @@ BEGIN
     DECLARE @tax_total                      decimal(30, 6);
     DECLARE @tax_account_id                 integer;
     DECLARE @shipping_charge                decimal(30, 6);
-    DECLARE @book_name                      national character varying(100) = 'Purchase Entry';
 	DECLARE @sales_tax_rate					numeric(30, 6);
 
     DECLARE @can_post_transaction           bit;
@@ -105,7 +105,7 @@ BEGIN
 
         SET @tax_account_id                 = finance.get_sales_tax_account_id_by_office_id(@office_id);
 
-        IF(@supplier_id IS NULL)
+        IF(COALESCE(@supplier_id, 0) = 0)
         BEGIN
             RAISERROR('Invalid supplier', 13, 1);
         END;
@@ -127,9 +127,18 @@ BEGIN
             base_unit_id                    = inventory.get_root_unit_id(unit_id),
             purchase_account_id             = inventory.get_purchase_account_id(item_id),
             purchase_discount_account_id    = inventory.get_purchase_discount_account_id(item_id),
-            inventory_account_id            = inventory.get_inventory_account_id(item_id),
-            discount                        = ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2);
+            inventory_account_id            = inventory.get_inventory_account_id(item_id);
         
+		UPDATE @checkout_details
+		SET
+            discount                        = COALESCE(ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2), 0)
+		WHERE COALESCE(discount, 0) = 0;
+
+		UPDATE @checkout_details
+		SET
+            discount_rate                   = COALESCE(ROUND(100 * discount / ((price * quantity) + shipping_charge), 2), 0)
+		WHERE COALESCE(discount_rate, 0) = 0;
+
 
 		UPDATE @checkout_details 
 		SET 
@@ -140,6 +149,16 @@ BEGIN
 
 		UPDATE @checkout_details
 		SET amount = (COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0);
+
+		IF EXISTS
+		(
+			SELECT 1
+			FROM @checkout_details
+			WHERE amount < 0
+		)
+		BEGIN
+			RAISERROR('A line amount cannot be less than zero.', 16, 1);
+		END;
 
         IF EXISTS
         (
@@ -154,6 +173,11 @@ BEGIN
 			@taxable_total		= COALESCE(SUM(CASE WHEN is_taxable_item = 1 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0),
 			@nontaxable_total	= COALESCE(SUM(CASE WHEN is_taxable_item = 0 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0)
 		FROM @checkout_details;
+
+		IF(@invoice_discount > @taxable_total)
+		BEGIN
+			RAISERROR('The invoice discount cannot be greater than total taxable amount.', 16, 1);
+		END;
 
         SELECT @discount_total				= SUM(COALESCE(discount, 0)) FROM @checkout_details;
 

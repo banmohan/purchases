@@ -60,14 +60,15 @@ BEGIN
         unit_id             integer,
         price               decimal(30, 6),
         discount_rate       decimal(30, 6),
-        tax                 decimal(30, 6),
+        discount			decimal(30, 6),
+        is_taxed            bit,
         shipping_charge     decimal(30, 6),
         root_unit_id        integer,
         base_quantity       numeric(30, 6)
     ) ;
 
-    INSERT INTO @details_temp(store_id, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
-    SELECT store_id, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
+    INSERT INTO @details_temp(store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge)
+    SELECT store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge
     FROM @details;
 
     UPDATE @details_temp

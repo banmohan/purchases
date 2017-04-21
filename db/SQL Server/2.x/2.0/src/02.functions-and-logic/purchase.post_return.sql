@@ -119,7 +119,7 @@ BEGIN
             RETURN;
         END;
 
-        SET @default_currency_code          = core.get_currency_code_by_office_id(@office_id);
+        SET @default_currency_code      = core.get_currency_code_by_office_id(@office_id);
         SET @tran_counter               = finance.get_new_transaction_counter(@value_date);
         SET @tran_code                  = finance.get_transaction_code(@value_date, @office_id, @user_id, @login_id);
 
@@ -253,7 +253,8 @@ BEGIN
 				@store_id,
 				@difference,
 				@invoice_discount,
-				@new_tran_id  OUTPUT;
+				@new_tran_id  OUTPUT,
+				@book_name;
 		END;
 		ELSE
 		BEGIN
@@ -308,45 +309,43 @@ GO
 
 
 
--- DECLARE @transaction_master_id          bigint = 245;
--- DECLARE @office_id                      integer = (SELECT TOP 1 office_id FROM core.offices);
--- DECLARE @user_id                        integer = (SELECT TOP 1 user_id FROM account.users);
--- DECLARE @login_id                       bigint = (SELECT TOP 1 login_id FROM account.logins WHERE user_id = @user_id);
--- DECLARE @value_date                     date = finance.get_value_date(@office_id);
--- DECLARE @book_date                      date = finance.get_value_date(@office_id);
--- DECLARE @store_id                       integer = (SELECT TOP 1 store_id FROM inventory.stores WHERE store_name='Cold Room RM');
--- DECLARE @cost_center_id                 integer = (SELECT TOP 1 cost_center_id FROM finance.cost_centers);
--- DECLARE @shipper_id						integer = (SELECT TOP 1 shipper_id FROM inventory.shippers);
--- DECLARE @supplier_id                    integer = 13;
--- DECLARE @price_type_id                  integer = (SELECT TOP 1 price_type_id FROM purchase.price_types);
--- DECLARE @reference_number               national character varying(24) = 'N/A';
--- DECLARE @statement_reference            national character varying(2000) = 'Test';
--- DECLARE @details                        purchase.purchase_detail_type;
--- DECLARE @tran_master_id                 bigint;
+ --DECLARE @transaction_master_id          bigint = 393;
+ --DECLARE @office_id                      integer = (SELECT TOP 1 office_id FROM core.offices);
+ --DECLARE @user_id                        integer = (SELECT TOP 1 user_id FROM account.users);
+ --DECLARE @login_id                       bigint = (SELECT TOP 1 login_id FROM account.logins WHERE user_id = @user_id);
+ --DECLARE @value_date                     date = finance.get_value_date(@office_id);
+ --DECLARE @book_date                      date = finance.get_value_date(@office_id);
+ --DECLARE @store_id                       integer = (SELECT TOP 1 store_id FROM inventory.stores WHERE store_name='Cold Room RM');
+ --DECLARE @cost_center_id                 integer = (SELECT TOP 1 cost_center_id FROM finance.cost_centers);
+ --DECLARE @shipper_id					 integer = (SELECT TOP 1 shipper_id FROM inventory.shippers);
+ --DECLARE @supplier_id                    integer = 4;
+ --DECLARE @price_type_id                  integer = (SELECT TOP 1 price_type_id FROM purchase.price_types);
+ --DECLARE @reference_number               national character varying(24) = 'N/A';
+ --DECLARE @statement_reference            national character varying(2000) = 'Test';
+ --DECLARE @details                        purchase.purchase_detail_type;
+ --DECLARE @tran_master_id                 bigint;
 
--- INSERT INTO @details
--- SELECT @store_id, 'Cr', item_id, 1, unit_id, 500, 0, 500* 0.13, 0
--- FROM inventory.items
--- WHERE inventory.items.item_code IN('SHS0005');
+ --INSERT INTO @details(store_id, transaction_type, item_id, quantity, unit_id, price, shipping_charge)
+ --SELECT @store_id, 'Cr', 1, 1, 6, 1600, 0;
 
 
--- EXECUTE purchase.post_return
-    -- @transaction_master_id          ,
-    -- @office_id                      ,
-    -- @user_id                        ,
-    -- @login_id                       ,
-    -- @value_date                     ,
-    -- @book_date                      ,
-    -- @store_id                       ,
-    -- @cost_center_id                 ,
-    -- @supplier_id                    ,
-    -- @price_type_id                  ,
+ --EXECUTE purchase.post_return
+ --    @transaction_master_id          ,
+ --    @office_id                      ,
+ --    @user_id                        ,
+ --    @login_id                       ,
+ --    @value_date                     ,
+ --    @book_date                      ,
+ --    @store_id                       ,
+ --    @cost_center_id                 ,
+ --    @supplier_id                    ,
+ --    @price_type_id                  ,
 	-- @shipper_id						,
-    -- @reference_number               ,
-    -- @statement_reference            ,
-    -- @details                        ,
+ --    @reference_number               ,
+ --    @statement_reference            ,
+ --    @details                        ,
 	-- 400,--discount
-    -- @tran_master_id                 OUTPUT;
+ --    @tran_master_id                 OUTPUT;
 
 
 

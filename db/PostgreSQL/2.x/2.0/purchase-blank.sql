@@ -40,6 +40,18 @@ CREATE UNIQUE INDEX item_cost_prices_item_id_unit_id_supplier_id_uix
 ON purchase.item_cost_prices(item_id, unit_id, supplier_id)
 WHERE NOT deleted;
 
+
+CREATE TABLE purchase.supplierwise_selling_prices
+(
+	selling_price_id						BIGSERIAL PRIMARY KEY,
+	supplier_id								integer NOT NULL REFERENCES inventory.suppliers,
+	unit_id									integer NOT NULL REFERENCES inventory.units,
+	price									numeric(30, 6),
+    audit_user_id                           integer REFERENCES account.users,
+    audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
+	deleted									boolean DEFAULT(false)
+);
+
 CREATE TABLE purchase.purchases
 (
     purchase_id                             BIGSERIAL PRIMARY KEY,
@@ -89,6 +101,7 @@ CREATE TABLE purchase.quotation_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
+	discount_rate							decimal(30, 6) NOT NULL,
     discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
 	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
@@ -129,6 +142,7 @@ CREATE TABLE purchase.order_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
+	discount_rate							decimal(30, 6) NOT NULL,
     discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
 	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
@@ -1560,6 +1574,7 @@ SELECT * FROM core.create_menu('MixERP.Purchases', 'Setup', 'Setup', 'square out
 SELECT * FROM core.create_menu('MixERP.Purchases', 'Suppliers', 'Suppliers', '/dashboard/purchase/setup/suppliers', 'users', 'Setup');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'PriceTypes', 'Price Types', '/dashboard/purchase/setup/price-types', 'dollar', 'Setup');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'CostPrices', 'Cost Prices', '/dashboard/purchase/setup/cost-prices', 'rupee', 'Setup');
+SELECT * FROM core.create_menu('MixERP.Purchases', 'SupplierwiseCostPrices', 'Supplierwise Cost Prices', '/dashboard/purchase/setup/cost-prices/supplier', 'rupee', 'Setup');
 
 SELECT * FROM core.create_menu('MixERP.Purchases', 'Reports', 'Reports', '', 'block layout', '');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'AccountPayables', 'Account Payables', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/AccountPayables.xml', 'spy', 'Reports');
@@ -1777,7 +1792,9 @@ SELECT
 	account.get_name_by_user_id(purchase.orders.user_id) AS posted_by,
 	core.get_office_name_by_office_id(purchase.orders.office_id) AS office,
 	purchase.orders.transaction_timestamp AS posted_on,
-	purchase.orders.office_id
+	purchase.orders.office_id,
+	purchase.orders.discount,
+	purchase.orders.tax	
 FROM purchase.orders;
 
 
@@ -1849,7 +1866,9 @@ SELECT
 	account.get_name_by_user_id(purchase.quotations.user_id) AS posted_by,
 	core.get_office_name_by_office_id(purchase.quotations.office_id) AS office,
 	purchase.quotations.transaction_timestamp AS posted_on,
-	purchase.quotations.office_id
+	purchase.quotations.office_id,
+	purchase.quotations.discount,
+	purchase.quotations.tax	
 FROM purchase.quotations;
 
 

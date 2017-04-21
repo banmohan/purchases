@@ -1,0 +1,116 @@
+﻿@using Frapid.ApplicationState.Cache
+@using MixERP.Purchases.Extensions
+@model dynamic
+
+@{
+    Layout = ViewBag.PurchaseLayoutPath;
+}
+
+<style>
+    .ticket.panel {
+        padding: 2em 0.2em;
+    }
+
+    #TicketIframe {
+        background-color: white;
+        width: 450px;
+        height: 500px;
+        border: none;
+        margin: 1em 0.2em;
+        padding: 0.5em;
+        box-shadow: 2px 2px 10px #ddd;
+        display: block;
+    }
+</style>
+@Html.InventoryPartialView("Shared/ClassicCheckout.cshtml", TenantConvention.GetTenant())
+
+<script>
+    $(".customer.field").remove();
+    $("#SaveButton").off("click").on("click", function () {
+        function request(model) {
+            const url = "/dashboard/purchase/tasks/return/new";
+            const data = JSON.stringify(model);
+            return window.getAjaxRequest(url, "POST", data);
+        };
+
+        function getModel() {
+            const model = window.getModel();
+            model.ExpectedDeliveryDate = model.BookDate;
+
+            if(!model.SupplierId) {
+                window.displayMessage("Please select a supplier.");
+                return null;
+            };
+
+            model.TransactionMasterId = window.getQueryStringByName("TransactionMasterId");
+
+            return model;
+        };
+
+        const model = getModel();
+
+        if (!model) {
+            return;
+        };
+
+        const button = $(this);
+        button.addClass("loading").prop("disabled", true);
+
+        const ajax = request(model);
+
+        ajax.success(function (response) {
+            button.removeClass("loading").prop("disabled", false);
+            const id = response;
+            document.location = `/dashboard/purchase/tasks/return/checklist/${id}`;
+        });
+
+        ajax.fail(function (xhr) {
+            button.removeClass("loading").prop("disabled", false);
+            window.displayMessage(JSON.stringify(xhr));
+        });
+    });
+
+    var model = {
+        Title: window.translate("PurchaseReturn"),
+        ProductApi: "/dashboard/purchase/tasks/items",
+        PriceTypeApi: "/api/forms/purchase/price-types/display-fields",
+        BookDateText: "Expected Delivery Date",
+        UpdatePrice: function () {
+            function request(itemId, supplierId, priceTypeId, unitId) {
+                var url = "/dashboard/purchase/tasks/cost-price/{itemId}/{supplierId}/{priceTypeId}/{unitId}";
+                url = url.replace("{itemId}", itemId);
+                url = url.replace("{supplierId}", supplierId);
+                url = url.replace("{priceTypeId}", priceTypeId);
+                url = url.replace("{unitId}", unitId);
+
+                return window.getAjaxRequest(url);
+            };
+
+            const itemId = $("#ItemSelect").val();
+            const supplierId = window.parseInt2($("#SupplierSelect").val()) || 0;
+            const priceTypeId = window.parseInt2($("#PriceTypeSelect").val()) || 0;
+            const unitId = $("#UnitSelect").val();
+
+
+            $(".checkout.segment").addClass("loading");
+
+            const ajax = request(itemId, supplierId, priceTypeId, unitId);
+
+            ajax.success(function (response) {
+                $(".checkout.segment").removeClass("loading");
+                const priceInput = $("#PriceInputText");
+                priceInput.val(response).trigger("keyup").trigger("change");
+            });
+
+            ajax.fail(function (xhr) {
+                $(".checkout.segment").removeClass("loading");
+                window.logAjaxErrorMessage(window.getAjaxErrorMessage(xhr));
+            });
+
+        }
+    };
+
+    window.initializeCheckout(model);
+
+    window.overridePath = "/dashboard/purchase/tasks/entry";
+</script>

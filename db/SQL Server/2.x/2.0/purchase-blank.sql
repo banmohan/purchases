@@ -38,12 +38,25 @@ CREATE TABLE purchase.item_cost_prices
     price                                   decimal(30, 6) NOT NULL,
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
-    deleted                                    bit DEFAULT(0)
+    deleted                                 bit DEFAULT(0)
 );
 
 CREATE UNIQUE INDEX item_cost_prices_item_id_unit_id_supplier_id
 ON purchase.item_cost_prices(item_id, unit_id, supplier_id)
 WHERE deleted = 0;
+
+
+
+CREATE TABLE purchase.supplierwise_selling_prices
+(
+	selling_price_id						bigint IDENTITY PRIMARY KEY,
+	supplier_id								integer NOT NULL REFERENCES inventory.suppliers,
+	unit_id									integer NOT NULL REFERENCES inventory.units,
+	price									numeric(30, 6),
+    audit_user_id                           integer REFERENCES account.users,
+    audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
+    deleted                                 bit DEFAULT(0)
+);
 
 CREATE TABLE purchase.purchases
 (
@@ -94,6 +107,7 @@ CREATE TABLE purchase.quotation_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   decimal(30, 6) NOT NULL,
+	discount_rate							decimal(30, 6) NOT NULL,
     discount                           		decimal(30, 6) NOT NULL DEFAULT(0),    
 	is_taxed 								bit NOT NULL,
     shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
@@ -134,6 +148,7 @@ CREATE TABLE purchase.order_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   decimal(30, 6) NOT NULL,
+	discount_rate							decimal(30, 6) NOT NULL,
     discount                          		decimal(30, 6) NOT NULL DEFAULT(0),    
 	is_taxed 								bit NOT NULL,
     shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
@@ -1803,6 +1818,7 @@ EXECUTE core.create_menu 'MixERP.Purchases', 'Setup', 'Setup', 'square outline',
 EXECUTE core.create_menu 'MixERP.Purchases', 'Suppliers', 'Suppliers', '/dashboard/purchase/setup/suppliers', 'users', 'Setup';
 EXECUTE core.create_menu 'MixERP.Purchases', 'PriceTypes', 'Price Types', '/dashboard/purchase/setup/price-types', 'dollar', 'Setup';
 EXECUTE core.create_menu 'MixERP.Purchases', 'CostPrices', 'Cost Prices', '/dashboard/purchase/setup/cost-prices', 'rupee', 'Setup';
+EXECUTE core.create_menu 'MixERP.Purchases', 'SupplierwiseCostPrices', 'Supplierwise Cost Prices', '/dashboard/purchase/setup/cost-prices/supplier', 'rupee', 'Setup';
 
 EXECUTE core.create_menu 'MixERP.Purchases', 'Reports', 'Reports', '', 'block layout', '';
 EXECUTE core.create_menu 'MixERP.Purchases', 'AccountPayables', 'Account Payables', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/AccountPayables.xml', 'spy', 'Reports';
@@ -2036,7 +2052,9 @@ SELECT
 	account.get_name_by_user_id(purchase.orders.user_id) AS posted_by,
 	core.get_office_name_by_office_id(purchase.orders.office_id) AS office,
 	purchase.orders.transaction_timestamp AS posted_on,
-	purchase.orders.office_id
+	purchase.orders.office_id,
+	purchase.orders.discount,
+	purchase.orders.tax	
 FROM purchase.orders;
 
 GO
@@ -2119,7 +2137,9 @@ SELECT
 	account.get_name_by_user_id(purchase.quotations.user_id) AS posted_by,
 	core.get_office_name_by_office_id(purchase.quotations.office_id) AS office,
 	purchase.quotations.transaction_timestamp AS posted_on,
-	purchase.quotations.office_id
+	purchase.quotations.office_id,
+	purchase.quotations.discount,
+	purchase.quotations.tax	
 FROM purchase.quotations;
 
 GO

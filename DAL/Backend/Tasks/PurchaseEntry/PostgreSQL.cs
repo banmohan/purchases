@@ -66,7 +66,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
             for (int i = 0; i < details.Count; i++)
             {
                 items.Add(string.Format(CultureInfo.InvariantCulture,
-                    "ROW(@StoreId{0}, @TransactionType{0}, @ItemId{0}, @Quantity{0}, @UnitId{0},@Price{0}, @DiscountRate{0}, @Tax{0}, @ShippingCharge{0})::purchase.purchase_detail_type",
+                    "ROW(@StoreId{0}, @TransactionType{0}, @ItemId{0}, @Quantity{0}, @UnitId{0}, @Price{0}, @DiscountRate{0},  @Discount{0}, @ShippingCharge{0}, @IsTaxed{0})::purchase.purchase_detail_type",
                     i.ToString(CultureInfo.InvariantCulture)));
             }
 
@@ -88,7 +88,8 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
                     parameters.Add(new NpgsqlParameter("@UnitId" + i, details[i].UnitId));
                     parameters.Add(new NpgsqlParameter("@Price" + i, details[i].Price));
                     parameters.Add(new NpgsqlParameter("@DiscountRate" + i, details[i].DiscountRate));
-                    parameters.Add(new NpgsqlParameter("@Tax" + i, DBNull.Value));//Tax will be determined on the database level.
+                    parameters.Add(new NpgsqlParameter("@Discount" + i, details[i].Discount));
+                    parameters.Add(new NpgsqlParameter("@IsTaxed" + i, details[i].IsTaxed));
                     parameters.Add(new NpgsqlParameter("@ShippingCharge" + i, details[i].ShippingCharge));
                 }
             }
