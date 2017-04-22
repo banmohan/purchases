@@ -458,6 +458,13 @@ function displayProducts(category, searchQuery) {
     $.each(groupItems, function() {
         const product = this;
 
+        var costPrice = product.CostPrice;
+
+        if (product.CostPriceIncludesTax) {
+            costPrice = (100 * costPrice) / (100 + window.parseFloat2(product.SalesTaxRate));
+            costPrice = window.round(costPrice, 2);
+        };
+
         const item = $("<div class='item' />");
         item.attr("data-item-id", product.ItemId);
         item.attr("data-item-code", product.ItemCode);
@@ -468,7 +475,9 @@ function displayProducts(category, searchQuery) {
         item.attr("data-valid-units", product.ValidUnits);
         item.attr("data-barcode", product.Barcode);
         item.attr("data-photo", product.Photo);
-        item.attr("data-cost-price", product.CostPrice);
+        item.attr("data-cost-price", costPrice);
+        item.attr("data-sales-tax-rate", product.SalesTaxRate);
+        item.attr("data-cost-price-includes-tax", product.CostPriceIncludesTax);
         item.attr("data-is-taxable-item", product.IsTaxableItem);
 
         if (product.HotItem) {
@@ -478,7 +487,7 @@ function displayProducts(category, searchQuery) {
         const info = $("<div class='info' />");
 
         const price = $("<div class='price' />");
-        price.html(window.getFormattedNumber(product.CostPrice));
+        price.html(window.getFormattedNumber(costPrice));
 
         price.appendTo(info);
 

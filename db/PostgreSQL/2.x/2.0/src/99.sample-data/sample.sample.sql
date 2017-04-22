@@ -35,7 +35,7 @@ BEGIN
             item_id,
             100,
             unit_id,
-            purchase.get_item_cost_price(item_id, _supplier_id, unit_id),
+            purchase.get_item_cost_price(_office_id, item_id, _supplier_id, unit_id),
             0,
             0,
             0)::purchase.purchase_detail_type

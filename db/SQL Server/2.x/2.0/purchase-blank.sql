@@ -35,7 +35,7 @@ CREATE TABLE purchase.item_cost_prices
     includes_tax                            bit NOT NULL
                                             CONSTRAINT item_cost_prices_includes_tax_df   
                                             DEFAULT(0),
-    price                                   decimal(30, 6) NOT NULL,
+    price                                   numeric(30, 6) NOT NULL,
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
     deleted                                 bit DEFAULT(0)
@@ -50,6 +50,7 @@ WHERE deleted = 0;
 CREATE TABLE purchase.supplierwise_cost_prices
 (
 	cost_price_id							bigint IDENTITY PRIMARY KEY,
+	item_id									integer NOT NULL REFERENCES inventory.items,
 	supplier_id								integer NOT NULL REFERENCES inventory.suppliers,
 	unit_id									integer NOT NULL REFERENCES inventory.units,
 	price									numeric(30, 6),
@@ -107,13 +108,13 @@ CREATE TABLE purchase.quotation_details
     quotation_id                            bigint NOT NULL REFERENCES purchase.quotations,
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
-    price                                   decimal(30, 6) NOT NULL,
-	discount_rate							decimal(30, 6) NOT NULL,
-    discount                           		decimal(30, 6) NOT NULL DEFAULT(0),    
+    price                                   numeric(30, 6) NOT NULL,
+	discount_rate							numeric(30, 6) NOT NULL,
+    discount                           		numeric(30, 6) NOT NULL DEFAULT(0),    
 	is_taxed 								bit NOT NULL,
-    shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
+    shipping_charge                         numeric(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
-    quantity                                decimal(30, 6) NOT NULL
+    quantity                                numeric(30, 6) NOT NULL
 );
 
 
@@ -149,13 +150,13 @@ CREATE TABLE purchase.order_details
     order_id                                bigint NOT NULL REFERENCES purchase.orders,
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
-    price                                   decimal(30, 6) NOT NULL,
-	discount_rate							decimal(30, 6) NOT NULL,
-    discount                          		decimal(30, 6) NOT NULL DEFAULT(0),    
+    price                                   numeric(30, 6) NOT NULL,
+	discount_rate							numeric(30, 6) NOT NULL,
+    discount                          		numeric(30, 6) NOT NULL DEFAULT(0),    
 	is_taxed 								bit NOT NULL,
-    shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
+    shipping_charge                         numeric(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
-    quantity                                decimal(30, 6) NOT NULL
+    quantity                                numeric(30, 6) NOT NULL
 );
 
 CREATE TABLE purchase.supplier_payments
@@ -201,12 +202,12 @@ AS TABLE
     store_id            integer,
     transaction_type    national character varying(2),
     item_id             integer,
-    quantity            decimal(30, 6),
+    quantity            numeric(30, 6),
     unit_id             integer,
-    price               decimal(30, 6),
-    discount_rate       decimal(30, 6),
-    discount       		decimal(30, 6),
-    shipping_charge     decimal(30, 6),
+    price               numeric(30, 6),
+    discount_rate       numeric(30, 6),
+    discount       		numeric(30, 6),
+    shipping_charge     numeric(30, 6),
 	is_taxed			bit
 );
 
@@ -221,51 +222,75 @@ DROP FUNCTION purchase.get_item_cost_price;
 
 GO
 
-CREATE FUNCTION purchase.get_item_cost_price(@item_id integer, @supplier_id bigint, @unit_id integer)
-RETURNS decimal(30, 6)
+CREATE FUNCTION purchase.get_item_cost_price(@office_id integer, @item_id integer, @supplier_id bigint, @unit_id integer)
+RETURNS numeric(30, 6)
 AS  
 BEGIN
-    DECLARE @price              decimal(30, 6);
+    DECLARE @price              numeric(30, 6);
     DECLARE @costing_unit_id    integer;
-    DECLARE @factor             decimal(30, 6);
+    DECLARE @factor             numeric(30, 6);
+    DECLARE @includes_tax       bit;
+    DECLARE @tax_rate           decimal(30, 6);
 
-    --Fist pick the catalog price which matches all these fields:
-    --Item, Customer Type, Price Type, and Unit.
-    --This is the most effective price.
-    SELECT 
-        @price = purchase.item_cost_prices.price, 
-        @costing_unit_id = purchase.item_cost_prices.unit_id
-    FROM purchase.item_cost_prices
-    WHERE purchase.item_cost_prices.item_id = @item_id
-    AND purchase.item_cost_prices.supplier_id = @supplier_id
-    AND purchase.item_cost_prices.unit_id = @unit_id
-    AND purchase.item_cost_prices.deleted = 0;
+	SELECT
+		@includes_tax	= inventory.items.cost_price_includes_tax
+	FROM inventory.items
+	WHERE inventory.items.item_id = @item_id;
 
+	SELECT
+		@price				= purchase.supplierwise_cost_prices.price,
+		@costing_unit_id	=  purchase.supplierwise_cost_prices.unit_id
+	FROM purchase.supplierwise_cost_prices
+	WHERE purchase.supplierwise_cost_prices.deleted = 0
+	AND purchase.supplierwise_cost_prices.supplier_id = @supplier_id
+	AND purchase.supplierwise_cost_prices.item_id = @item_id;
 
-    IF(@costing_unit_id IS NULL)
-    BEGIN
-        --We do not have a cost price of this item for the unit supplied.
-        --Let's see if this item has a price for other units.
-        SELECT 
-            @price = purchase.item_cost_prices.price, 
-            @costing_unit_id = purchase.item_cost_prices.unit_id
-        FROM purchase.item_cost_prices
-        WHERE purchase.item_cost_prices.item_id = @item_id
-        AND purchase.item_cost_prices.supplier_id = @supplier_id
-        AND purchase.item_cost_prices.deleted = 0;
-    END;
+	
+	IF(@price IS NULL)
+	BEGIN
+		--Pick the catalog price which matches all these fields:
+		--Item, Customer Type, Price Type, and Unit.
+		--This is the most effective price.
+		SELECT 
+			@price = purchase.item_cost_prices.price, 
+			@costing_unit_id = purchase.item_cost_prices.unit_id
+		FROM purchase.item_cost_prices
+		WHERE purchase.item_cost_prices.item_id = @item_id
+		AND purchase.item_cost_prices.supplier_id = @supplier_id
+		AND purchase.item_cost_prices.unit_id = @unit_id
+		AND purchase.item_cost_prices.deleted = 0;
+
+		IF(@costing_unit_id IS NULL)
+		BEGIN
+			--We do not have a cost price of this item for the unit supplied.
+			--Let's see if this item has a price for other units.
+			SELECT 
+				@price = purchase.item_cost_prices.price, 
+				@costing_unit_id = purchase.item_cost_prices.unit_id
+			FROM purchase.item_cost_prices
+			WHERE purchase.item_cost_prices.item_id = @item_id
+			AND purchase.item_cost_prices.supplier_id = @supplier_id
+			AND purchase.item_cost_prices.deleted = 0;
+		END;
 
     
-    IF(@price IS NULL)
+		IF(@price IS NULL)
+		BEGIN
+			--This item does not have cost price defined in the catalog.
+			--Therefore, getting the default cost price from the item definition.
+			SELECT 
+				@price = cost_price, 
+				@costing_unit_id = unit_id
+			FROM inventory.items
+			WHERE inventory.items.item_id = @item_id
+			AND inventory.items.deleted = 0;
+		END;
+	END;
+
+    IF(@includes_tax = 1)
     BEGIN
-        --This item does not have cost price defined in the catalog.
-        --Therefore, getting the default cost price from the item definition.
-        SELECT 
-            @price = cost_price, 
-            @costing_unit_id = unit_id
-        FROM inventory.items
-        WHERE inventory.items.item_id = @item_id
-        AND inventory.items.deleted = 0;
+        SET @tax_rate = finance.get_sales_tax_rate(@office_id);
+        SET @price = @price / ((100 + @tax_rate)/ 100);
     END;
 
         --Get the unitary conversion factor if the requested unit does not match with the price defition.
@@ -274,11 +299,10 @@ BEGIN
 END;
 
 
-
---SELECT * FROM purchase.get_item_cost_price(6, 1, 7);
-
-
 GO
+
+
+--SELECT purchase.get_item_cost_price(1, 1, 1, 5);
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/02.functions-and-logic/purchase.get_order_view.sql --<--<--
@@ -565,16 +589,16 @@ BEGIN
     DECLARE @checkout_id                    bigint;
     DECLARE @checkout_detail_id             bigint;
     DECLARE @shipping_address_id            integer;
-    DECLARE @grand_total                    decimal(30, 6);
-    DECLARE @discount_total                 decimal(30, 6);
-    DECLARE @payable                        decimal(30, 6);
+    DECLARE @grand_total                    numeric(30, 6);
+    DECLARE @discount_total                 numeric(30, 6);
+    DECLARE @payable                        numeric(30, 6);
     DECLARE @default_currency_code          national character varying(12);
     DECLARE @is_periodic                    bit = inventory.is_periodic_inventory(@office_id);
     DECLARE @tran_counter                   integer;
     DECLARE @transaction_code               national character varying(50);
-    DECLARE @tax_total                      decimal(30, 6);
+    DECLARE @tax_total                      numeric(30, 6);
     DECLARE @tax_account_id                 integer;
-    DECLARE @shipping_charge                decimal(30, 6);
+    DECLARE @shipping_charge                numeric(30, 6);
 	DECLARE @sales_tax_rate					numeric(30, 6);
 
     DECLARE @can_post_transaction           bit;
@@ -589,17 +613,17 @@ BEGIN
         store_id                            integer,
         transaction_type                    national character varying(2),
         item_id                             integer, 
-        quantity                            decimal(30, 6),
+        quantity                            numeric(30, 6),
         unit_id                             integer,
-        base_quantity                       decimal(30, 6),
+        base_quantity                       numeric(30, 6),
         base_unit_id                        integer,
-        price                               decimal(30, 6) NOT NULL DEFAULT(0),
-        cost_of_goods_sold                  decimal(30, 6) NOT NULL DEFAULT(0),
-        discount_rate                       decimal(30, 6),
-        discount                            decimal(30, 6) NOT NULL DEFAULT(0),
+        price                               numeric(30, 6) NOT NULL DEFAULT(0),
+        cost_of_goods_sold                  numeric(30, 6) NOT NULL DEFAULT(0),
+        discount_rate                       numeric(30, 6),
+        discount                            numeric(30, 6) NOT NULL DEFAULT(0),
 		is_taxable_item						bit,
-        amount								decimal(30, 6),
-        shipping_charge                     decimal(30, 6) NOT NULL DEFAULT(0),
+        amount								numeric(30, 6),
+        shipping_charge                     numeric(30, 6) NOT NULL DEFAULT(0),
         purchase_account_id                 integer, 
         purchase_discount_account_id        integer, 
         inventory_account_id                integer
@@ -612,10 +636,10 @@ BEGIN
         account_id                          integer, 
         statement_reference                 national character varying(2000), 
         currency_code                       national character varying(12), 
-        amount_in_currency                  decimal(30, 6), 
+        amount_in_currency                  numeric(30, 6), 
         local_currency_code                 national character varying(12), 
-        er                                  decimal(30, 6), 
-        amount_in_local_currency            decimal(30, 6)
+        er                                  numeric(30, 6), 
+        amount_in_local_currency            numeric(30, 6)
     );
 
     BEGIN TRY
@@ -897,7 +921,7 @@ CREATE PROCEDURE purchase.post_return
     @reference_number                       national character varying(24),
     @statement_reference                    national character varying(2000),
     @details                                purchase.purchase_detail_type READONLY,
-	@invoice_discount						decimal(30, 6),
+	@invoice_discount						numeric(30, 6),
     @tran_master_id                         bigint OUTPUT
 )
 AS
@@ -911,14 +935,14 @@ BEGIN
     DECLARE @tran_counter           integer;
     DECLARE @tran_code              national character varying(50);
     DECLARE @checkout_id            bigint;
-    DECLARE @grand_total            decimal(30, 6);
-    DECLARE @discount_total         decimal(30, 6);
+    DECLARE @grand_total            numeric(30, 6);
+    DECLARE @discount_total         numeric(30, 6);
     DECLARE @is_credit              bit;
     DECLARE @default_currency_code  national character varying(12);
-    DECLARE @cost_of_goods_sold     decimal(30, 6);
+    DECLARE @cost_of_goods_sold     numeric(30, 6);
     DECLARE @ck_id                  bigint;
     DECLARE @purchase_id            bigint;
-    DECLARE @tax_total              decimal(30, 6);
+    DECLARE @tax_total              numeric(30, 6);
     DECLARE @tax_account_id         integer;
 	DECLARE @fiscal_year_code		national character varying(12);
     DECLARE @can_post_transaction   bit;
@@ -943,14 +967,14 @@ BEGIN
 		store_id					integer,
 		transaction_type			national character varying(2),
 		item_id						integer,
-		quantity					decimal(30, 6),
+		quantity					numeric(30, 6),
 		unit_id						integer,
-        base_quantity				decimal(30, 6),
+        base_quantity				numeric(30, 6),
         base_unit_id                integer,                
-		price						decimal(30, 6),
-		discount_rate				decimal(30, 6),
-		discount					decimal(30, 6),
-		shipping_charge				decimal(30, 6)
+		price						numeric(30, 6),
+		discount_rate				numeric(30, 6),
+		discount					numeric(30, 6),
+		shipping_charge				numeric(30, 6)
 	);
 	
     BEGIN TRY
@@ -1444,22 +1468,22 @@ BEGIN
     DECLARE @is_purchase                    bit = 0;
     DECLARE @item_id                        integer = 0;
     DECLARE @factor_to_base_unit            numeric(30, 6);
-    DECLARE @returned_in_previous_batch     decimal(30, 6) = 0;
-    DECLARE @in_verification_queue          decimal(30, 6) = 0;
-    DECLARE @actual_price_in_root_unit      decimal(30, 6) = 0;
-    DECLARE @price_in_root_unit             decimal(30, 6) = 0;
-    DECLARE @item_in_stock                  decimal(30, 6) = 0;
+    DECLARE @returned_in_previous_batch     numeric(30, 6) = 0;
+    DECLARE @in_verification_queue          numeric(30, 6) = 0;
+    DECLARE @actual_price_in_root_unit      numeric(30, 6) = 0;
+    DECLARE @price_in_root_unit             numeric(30, 6) = 0;
+    DECLARE @item_in_stock                  numeric(30, 6) = 0;
     DECLARE @error_item_id                  integer;
-    DECLARE @error_quantity                 decimal(30, 6);
+    DECLARE @error_quantity                 numeric(30, 6);
     DECLARE @error_unit						national character varying(500);
-    DECLARE @error_amount                   decimal(30, 6);
+    DECLARE @error_amount                   numeric(30, 6);
     DECLARE @error_message                  national character varying(MAX);
 
     DECLARE @total_rows                     integer = 0;
     DECLARE @counter                        integer = 0;
     DECLARE @loop_id                        integer;
     DECLARE @loop_item_id                   integer;
-    DECLARE @loop_price                     decimal(30, 6);
+    DECLARE @loop_price                     numeric(30, 6);
     DECLARE @loop_base_quantity             numeric(30, 6);
 	DECLARE @original_purchase_id			bigint;
 
@@ -1481,13 +1505,13 @@ BEGIN
         store_id            integer,
         item_id             integer,
         item_in_stock       numeric(30, 6),
-        quantity            decimal(30, 6),        
+        quantity            numeric(30, 6),        
         unit_id             integer,
-        price               decimal(30, 6),
-        discount_rate       decimal(30, 6),
-        discount			decimal(30, 6),
+        price               numeric(30, 6),
+        discount_rate       numeric(30, 6),
+        discount			numeric(30, 6),
         is_taxed            bit,
-        shipping_charge     decimal(30, 6),
+        shipping_charge     numeric(30, 6),
         root_unit_id        integer,
         base_quantity       numeric(30, 6)
     ) ;

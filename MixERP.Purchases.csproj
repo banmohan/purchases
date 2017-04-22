@@ -152,6 +152,7 @@
     <Compile Include="Controllers\Backend\Tasks\QuotationController.cs" />
     <Compile Include="Controllers\Backend\Tasks\PaymentController.cs" />
     <Compile Include="Controllers\Backend\Tasks\ReturnController.cs" />
+    <Compile Include="DAL\Backend\Setup\CostPrices.cs" />
     <Compile Include="DAL\Backend\Service\Items.cs" />
     <Compile Include="Controllers\Backend\Setup\CostPriceController.cs" />
     <Compile Include="Controllers\Backend\Setup\PriceTypeController.cs" />
@@ -180,6 +181,7 @@
     <Compile Include="DTO\QuotationDetail.cs" />
     <Compile Include="DTO\QuotationResultview.cs" />
     <Compile Include="DTO\SupplierTransactionSummary.cs" />
+    <Compile Include="DTO\SupplierwiseCostPrice.cs" />
     <Compile Include="Extensions\PartialViewExtensions.cs" />
     <Compile Include="I18N.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -268,6 +270,7 @@
     <Content Include="Views\Tasks\Quotation\ClassicCheckout.cshtml" />
     <Content Include="Views\Tasks\Entry\ClassicCheckout.cshtml" />
     <Content Include="Views\Tasks\Return\ClassicCheckout.cshtml" />
+    <Content Include="Views\Setup\SupplierCostPrices.cshtml" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

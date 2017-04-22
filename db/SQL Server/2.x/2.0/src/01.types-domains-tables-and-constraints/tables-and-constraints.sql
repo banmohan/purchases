@@ -34,7 +34,7 @@ CREATE TABLE purchase.item_cost_prices
     includes_tax                            bit NOT NULL
                                             CONSTRAINT item_cost_prices_includes_tax_df   
                                             DEFAULT(0),
-    price                                   decimal(30, 6) NOT NULL,
+    price                                   numeric(30, 6) NOT NULL,
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
     deleted                                 bit DEFAULT(0)
@@ -49,6 +49,7 @@ WHERE deleted = 0;
 CREATE TABLE purchase.supplierwise_cost_prices
 (
 	cost_price_id							bigint IDENTITY PRIMARY KEY,
+	item_id									integer NOT NULL REFERENCES inventory.items,
 	supplier_id								integer NOT NULL REFERENCES inventory.suppliers,
 	unit_id									integer NOT NULL REFERENCES inventory.units,
 	price									numeric(30, 6),
@@ -106,13 +107,13 @@ CREATE TABLE purchase.quotation_details
     quotation_id                            bigint NOT NULL REFERENCES purchase.quotations,
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
-    price                                   decimal(30, 6) NOT NULL,
-	discount_rate							decimal(30, 6) NOT NULL,
-    discount                           		decimal(30, 6) NOT NULL DEFAULT(0),    
+    price                                   numeric(30, 6) NOT NULL,
+	discount_rate							numeric(30, 6) NOT NULL,
+    discount                           		numeric(30, 6) NOT NULL DEFAULT(0),    
 	is_taxed 								bit NOT NULL,
-    shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
+    shipping_charge                         numeric(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
-    quantity                                decimal(30, 6) NOT NULL
+    quantity                                numeric(30, 6) NOT NULL
 );
 
 
@@ -148,13 +149,13 @@ CREATE TABLE purchase.order_details
     order_id                                bigint NOT NULL REFERENCES purchase.orders,
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
-    price                                   decimal(30, 6) NOT NULL,
-	discount_rate							decimal(30, 6) NOT NULL,
-    discount                          		decimal(30, 6) NOT NULL DEFAULT(0),    
+    price                                   numeric(30, 6) NOT NULL,
+	discount_rate							numeric(30, 6) NOT NULL,
+    discount                          		numeric(30, 6) NOT NULL DEFAULT(0),    
 	is_taxed 								bit NOT NULL,
-    shipping_charge                         decimal(30, 6) NOT NULL DEFAULT(0),    
+    shipping_charge                         numeric(30, 6) NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
-    quantity                                decimal(30, 6) NOT NULL
+    quantity                                numeric(30, 6) NOT NULL
 );
 
 CREATE TABLE purchase.supplier_payments
@@ -200,12 +201,12 @@ AS TABLE
     store_id            integer,
     transaction_type    national character varying(2),
     item_id             integer,
-    quantity            decimal(30, 6),
+    quantity            numeric(30, 6),
     unit_id             integer,
-    price               decimal(30, 6),
-    discount_rate       decimal(30, 6),
-    discount       		decimal(30, 6),
-    shipping_charge     decimal(30, 6),
+    price               numeric(30, 6),
+    discount_rate       numeric(30, 6),
+    discount       		numeric(30, 6),
+    shipping_charge     numeric(30, 6),
 	is_taxed			bit
 );
 

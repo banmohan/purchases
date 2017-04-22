@@ -31,16 +31,16 @@ BEGIN
     DECLARE @checkout_id                    bigint;
     DECLARE @checkout_detail_id             bigint;
     DECLARE @shipping_address_id            integer;
-    DECLARE @grand_total                    decimal(30, 6);
-    DECLARE @discount_total                 decimal(30, 6);
-    DECLARE @payable                        decimal(30, 6);
+    DECLARE @grand_total                    numeric(30, 6);
+    DECLARE @discount_total                 numeric(30, 6);
+    DECLARE @payable                        numeric(30, 6);
     DECLARE @default_currency_code          national character varying(12);
     DECLARE @is_periodic                    bit = inventory.is_periodic_inventory(@office_id);
     DECLARE @tran_counter                   integer;
     DECLARE @transaction_code               national character varying(50);
-    DECLARE @tax_total                      decimal(30, 6);
+    DECLARE @tax_total                      numeric(30, 6);
     DECLARE @tax_account_id                 integer;
-    DECLARE @shipping_charge                decimal(30, 6);
+    DECLARE @shipping_charge                numeric(30, 6);
 	DECLARE @sales_tax_rate					numeric(30, 6);
 
     DECLARE @can_post_transaction           bit;
@@ -55,17 +55,17 @@ BEGIN
         store_id                            integer,
         transaction_type                    national character varying(2),
         item_id                             integer, 
-        quantity                            decimal(30, 6),
+        quantity                            numeric(30, 6),
         unit_id                             integer,
-        base_quantity                       decimal(30, 6),
+        base_quantity                       numeric(30, 6),
         base_unit_id                        integer,
-        price                               decimal(30, 6) NOT NULL DEFAULT(0),
-        cost_of_goods_sold                  decimal(30, 6) NOT NULL DEFAULT(0),
-        discount_rate                       decimal(30, 6),
-        discount                            decimal(30, 6) NOT NULL DEFAULT(0),
+        price                               numeric(30, 6) NOT NULL DEFAULT(0),
+        cost_of_goods_sold                  numeric(30, 6) NOT NULL DEFAULT(0),
+        discount_rate                       numeric(30, 6),
+        discount                            numeric(30, 6) NOT NULL DEFAULT(0),
 		is_taxable_item						bit,
-        amount								decimal(30, 6),
-        shipping_charge                     decimal(30, 6) NOT NULL DEFAULT(0),
+        amount								numeric(30, 6),
+        shipping_charge                     numeric(30, 6) NOT NULL DEFAULT(0),
         purchase_account_id                 integer, 
         purchase_discount_account_id        integer, 
         inventory_account_id                integer
@@ -78,10 +78,10 @@ BEGIN
         account_id                          integer, 
         statement_reference                 national character varying(2000), 
         currency_code                       national character varying(12), 
-        amount_in_currency                  decimal(30, 6), 
+        amount_in_currency                  numeric(30, 6), 
         local_currency_code                 national character varying(12), 
-        er                                  decimal(30, 6), 
-        amount_in_local_currency            decimal(30, 6)
+        er                                  numeric(30, 6), 
+        amount_in_local_currency            numeric(30, 6)
     );
 
     BEGIN TRY

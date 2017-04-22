@@ -14,7 +14,7 @@
     _reference_number                       national character varying(24),
     _statement_reference                    national character varying(2000),
     _details                                purchase.purchase_detail_type[],
-	_invoice_discount						decimal(30, 6)
+	_invoice_discount						numeric(30, 6)
 );
 
 CREATE FUNCTION purchase.post_return
@@ -33,7 +33,7 @@ CREATE FUNCTION purchase.post_return
     _reference_number                       national character varying(24),
     _statement_reference                    national character varying(2000),
     _details                                purchase.purchase_detail_type[],
-	_invoice_discount						decimal(30, 6)
+	_invoice_discount						numeric(30, 6)
 )
 RETURNS bigint
 AS
@@ -44,14 +44,14 @@ $$
     DECLARE _tran_counter           integer;
     DECLARE _tran_code              national character varying(50);
     DECLARE _checkout_id            bigint;
-    DECLARE _grand_total            decimal(30, 6);
-    DECLARE _discount_total         decimal(30, 6);
+    DECLARE _grand_total            numeric(30, 6);
+    DECLARE _discount_total         numeric(30, 6);
     DECLARE _is_credit              bit;
     DECLARE _default_currency_code  national character varying(12);
-    DECLARE _cost_of_goods_sold     decimal(30, 6);
+    DECLARE _cost_of_goods_sold     numeric(30, 6);
     DECLARE _ck_id                  bigint;
     DECLARE _purchase_id            bigint;
-    DECLARE _tax_total              decimal(30, 6);
+    DECLARE _tax_total              numeric(30, 6);
     DECLARE _tax_account_id         integer;
 	DECLARE _fiscal_year_code		national character varying(12);
     DECLARE _can_post_transaction   bit;
@@ -78,14 +78,14 @@ BEGIN
 		store_id					integer,
 		transaction_type			national character varying(2),
 		item_id						integer,
-		quantity					decimal(30, 6),
+		quantity					numeric(30, 6),
 		unit_id						integer,
-        base_quantity				decimal(30, 6),
+        base_quantity				numeric(30, 6),
         base_unit_id                integer,                
-		price						decimal(30, 6),
-		discount_rate				decimal(30, 6),
-		discount					decimal(30, 6),
-		shipping_charge				decimal(30, 6)
+		price						numeric(30, 6),
+		discount_rate				numeric(30, 6),
+		discount					numeric(30, 6),
+		shipping_charge				numeric(30, 6)
 	) ON COMMIT DROP;
 	
         

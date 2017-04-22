@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using Frapid.ApplicationState.Cache;
 using MixERP.Purchases.DAL.Backend.Service;
 using Frapid.DataAccess.Models;
 using Frapid.Dashboard;
@@ -12,7 +13,8 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
         [AccessPolicy("purchase", "item_view", AccessTypeEnum.Read)]
         public async Task<ActionResult> IndexAsync()
         {
-            var model = await Items.GetItemsAsync(this.Tenant).ConfigureAwait(true);
+            var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
+            var model = await Items.GetItemsAsync(this.Tenant, meta.OfficeId).ConfigureAwait(true);
             return this.Ok(model);
         }
 
@@ -24,7 +26,8 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
                 return this.InvalidModelState(this.ModelState);
             }
 
-            decimal model = await Items.GetCostPriceAsync(this.Tenant, itemId, supplierId, unitId).ConfigureAwait(true);
+            var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
+            decimal model = await Items.GetCostPriceAsync(this.Tenant, meta.OfficeId, itemId, supplierId, unitId).ConfigureAwait(true);
             return this.Ok(model);
         }
     }

@@ -41,9 +41,10 @@ ON purchase.item_cost_prices(item_id, unit_id, supplier_id)
 WHERE NOT deleted;
 
 
-CREATE TABLE purchase.supplierwise_selling_prices
+CREATE TABLE purchase.supplierwise_cost_prices
 (
-	selling_price_id						BIGSERIAL PRIMARY KEY,
+	cost_price_id							BIGSERIAL PRIMARY KEY,
+	item_id									integer NOT NULL REFERENCES inventory.items,
 	supplier_id								integer NOT NULL REFERENCES inventory.suppliers,
 	unit_id									integer NOT NULL REFERENCES inventory.units,
 	price									numeric(30, 6),
@@ -102,7 +103,7 @@ CREATE TABLE purchase.quotation_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
-	discount_rate							decimal(30, 6) NOT NULL,
+	discount_rate							numeric(30, 6) NOT NULL,
     discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
 	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
@@ -144,7 +145,7 @@ CREATE TABLE purchase.order_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
-	discount_rate							decimal(30, 6) NOT NULL,
+	discount_rate							numeric(30, 6) NOT NULL,
     discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
 	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
@@ -209,72 +210,95 @@ AS
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/02.functions-and-logic/purchase.get_item_cost_price.sql --<--<--
-DROP FUNCTION IF EXISTS purchase.get_item_cost_price(_item_id integer, _supplier_id bigint, _unit_id integer);
+DROP FUNCTION IF EXISTS purchase.get_item_cost_price(_office_id integer, _item_id integer, _supplier_id bigint, _unit_id integer);
 
-CREATE FUNCTION purchase.get_item_cost_price(_item_id integer, _supplier_id bigint, _unit_id integer)
-RETURNS public.money_strict2
-STABLE
+CREATE FUNCTION purchase.get_item_cost_price(_office_id integer, _item_id integer, _supplier_id bigint, _unit_id integer)
+RETURNS numeric(30, 6)
 AS
 $$
-    DECLARE _price              public.money_strict2;
+    DECLARE _price              numeric(30, 6);
     DECLARE _costing_unit_id    integer;
-    DECLARE _factor             decimal(30, 6);
-  
+    DECLARE _factor             numeric(30, 6);
+    DECLARE _includes_tax       boolean;
+    DECLARE _tax_rate           decimal(30, 6);
 BEGIN
-    --Fist pick the catalog price which matches all these fields:
-    --Item, Customer Type, Price Type, and Unit.
-    --This is the most effective price.
-    SELECT 
-        purchase.item_cost_prices.price, 
-        purchase.item_cost_prices.unit_id
-    INTO 
+	SELECT inventory.items.cost_price_includes_tax INTO _includes_tax
+	FROM inventory.items
+	WHERE inventory.items.item_id = _item_id;
+
+	SELECT
+        purchase.supplierwise_cost_prices.price,
+		purchase.supplierwise_cost_prices.unit_id
+    INTO
         _price,
         _costing_unit_id
-    FROM purchase.item_cost_prices
-    WHERE purchase.item_cost_prices.item_id=_item_id
-    AND purchase.item_cost_prices.supplier_id =_supplier_id
-    AND purchase.item_cost_prices.unit_id = _unit_id
-    AND NOT purchase.item_cost_prices.deleted;
+	FROM purchase.supplierwise_cost_prices
+	WHERE NOT purchase.supplierwise_cost_prices.deleted
+	AND purchase.supplierwise_cost_prices.supplier_id = _supplier_id
+	AND purchase.supplierwise_cost_prices.item_id = _item_id;
 
-
-    IF(_costing_unit_id IS NULL) THEN
-        --We do not have a cost price of this item for the unit supplied.
-        --Let's see if this item has a price for other units.
-        SELECT 
-            purchase.item_cost_prices.price, 
-            purchase.item_cost_prices.unit_id
-        INTO 
-            _price, 
+	
+	IF(_price IS NULL) THEN
+        --Pick the catalog price which matches all these fields:
+        --Item, Customer Type, Price Type, and Unit.
+        --This is the most effective price.
+		SELECT 
+			purchase.item_cost_prices.price, 
+			 purchase.item_cost_prices.unit_id
+        INTO
+            _price,
             _costing_unit_id
-        FROM purchase.item_cost_prices
-        WHERE purchase.item_cost_prices.item_id=_item_id
-        AND purchase.item_cost_prices.supplier_id =_supplier_id
-	AND NOT purchase.item_cost_prices.deleted;
-    END IF;
+		FROM purchase.item_cost_prices
+		WHERE purchase.item_cost_prices.item_id = _item_id
+		AND purchase.item_cost_prices.supplier_id = _supplier_id
+		AND purchase.item_cost_prices.unit_id = _unit_id
+		AND NOT purchase.item_cost_prices.deleted;
+
+		IF(_costing_unit_id IS NULL) THEN
+			--We do not have a cost price of this item for the unit supplied.
+			--Let's see if this item has a price for other units.
+			SELECT 
+				 purchase.item_cost_prices.price, 
+				 purchase.item_cost_prices.unit_id
+			INTO
+                _price,
+                _costing_unit_id
+			FROM purchase.item_cost_prices
+			WHERE purchase.item_cost_prices.item_id = _item_id
+			AND purchase.item_cost_prices.supplier_id = _supplier_id
+			AND NOT purchase.item_cost_prices.deleted;
+		END IF;
 
     
-    IF(_price IS NULL) THEN
-        --This item does not have cost price defined in the catalog.
-        --Therefore, getting the default cost price from the item definition.
-        SELECT 
-            cost_price, 
-            unit_id
-        INTO 
-            _price, 
-            _costing_unit_id
-        FROM inventory.items
-        WHERE inventory.items.item_id = _item_id
-		AND NOT inventory.items.deleted;
+		IF(_price IS NULL) THEN
+			--This item does not have cost price defined in the catalog.
+			--Therefore, getting the default cost price from the item definition.
+			SELECT 
+				cost_price, 
+				unit_id
+			INTO
+                _price,
+                _costing_unit_id
+			FROM inventory.items
+			WHERE inventory.items.item_id = _item_id
+			AND NOT inventory.items.deleted;
+		END IF;
+	END IF;
+
+    IF(_includes_tax) THEN
+        _tax_rate       := finance.get_sales_tax_rate(_office_id);
+        _price          := _price / ((100 + _tax_rate)/ 100);
     END IF;
 
         --Get the unitary conversion factor if the requested unit does not match with the price defition.
-    _factor := inventory.convert_unit(_unit_id, _costing_unit_id);
+    _factor             := inventory.convert_unit(_unit_id, _costing_unit_id);
     RETURN _price * _factor;
 END
 $$
 LANGUAGE plpgsql;
 
---SELECT * FROM purchase.get_item_cost_price(6, 1, 7);
+
+--SELECT purchase.get_item_cost_price(1, 6, 1, 7);
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/02.functions-and-logic/purchase.get_order_view.sql --<--<--
@@ -609,11 +633,11 @@ BEGIN
         item_id                         	integer, 
         quantity                        	public.integer_strict,
         unit_id                         	integer,
-        base_quantity                   	decimal(30, 6),
+        base_quantity                   	numeric(30, 6),
         base_unit_id                    	integer,
         price                           	public.money_strict NOT NULL DEFAULT(0),
         cost_of_goods_sold              	public.money_strict2 NOT NULL DEFAULT(0),
-        discount_rate                       decimal(30, 6),
+        discount_rate                       numeric(30, 6),
         discount                        	public.money_strict2 NOT NULL DEFAULT(0),
         is_taxable_item                     boolean,
         amount                              public.money_strict2,
@@ -814,7 +838,7 @@ DROP FUNCTION IF EXISTS purchase.post_return
     _reference_number                       national character varying(24),
     _statement_reference                    national character varying(2000),
     _details                                purchase.purchase_detail_type[],
-	_invoice_discount						decimal(30, 6)
+	_invoice_discount						numeric(30, 6)
 );
 
 CREATE FUNCTION purchase.post_return
@@ -833,7 +857,7 @@ CREATE FUNCTION purchase.post_return
     _reference_number                       national character varying(24),
     _statement_reference                    national character varying(2000),
     _details                                purchase.purchase_detail_type[],
-	_invoice_discount						decimal(30, 6)
+	_invoice_discount						numeric(30, 6)
 )
 RETURNS bigint
 AS
@@ -844,14 +868,14 @@ $$
     DECLARE _tran_counter           integer;
     DECLARE _tran_code              national character varying(50);
     DECLARE _checkout_id            bigint;
-    DECLARE _grand_total            decimal(30, 6);
-    DECLARE _discount_total         decimal(30, 6);
+    DECLARE _grand_total            numeric(30, 6);
+    DECLARE _discount_total         numeric(30, 6);
     DECLARE _is_credit              bit;
     DECLARE _default_currency_code  national character varying(12);
-    DECLARE _cost_of_goods_sold     decimal(30, 6);
+    DECLARE _cost_of_goods_sold     numeric(30, 6);
     DECLARE _ck_id                  bigint;
     DECLARE _purchase_id            bigint;
-    DECLARE _tax_total              decimal(30, 6);
+    DECLARE _tax_total              numeric(30, 6);
     DECLARE _tax_account_id         integer;
 	DECLARE _fiscal_year_code		national character varying(12);
     DECLARE _can_post_transaction   bit;
@@ -878,14 +902,14 @@ BEGIN
 		store_id					integer,
 		transaction_type			national character varying(2),
 		item_id						integer,
-		quantity					decimal(30, 6),
+		quantity					numeric(30, 6),
 		unit_id						integer,
-        base_quantity				decimal(30, 6),
+        base_quantity				numeric(30, 6),
         base_unit_id                integer,                
-		price						decimal(30, 6),
-		discount_rate				decimal(30, 6),
-		discount					decimal(30, 6),
-		shipping_charge				decimal(30, 6)
+		price						numeric(30, 6),
+		discount_rate				numeric(30, 6),
+		discount					numeric(30, 6),
+		shipping_charge				numeric(30, 6)
 	) ON COMMIT DROP;
 	
         
@@ -1289,9 +1313,9 @@ $$
     DECLARE _price_in_root_unit             public.money_strict2 = 0;
     DECLARE _item_in_stock                  public.decimal_strict2 = 0;
     DECLARE _error_item_id                  integer;
-    DECLARE _error_quantity                 decimal(30, 6);
+    DECLARE _error_quantity                 numeric(30, 6);
     DECLARE _error_unit                     text;
-    DECLARE _error_amount                   decimal(30, 6);
+    DECLARE _error_amount                   numeric(30, 6);
     DECLARE _original_purchase_id           bigint;
     DECLARE this                            RECORD; 
 BEGIN        

@@ -19,22 +19,22 @@ BEGIN
     DECLARE @is_purchase                    bit = 0;
     DECLARE @item_id                        integer = 0;
     DECLARE @factor_to_base_unit            numeric(30, 6);
-    DECLARE @returned_in_previous_batch     decimal(30, 6) = 0;
-    DECLARE @in_verification_queue          decimal(30, 6) = 0;
-    DECLARE @actual_price_in_root_unit      decimal(30, 6) = 0;
-    DECLARE @price_in_root_unit             decimal(30, 6) = 0;
-    DECLARE @item_in_stock                  decimal(30, 6) = 0;
+    DECLARE @returned_in_previous_batch     numeric(30, 6) = 0;
+    DECLARE @in_verification_queue          numeric(30, 6) = 0;
+    DECLARE @actual_price_in_root_unit      numeric(30, 6) = 0;
+    DECLARE @price_in_root_unit             numeric(30, 6) = 0;
+    DECLARE @item_in_stock                  numeric(30, 6) = 0;
     DECLARE @error_item_id                  integer;
-    DECLARE @error_quantity                 decimal(30, 6);
+    DECLARE @error_quantity                 numeric(30, 6);
     DECLARE @error_unit						national character varying(500);
-    DECLARE @error_amount                   decimal(30, 6);
+    DECLARE @error_amount                   numeric(30, 6);
     DECLARE @error_message                  national character varying(MAX);
 
     DECLARE @total_rows                     integer = 0;
     DECLARE @counter                        integer = 0;
     DECLARE @loop_id                        integer;
     DECLARE @loop_item_id                   integer;
-    DECLARE @loop_price                     decimal(30, 6);
+    DECLARE @loop_price                     numeric(30, 6);
     DECLARE @loop_base_quantity             numeric(30, 6);
 	DECLARE @original_purchase_id			bigint;
 
@@ -56,13 +56,13 @@ BEGIN
         store_id            integer,
         item_id             integer,
         item_in_stock       numeric(30, 6),
-        quantity            decimal(30, 6),        
+        quantity            numeric(30, 6),        
         unit_id             integer,
-        price               decimal(30, 6),
-        discount_rate       decimal(30, 6),
-        discount			decimal(30, 6),
+        price               numeric(30, 6),
+        discount_rate       numeric(30, 6),
+        discount			numeric(30, 6),
         is_taxed            bit,
-        shipping_charge     decimal(30, 6),
+        shipping_charge     numeric(30, 6),
         root_unit_id        integer,
         base_quantity       numeric(30, 6)
     ) ;

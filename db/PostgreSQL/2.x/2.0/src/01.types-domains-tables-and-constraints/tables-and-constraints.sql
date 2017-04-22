@@ -40,9 +40,10 @@ ON purchase.item_cost_prices(item_id, unit_id, supplier_id)
 WHERE NOT deleted;
 
 
-CREATE TABLE purchase.supplierwise_selling_prices
+CREATE TABLE purchase.supplierwise_cost_prices
 (
-	selling_price_id						BIGSERIAL PRIMARY KEY,
+	cost_price_id							BIGSERIAL PRIMARY KEY,
+	item_id									integer NOT NULL REFERENCES inventory.items,
 	supplier_id								integer NOT NULL REFERENCES inventory.suppliers,
 	unit_id									integer NOT NULL REFERENCES inventory.units,
 	price									numeric(30, 6),
@@ -101,7 +102,7 @@ CREATE TABLE purchase.quotation_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
-	discount_rate							decimal(30, 6) NOT NULL,
+	discount_rate							numeric(30, 6) NOT NULL,
     discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
 	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
@@ -143,7 +144,7 @@ CREATE TABLE purchase.order_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
-	discount_rate							decimal(30, 6) NOT NULL,
+	discount_rate							numeric(30, 6) NOT NULL,
     discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
 	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    

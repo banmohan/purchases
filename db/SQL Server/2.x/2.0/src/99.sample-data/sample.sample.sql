@@ -31,7 +31,7 @@ SELECT
 	item_id,
 	100,
 	unit_id,
-	purchase.get_item_cost_price(item_id, @supplier_id, unit_id),
+	purchase.get_item_cost_price(@office_id, item_id, @supplier_id, unit_id),
 	0,
 	0,
 	0        

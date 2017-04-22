@@ -76,7 +76,7 @@
         BookDateText: "Expected Delivery Date",
         UpdatePrice: function () {
             function request(itemId, supplierId, priceTypeId, unitId) {
-                var url = "/dashboard/purchase/tasks/cost-price/{itemId}/{supplierId}/{priceTypeId}/{unitId}";
+                var url = "/dashboard/purchase/tasks/cost-price/{itemId}/{supplierId}/{unitId}";
                 url = url.replace("{itemId}", itemId);
                 url = url.replace("{supplierId}", supplierId);
                 url = url.replace("{priceTypeId}", priceTypeId);
