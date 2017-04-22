@@ -104,6 +104,11 @@ namespace MixERP.Purchases
 		public static string OfficeId => I18NResource.GetString(ResourceDirectory, "OfficeId");
 
 		/// <summary>
+		///Discount Rate
+		/// </summary>
+		public static string DiscountRate => I18NResource.GetString(ResourceDirectory, "DiscountRate");
+
+		/// <summary>
 		///Tran Code
 		/// </summary>
 		public static string TranCode => I18NResource.GetString(ResourceDirectory, "TranCode");
@@ -144,14 +149,14 @@ namespace MixERP.Purchases
 		public static string Item => I18NResource.GetString(ResourceDirectory, "Item");
 
 		/// <summary>
-		///Item Cost Price Id
-		/// </summary>
-		public static string ItemCostPriceId => I18NResource.GetString(ResourceDirectory, "ItemCostPriceId");
-
-		/// <summary>
 		///Terms
 		/// </summary>
 		public static string Terms => I18NResource.GetString(ResourceDirectory, "Terms");
+
+		/// <summary>
+		///Item Cost Price Id
+		/// </summary>
+		public static string ItemCostPriceId => I18NResource.GetString(ResourceDirectory, "ItemCostPriceId");
 
 		/// <summary>
 		///Supplier Id
@@ -332,6 +337,11 @@ namespace MixERP.Purchases
 		///Barcode
 		/// </summary>
 		public static string Barcode => I18NResource.GetString(ResourceDirectory, "Barcode");
+
+		/// <summary>
+		///Selling Price Id
+		/// </summary>
+		public static string SellingPriceId => I18NResource.GetString(ResourceDirectory, "SellingPriceId");
 
 		/// <summary>
 		///Unit Id
@@ -544,6 +554,11 @@ namespace MixERP.Purchases
 		public static string CostPrices => I18NResource.GetString(ResourceDirectory, "CostPrices");
 
 		/// <summary>
+		///Supplierwise Cost Prices
+		/// </summary>
+		public static string SupplierwiseCostPrices => I18NResource.GetString(ResourceDirectory, "SupplierwiseCostPrices");
+
+		/// <summary>
 		///Reports
 		/// </summary>
 		public static string Reports => I18NResource.GetString(ResourceDirectory, "Reports");
@@ -747,11 +762,6 @@ namespace MixERP.Purchases
 		///Delete
 		/// </summary>
 		public static string Delete => I18NResource.GetString(ResourceDirectory, "Delete");
-
-		/// <summary>
-		///Discount Rate
-		/// </summary>
-		public static string DiscountRate => I18NResource.GetString(ResourceDirectory, "DiscountRate");
 
 		/// <summary>
 		///Edit Price

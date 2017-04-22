@@ -34,6 +34,10 @@
         <td>{i18n.Terms}</td>
         <td> {DataSource[0].terms}</td>
       </tr>
+      <tr>
+        <td>{i18n.Cancelled}</td>
+        <td> {DataSource[0].cancelled}</td>
+      </tr>
     </table>
     <br />
   </TopSection>
@@ -111,6 +115,7 @@
 			purchase.quotations.expected_delivery_date,
 			core.offices.office_name,
 			purchase.quotations.terms,
+			purchase.quotations.cancelled,
 			purchase.quotations.internal_memo,
 			inventory.suppliers.supplier_name,
 			purchase.quotations.taxable_total,
@@ -148,8 +153,8 @@
 				inventory.units.unit_name,
 				ROUND(purchase.quotation_details.price * purchase.quotation_details.quantity, 4) AS amount,
 				purchase.quotation_details.discount,
-				ROUND((purchase.quotation_details.price * purchase.quotation_details.quantity) - purchase.quotation_details.discount, 4) AS sub_total,
-				ROUND((purchase.quotation_details.price * purchase.quotation_details.quantity) - purchase.quotation_details.discount, 4) AS total
+				purchase.quotation_details.shipping_charge,
+				ROUND((purchase.quotation_details.price * purchase.quotation_details.quantity) - purchase.quotation_details.discount + purchase.quotation_details.shipping_charge, 4) AS total
 			FROM purchase.quotation_details
 			INNER JOIN inventory.items
 			ON purchase.quotation_details.item_id = inventory.items.item_id

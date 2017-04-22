@@ -47,9 +47,9 @@ WHERE deleted = 0;
 
 
 
-CREATE TABLE purchase.supplierwise_selling_prices
+CREATE TABLE purchase.supplierwise_cost_prices
 (
-	selling_price_id						bigint IDENTITY PRIMARY KEY,
+	cost_price_id							bigint IDENTITY PRIMARY KEY,
 	supplier_id								integer NOT NULL REFERENCES inventory.suppliers,
 	unit_id									integer NOT NULL REFERENCES inventory.units,
 	price									numeric(30, 6),
@@ -95,6 +95,7 @@ CREATE TABLE purchase.quotations
 	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
 	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
 	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								bit NOT NULL DEFAULT(0),
 	audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
     deleted                                 bit DEFAULT(0)
@@ -136,6 +137,7 @@ CREATE TABLE purchase.orders
 	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
 	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
 	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								bit NOT NULL DEFAULT(0),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
     deleted                                 bit DEFAULT(0)
@@ -203,8 +205,9 @@ AS TABLE
     unit_id             integer,
     price               decimal(30, 6),
     discount_rate       decimal(30, 6),
-    tax                 decimal(30, 6),
-    shipping_charge     decimal(30, 6)
+    discount       		decimal(30, 6),
+    shipping_charge     decimal(30, 6),
+	is_taxed			bit
 );
 
 
@@ -551,7 +554,8 @@ CREATE PROCEDURE purchase.post_purchase
     @store_id								integer,
     @details                                purchase.purchase_detail_type READONLY,
 	@invoice_discount						numeric(30, 6) = 0,
-	@transaction_master_id					bigint OUTPUT
+	@transaction_master_id					bigint OUTPUT,
+	@book_name								national character varying(48) = 'Purchase Entry'
 )
 AS
 BEGIN
@@ -571,7 +575,6 @@ BEGIN
     DECLARE @tax_total                      decimal(30, 6);
     DECLARE @tax_account_id                 integer;
     DECLARE @shipping_charge                decimal(30, 6);
-    DECLARE @book_name                      national character varying(100) = 'Purchase Entry';
 	DECLARE @sales_tax_rate					numeric(30, 6);
 
     DECLARE @can_post_transaction           bit;
@@ -636,7 +639,7 @@ BEGIN
 
         SET @tax_account_id                 = finance.get_sales_tax_account_id_by_office_id(@office_id);
 
-        IF(@supplier_id IS NULL)
+        IF(COALESCE(@supplier_id, 0) = 0)
         BEGIN
             RAISERROR('Invalid supplier', 13, 1);
         END;
@@ -648,8 +651,8 @@ BEGIN
 		WHERE finance.tax_setups.deleted = 0
 		AND finance.tax_setups.office_id = @office_id;
 
-        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge)
-        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge
+        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge)
+        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge
         FROM @details;
 
         UPDATE @checkout_details 
@@ -658,9 +661,18 @@ BEGIN
             base_unit_id                    = inventory.get_root_unit_id(unit_id),
             purchase_account_id             = inventory.get_purchase_account_id(item_id),
             purchase_discount_account_id    = inventory.get_purchase_discount_account_id(item_id),
-            inventory_account_id            = inventory.get_inventory_account_id(item_id),
-            discount                        = ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2);
+            inventory_account_id            = inventory.get_inventory_account_id(item_id);
         
+		UPDATE @checkout_details
+		SET
+            discount                        = COALESCE(ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2), 0)
+		WHERE COALESCE(discount, 0) = 0;
+
+		UPDATE @checkout_details
+		SET
+            discount_rate                   = COALESCE(ROUND(100 * discount / ((price * quantity) + shipping_charge), 2), 0)
+		WHERE COALESCE(discount_rate, 0) = 0;
+
 
 		UPDATE @checkout_details 
 		SET 
@@ -671,6 +683,16 @@ BEGIN
 
 		UPDATE @checkout_details
 		SET amount = (COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0);
+
+		IF EXISTS
+		(
+			SELECT 1
+			FROM @checkout_details
+			WHERE amount < 0
+		)
+		BEGIN
+			RAISERROR('A line amount cannot be less than zero.', 16, 1);
+		END;
 
         IF EXISTS
         (
@@ -685,6 +707,11 @@ BEGIN
 			@taxable_total		= COALESCE(SUM(CASE WHEN is_taxable_item = 1 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0),
 			@nontaxable_total	= COALESCE(SUM(CASE WHEN is_taxable_item = 0 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0)
 		FROM @checkout_details;
+
+		IF(@invoice_discount > @taxable_total)
+		BEGIN
+			RAISERROR('The invoice discount cannot be greater than total taxable amount.', 16, 1);
+		END;
 
         SELECT @discount_total				= SUM(COALESCE(discount, 0)) FROM @checkout_details;
 
@@ -827,10 +854,8 @@ GO
 --DECLARE @invoice_discount						numeric(30, 6)						= 0.00;
 --DECLARE @transaction_master_id					bigint;
 
---INSERT INTO @details
---SELECT @store_id, 'Cr', item_id, 20, unit_id, cost_price, 0, CASE WHEN is_taxable_item = 1 THEN 1 ELSE 0 END * cost_price * 0.13, 0
---FROM inventory.items
---WHERE inventory.items.item_code IN('SHS0003', 'SHS0004');
+--INSERT INTO @details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge)
+--SELECT @store_id, 'Dr', 1, 1, 6, 1600, 16.67, 300, 200;
 
 --EXECUTE purchase.post_purchase
 --    @office_id,
@@ -972,7 +997,7 @@ BEGIN
             RETURN;
         END;
 
-        SET @default_currency_code          = core.get_currency_code_by_office_id(@office_id);
+        SET @default_currency_code      = core.get_currency_code_by_office_id(@office_id);
         SET @tran_counter               = finance.get_new_transaction_counter(@value_date);
         SET @tran_code                  = finance.get_transaction_code(@value_date, @office_id, @user_id, @login_id);
 
@@ -1106,7 +1131,8 @@ BEGIN
 				@store_id,
 				@difference,
 				@invoice_discount,
-				@new_tran_id  OUTPUT;
+				@new_tran_id  OUTPUT,
+				@book_name;
 		END;
 		ELSE
 		BEGIN
@@ -1161,45 +1187,43 @@ GO
 
 
 
--- DECLARE @transaction_master_id          bigint = 245;
--- DECLARE @office_id                      integer = (SELECT TOP 1 office_id FROM core.offices);
--- DECLARE @user_id                        integer = (SELECT TOP 1 user_id FROM account.users);
--- DECLARE @login_id                       bigint = (SELECT TOP 1 login_id FROM account.logins WHERE user_id = @user_id);
--- DECLARE @value_date                     date = finance.get_value_date(@office_id);
--- DECLARE @book_date                      date = finance.get_value_date(@office_id);
--- DECLARE @store_id                       integer = (SELECT TOP 1 store_id FROM inventory.stores WHERE store_name='Cold Room RM');
--- DECLARE @cost_center_id                 integer = (SELECT TOP 1 cost_center_id FROM finance.cost_centers);
--- DECLARE @shipper_id						integer = (SELECT TOP 1 shipper_id FROM inventory.shippers);
--- DECLARE @supplier_id                    integer = 13;
--- DECLARE @price_type_id                  integer = (SELECT TOP 1 price_type_id FROM purchase.price_types);
--- DECLARE @reference_number               national character varying(24) = 'N/A';
--- DECLARE @statement_reference            national character varying(2000) = 'Test';
--- DECLARE @details                        purchase.purchase_detail_type;
--- DECLARE @tran_master_id                 bigint;
+ --DECLARE @transaction_master_id          bigint = 393;
+ --DECLARE @office_id                      integer = (SELECT TOP 1 office_id FROM core.offices);
+ --DECLARE @user_id                        integer = (SELECT TOP 1 user_id FROM account.users);
+ --DECLARE @login_id                       bigint = (SELECT TOP 1 login_id FROM account.logins WHERE user_id = @user_id);
+ --DECLARE @value_date                     date = finance.get_value_date(@office_id);
+ --DECLARE @book_date                      date = finance.get_value_date(@office_id);
+ --DECLARE @store_id                       integer = (SELECT TOP 1 store_id FROM inventory.stores WHERE store_name='Cold Room RM');
+ --DECLARE @cost_center_id                 integer = (SELECT TOP 1 cost_center_id FROM finance.cost_centers);
+ --DECLARE @shipper_id					 integer = (SELECT TOP 1 shipper_id FROM inventory.shippers);
+ --DECLARE @supplier_id                    integer = 4;
+ --DECLARE @price_type_id                  integer = (SELECT TOP 1 price_type_id FROM purchase.price_types);
+ --DECLARE @reference_number               national character varying(24) = 'N/A';
+ --DECLARE @statement_reference            national character varying(2000) = 'Test';
+ --DECLARE @details                        purchase.purchase_detail_type;
+ --DECLARE @tran_master_id                 bigint;
 
--- INSERT INTO @details
--- SELECT @store_id, 'Cr', item_id, 1, unit_id, 500, 0, 500* 0.13, 0
--- FROM inventory.items
--- WHERE inventory.items.item_code IN('SHS0005');
+ --INSERT INTO @details(store_id, transaction_type, item_id, quantity, unit_id, price, shipping_charge)
+ --SELECT @store_id, 'Cr', 1, 1, 6, 1600, 0;
 
 
--- EXECUTE purchase.post_return
-    -- @transaction_master_id          ,
-    -- @office_id                      ,
-    -- @user_id                        ,
-    -- @login_id                       ,
-    -- @value_date                     ,
-    -- @book_date                      ,
-    -- @store_id                       ,
-    -- @cost_center_id                 ,
-    -- @supplier_id                    ,
-    -- @price_type_id                  ,
+ --EXECUTE purchase.post_return
+ --    @transaction_master_id          ,
+ --    @office_id                      ,
+ --    @user_id                        ,
+ --    @login_id                       ,
+ --    @value_date                     ,
+ --    @book_date                      ,
+ --    @store_id                       ,
+ --    @cost_center_id                 ,
+ --    @supplier_id                    ,
+ --    @price_type_id                  ,
 	-- @shipper_id						,
-    -- @reference_number               ,
-    -- @statement_reference            ,
-    -- @details                        ,
+ --    @reference_number               ,
+ --    @statement_reference            ,
+ --    @details                        ,
 	-- 400,--discount
-    -- @tran_master_id                 OUTPUT;
+ --    @tran_master_id                 OUTPUT;
 
 
 
@@ -1461,14 +1485,15 @@ BEGIN
         unit_id             integer,
         price               decimal(30, 6),
         discount_rate       decimal(30, 6),
-        tax                 decimal(30, 6),
+        discount			decimal(30, 6),
+        is_taxed            bit,
         shipping_charge     decimal(30, 6),
         root_unit_id        integer,
         base_quantity       numeric(30, 6)
     ) ;
 
-    INSERT INTO @details_temp(store_id, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
-    SELECT store_id, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
+    INSERT INTO @details_temp(store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge)
+    SELECT store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge
     FROM @details;
 
     UPDATE @details_temp
@@ -2054,7 +2079,8 @@ SELECT
 	purchase.orders.transaction_timestamp AS posted_on,
 	purchase.orders.office_id,
 	purchase.orders.discount,
-	purchase.orders.tax	
+	purchase.orders.tax,
+	purchase.orders.cancelled
 FROM purchase.orders;
 
 GO
@@ -2139,7 +2165,8 @@ SELECT
 	purchase.quotations.transaction_timestamp AS posted_on,
 	purchase.quotations.office_id,
 	purchase.quotations.discount,
-	purchase.quotations.tax	
+	purchase.quotations.tax,
+	purchase.quotations.cancelled
 FROM purchase.quotations;
 
 GO
@@ -2153,20 +2180,20 @@ GO
 
 CREATE VIEW purchase.return_search_view
 AS
-SELECT
+SELECT 
 	finance.transaction_master.transaction_master_id AS tran_id,
 	finance.transaction_master.transaction_code AS tran_code,
 	purchase.purchase_returns.supplier_id,
 	inventory.get_supplier_name_by_supplier_id(purchase.purchase_returns.supplier_id) AS supplier,
-	SUM(CASE WHEN finance.transaction_details.tran_type = 'Dr' THEN finance.transaction_details.amount_in_local_currency ELSE 0 END) AS amount,
+	inventory.checkouts.taxable_total + inventory.checkouts.nontaxable_total + inventory.checkouts.tax - inventory.checkouts.discount AS amount,
 	finance.transaction_master.value_date,
 	finance.transaction_master.book_date,
-	COALESCE(finance.transaction_master.reference_number, '') AS reference_number,
-	COALESCE(finance.transaction_master.statement_reference, '') AS statement_reference,
+	finance.transaction_master.reference_number,
+	finance.transaction_master.statement_reference,
 	account.get_name_by_user_id(finance.transaction_master.user_id) AS posted_by,
 	core.get_office_name_by_office_id(finance.transaction_master.office_id) AS office,
-	finance.get_verification_status_name_by_verification_status_id(finance.transaction_master.verification_status_id) AS status,
-	COALESCE(account.get_name_by_user_id(finance.transaction_master.verified_by_user_id), '') AS verified_by,
+	core.verification_statuses.verification_status_name AS status,
+	account.get_name_by_user_id(finance.transaction_master.verified_by_user_id) AS verified_by,
 	finance.transaction_master.last_verified_on,
 	finance.transaction_master.verification_reason AS reason,
 	finance.transaction_master.office_id
@@ -2175,25 +2202,12 @@ INNER JOIN inventory.checkouts
 ON inventory.checkouts.checkout_id = purchase.purchase_returns.checkout_id
 INNER JOIN finance.transaction_master
 ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
-INNER JOIN finance.transaction_details
-ON finance.transaction_details.transaction_master_id = finance.transaction_master.transaction_master_id
-WHERE finance.transaction_master.deleted = 0
-GROUP BY
-finance.transaction_master.transaction_master_id,
-finance.transaction_master.transaction_code,
-purchase.purchase_returns.supplier_id,
-finance.transaction_master.value_date,
-finance.transaction_master.book_date,
-finance.transaction_master.reference_number,
-finance.transaction_master.statement_reference,
-finance.transaction_master.user_id,
-finance.transaction_master.office_id,
-finance.transaction_master.verification_status_id,
-finance.transaction_master.verified_by_user_id,
-finance.transaction_master.last_verified_on,
-finance.transaction_master.verification_reason;
+LEFT JOIN core.verification_statuses
+ON core.verification_statuses.verification_status_id = finance.transaction_master.verification_status_id;
+
 
 GO
+
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/SQL Server/2.x/2.0/src/05.views/purchase.supplier_payment_search_view.sql --<--<--

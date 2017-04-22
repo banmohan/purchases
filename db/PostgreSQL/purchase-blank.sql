@@ -89,6 +89,7 @@ CREATE TABLE purchase.quotations
 	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
 	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
 	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								boolean NOT NULL DEFAULT(false),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
@@ -130,6 +131,7 @@ CREATE TABLE purchase.orders
 	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
 	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
 	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								boolean NOT NULL DEFAULT(false),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
@@ -199,8 +201,9 @@ AS
     unit_id           	integer,
     price               public.money_strict,
     discount_rate       public.money_strict2,
-    tax                 public.money_strict2,
-    shipping_charge     public.money_strict2
+    discount       		public.money_strict2,
+    shipping_charge     public.money_strict2,
+	is_taxed			boolean
 );
 
 
@@ -586,7 +589,7 @@ BEGIN
 
     _tax_account_id                         := finance.get_sales_tax_account_id_by_office_id(_office_id);
 
-    IF(_supplier_id IS NULL) THEN
+    IF(COALESCE(_supplier_id, 0) = 0) THEN
         RAISE EXCEPTION '%', 'Invalid supplier';
     END IF;
     
@@ -622,8 +625,8 @@ BEGIN
 
 
 
-    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge)
-    SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge
+    INSERT INTO temp_checkout_details(store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge)
+    SELECT store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge
     FROM explode_array(_details);
 
 
@@ -633,9 +636,18 @@ BEGIN
         base_unit_id                    	= inventory.get_root_unit_id(unit_id),
         purchase_account_id             	= inventory.get_purchase_account_id(item_id),
         purchase_discount_account_id    	= inventory.get_purchase_discount_account_id(item_id),
-        inventory_account_id            	= inventory.get_inventory_account_id(item_id),
-        discount                            = ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2);
+        inventory_account_id            	= inventory.get_inventory_account_id(item_id);
     
+    UPDATE temp_checkout_details
+    SET
+        discount                        = COALESCE(ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2), 0)
+    WHERE COALESCE(discount, 0) = 0;
+
+    UPDATE temp_checkout_details
+    SET
+        discount_rate                   = COALESCE(ROUND(100 * discount / ((price * quantity) + shipping_charge), 2), 0)
+    WHERE COALESCE(discount_rate, 0) = 0;
+
     UPDATE temp_checkout_details 
     SET is_taxable_item = inventory.items.is_taxable_item
     FROM inventory.items
@@ -643,6 +655,15 @@ BEGIN
 
     UPDATE temp_checkout_details
     SET amount = (COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0);
+
+    IF EXISTS
+    (
+        SELECT 1
+        FROM temp_checkout_details
+        WHERE amount < 0
+    ) THEN
+        RAISE EXCEPTION '%', 'A line amount cannot be less than zero.';
+    END IF;
 
     IF EXISTS
     (
@@ -661,6 +682,10 @@ BEGIN
         _taxable_total,
         _nontaxable_total
     FROM temp_checkout_details;
+
+    IF(_invoice_discount > _taxable_total) THEN
+        RAISE EXCEPTION 'The invoice discount cannot be greater than total taxable amount.';
+    END IF;
 
     SELECT ROUND(SUM(COALESCE(discount, 0)), 2)                         INTO _discount_total FROM temp_checkout_details;
     SELECT ROUND(SUM(COALESCE(price, 0) * COALESCE(quantity, 0)), 2)    INTO _grand_total FROM temp_checkout_details;
@@ -1289,14 +1314,15 @@ BEGIN
         unit_id             integer,
         price               public.money_strict,
         discount_rate       public.decimal_strict2,
-        tax                 money_strict2,
+        discount            money_strict2,
+		is_taxed			boolean,
         shipping_charge     money_strict2,
         root_unit_id        integer,
         base_quantity       numeric(30, 6)
     ) ON COMMIT DROP;
 
-    INSERT INTO details_temp(store_id, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
-    SELECT store_id, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
+    INSERT INTO details_temp(store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge)
+    SELECT store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge
     FROM explode_array(_details);
 
     UPDATE details_temp
@@ -1794,7 +1820,8 @@ SELECT
 	purchase.orders.transaction_timestamp AS posted_on,
 	purchase.orders.office_id,
 	purchase.orders.discount,
-	purchase.orders.tax	
+	purchase.orders.tax,
+	purchase.orders.cancelled
 FROM purchase.orders;
 
 
@@ -1868,7 +1895,8 @@ SELECT
 	purchase.quotations.transaction_timestamp AS posted_on,
 	purchase.quotations.office_id,
 	purchase.quotations.discount,
-	purchase.quotations.tax	
+	purchase.quotations.tax,
+	purchase.quotations.cancelled
 FROM purchase.quotations;
 
 
@@ -1877,20 +1905,20 @@ DROP VIEW IF EXISTS purchase.return_search_view;
 
 CREATE VIEW purchase.return_search_view
 AS
-SELECT
-	finance.transaction_master.transaction_master_id::text AS tran_id,
+SELECT 
+	finance.transaction_master.transaction_master_id AS tran_id,
 	finance.transaction_master.transaction_code AS tran_code,
 	purchase.purchase_returns.supplier_id,
 	inventory.get_supplier_name_by_supplier_id(purchase.purchase_returns.supplier_id) AS supplier,
-	SUM(CASE WHEN finance.transaction_details.tran_type = 'Dr' THEN finance.transaction_details.amount_in_local_currency ELSE 0 END) AS amount,
+	inventory.checkouts.taxable_total + inventory.checkouts.nontaxable_total + inventory.checkouts.tax - inventory.checkouts.discount AS amount,
 	finance.transaction_master.value_date,
 	finance.transaction_master.book_date,
-	COALESCE(finance.transaction_master.reference_number, '') AS reference_number,
-	COALESCE(finance.transaction_master.statement_reference, '') AS statement_reference,
+	finance.transaction_master.reference_number,
+	finance.transaction_master.statement_reference,
 	account.get_name_by_user_id(finance.transaction_master.user_id) AS posted_by,
 	core.get_office_name_by_office_id(finance.transaction_master.office_id) AS office,
-	finance.get_verification_status_name_by_verification_status_id(finance.transaction_master.verification_status_id) AS status,
-	COALESCE(account.get_name_by_user_id(finance.transaction_master.verified_by_user_id), '') AS verified_by,
+	core.verification_statuses.verification_status_name AS status,
+	account.get_name_by_user_id(finance.transaction_master.verified_by_user_id) AS verified_by,
 	finance.transaction_master.last_verified_on,
 	finance.transaction_master.verification_reason AS reason,
 	finance.transaction_master.office_id
@@ -1899,23 +1927,8 @@ INNER JOIN inventory.checkouts
 ON inventory.checkouts.checkout_id = purchase.purchase_returns.checkout_id
 INNER JOIN finance.transaction_master
 ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
-INNER JOIN finance.transaction_details
-ON finance.transaction_details.transaction_master_id = finance.transaction_master.transaction_master_id
-WHERE NOT finance.transaction_master.deleted
-GROUP BY
-finance.transaction_master.transaction_master_id,
-finance.transaction_master.transaction_code,
-purchase.purchase_returns.supplier_id,
-finance.transaction_master.value_date,
-finance.transaction_master.book_date,
-finance.transaction_master.reference_number,
-finance.transaction_master.statement_reference,
-finance.transaction_master.user_id,
-finance.transaction_master.office_id,
-finance.transaction_master.verification_status_id,
-finance.transaction_master.verified_by_user_id,
-finance.transaction_master.last_verified_on,
-finance.transaction_master.verification_reason;
+LEFT JOIN core.verification_statuses
+ON core.verification_statuses.verification_status_id = finance.transaction_master.verification_status_id;
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.views/purchase.supplier_payment_search_view.sql --<--<--

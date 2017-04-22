@@ -94,6 +94,7 @@ CREATE TABLE purchase.quotations
 	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
 	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
 	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								bit NOT NULL DEFAULT(0),
 	audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
     deleted                                 bit DEFAULT(0)
@@ -135,6 +136,7 @@ CREATE TABLE purchase.orders
 	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
 	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
 	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								bit NOT NULL DEFAULT(0),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                DATETIMEOFFSET DEFAULT(GETUTCDATE()),
     deleted                                 bit DEFAULT(0)

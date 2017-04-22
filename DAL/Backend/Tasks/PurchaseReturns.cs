@@ -33,7 +33,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
 
                 if (search.Amount > 0)
                 {
-                    sql.And("total_amount = @0", search.Amount);
+                    sql.And("amount = @0", search.Amount);
                 }
 
                 sql.And("office_id IN(SELECT * FROM core.get_office_ids(@0))", officeId);

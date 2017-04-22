@@ -28,7 +28,7 @@
 		ELSE inventory.suppliers.supplier_name
 		END as supplier,
 		inventory.suppliers.company_country AS country,
-		SUM((price * quantity) - discount + tax) AS amount
+		SUM((price * quantity) - discount + shipping_charge) AS amount
 		FROM inventory.verified_checkout_details_view
 		INNER JOIN purchase.purchases
 		ON inventory.verified_checkout_details_view.checkout_id = purchase.purchases.checkout_id
@@ -39,7 +39,7 @@
 		inventory.suppliers.supplier_name,
 		inventory.suppliers.company_name,
 		inventory.suppliers.company_country
-		ORDER BY 2 DESC;
+		ORDER BY 4 DESC;
       </Query>
     </DataSource>
   </DataSources>

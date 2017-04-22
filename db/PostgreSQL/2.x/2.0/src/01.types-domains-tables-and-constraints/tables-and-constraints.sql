@@ -88,6 +88,7 @@ CREATE TABLE purchase.quotations
 	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
 	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
 	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								boolean NOT NULL DEFAULT(false),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
@@ -129,6 +130,7 @@ CREATE TABLE purchase.orders
 	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
 	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
 	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								boolean NOT NULL DEFAULT(false),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)

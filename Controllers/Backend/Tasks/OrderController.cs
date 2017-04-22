@@ -87,6 +87,28 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Order/New.cshtml", this.Tenant));
         }
 
+        [Route("dashboard/purchase/tasks/order/{id}/cancel")]
+        [HttpDelete]
+        [AccessPolicy("purchase", "orders", AccessTypeEnum.Delete)]
+        public async Task<ActionResult> CancelAsync(long id)
+        {
+            if (id <= 0)
+            {
+                return this.Failed("Invalid id supplied.", HttpStatusCode.BadRequest);
+            }
+
+            var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
+            try
+            {
+                await Orders.CancelAsync(this.Tenant, id, meta).ConfigureAwait(true);
+                return this.Ok();
+            }
+            catch (Exception ex)
+            {
+                return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [Route("dashboard/purchase/tasks/order/new")]
         [HttpPost]
         [AccessPolicy("purchase", "orders", AccessTypeEnum.Create)]

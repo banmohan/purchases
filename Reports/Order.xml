@@ -34,6 +34,10 @@
         <td>{i18n.Terms}</td>
         <td> {DataSource[0].terms}</td>
       </tr>
+      <tr>
+        <td>{i18n.Cancelled}</td>
+        <td> {DataSource[0].cancelled}</td>
+      </tr>
     </table>
     <br />
   </TopSection>
@@ -71,7 +75,7 @@
 			<td>
 				{i18n.Tax} ({DataSource[0].tax_rate}%)
 			</td>
-			<td>
+			<td data-remove-row-on-zero="">
 				{DataSource[0].tax}
 			</td>
 		</tr>
@@ -111,6 +115,7 @@
 			purchase.orders.expected_delivery_date,
 			core.offices.office_name,
 			purchase.orders.terms,
+			purchase.orders.cancelled,
 			purchase.orders.internal_memo,
 			inventory.suppliers.supplier_name,
 			purchase.orders.taxable_total,
@@ -148,8 +153,8 @@
 				inventory.units.unit_name,
 				ROUND(purchase.order_details.price * purchase.order_details.quantity, 4) AS amount,
 				purchase.order_details.discount,
-				ROUND((purchase.order_details.price * purchase.order_details.quantity) - purchase.order_details.discount, 4) AS sub_total,
-				ROUND((purchase.order_details.price * purchase.order_details.quantity) - purchase.order_details.discount, 4) AS total
+				purchase.order_details.shipping_charge,
+				ROUND((purchase.order_details.price * purchase.order_details.quantity) - purchase.order_details.discount + purchase.order_details.shipping_charge, 4) AS total
 			FROM purchase.order_details
 			INNER JOIN inventory.items
 			ON purchase.order_details.item_id = inventory.items.item_id

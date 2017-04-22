@@ -117,8 +117,8 @@ BEGIN
 		WHERE finance.tax_setups.deleted = 0
 		AND finance.tax_setups.office_id = @office_id;
 
-        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge)
-        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge
+        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge)
+        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge
         FROM @details;
 
         UPDATE @checkout_details 
@@ -320,10 +320,8 @@ GO
 --DECLARE @invoice_discount						numeric(30, 6)						= 0.00;
 --DECLARE @transaction_master_id					bigint;
 
---INSERT INTO @details
---SELECT @store_id, 'Cr', item_id, 20, unit_id, cost_price, 0, CASE WHEN is_taxable_item = 1 THEN 1 ELSE 0 END * cost_price * 0.13, 0
---FROM inventory.items
---WHERE inventory.items.item_code IN('SHS0003', 'SHS0004');
+--INSERT INTO @details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge)
+--SELECT @store_id, 'Dr', 1, 1, 6, 1600, 16.67, 300, 200;
 
 --EXECUTE purchase.post_purchase
 --    @office_id,

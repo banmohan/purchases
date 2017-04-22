@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Frapid.ApplicationState.Models;
 using Frapid.Configuration;
 using Frapid.Configuration.Db;
 using Frapid.DataAccess;
@@ -9,6 +11,7 @@ using Frapid.Mapper;
 using Frapid.Mapper.Database;
 using Frapid.Mapper.Helpers;
 using Frapid.Mapper.Query.Insert;
+using Frapid.Mapper.Query.NonQuery;
 using Frapid.Mapper.Query.Select;
 using MixERP.Purchases.DTO;
 using MixERP.Purchases.QueryModels;
@@ -40,6 +43,21 @@ namespace MixERP.Purchases.DAL.Backend.Tasks
                 sql.And("office_id IN(SELECT * FROM core.get_office_ids(@0))", officeId);
 
                 return await db.SelectAsync<dynamic>(sql).ConfigureAwait(false);
+            }
+        }
+
+        public static async Task CancelAsync(string tenant, long id, LoginView meta)
+        {
+            using (var db = DbProvider.Get(FrapidDbServer.GetConnectionString(tenant), tenant).GetDatabase())
+            {
+                var sql = new Sql("UPDATE purchase.quotations");
+                sql.Append("SET");
+                sql.Append("cancelled = @0, ", true);
+                sql.Append("audit_user_id = @0, ", meta.UserId);
+                sql.Append("audit_ts = @0", DateTimeOffset.UtcNow);
+                sql.Where("quotation_id = @0", id);
+
+                await db.NonQueryAsync(sql).ConfigureAwait(false);
             }
         }
 
