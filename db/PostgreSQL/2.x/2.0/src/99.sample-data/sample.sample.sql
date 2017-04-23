@@ -1,4 +1,4 @@
-DO
+﻿DO
 $$
     DECLARE _office_id              integer = core.get_office_id_by_office_name('Default');
     DECLARE _user_id                integer;
@@ -38,7 +38,7 @@ BEGIN
             purchase.get_item_cost_price(_office_id, item_id, _supplier_id, unit_id),
             0,
             0,
-            0)::purchase.purchase_detail_type
+            0, true)::purchase.purchase_detail_type
             
         FROM inventory.items
     ) INTO _details;

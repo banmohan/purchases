@@ -25,7 +25,7 @@ SELECT TOP 1 @login_id = account.logins.login_id
 FROM account.logins
 WHERE account.logins.user_id = @user_id;
 
-INSERT INTO @details
+INSERT INTO @details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge)
 SELECT
 	@store_id,
 	'Dr',
@@ -39,18 +39,20 @@ SELECT
 FROM inventory.items;
 
 
---TODO
--- EXECUTE purchase.post_purchase
--- 	@office_id,
--- 	@user_id,
--- 	@login_id,
--- 	@value_date,
--- 	@book_date,
--- 	@cost_center_id,
--- 	@reference_number,
--- 	@statement_reference,
--- 	@supplier_id,
--- 	@price_type_id,
--- 	@shipper_id,
--- 	@details,
--- 	@transaction_master_id = @transaction_master_id OUTPUT;
+
+EXECUTE purchase.post_purchase
+	@office_id,
+	@user_id,
+	@login_id,
+	@value_date,
+	@book_date,
+	@cost_center_id,
+	@reference_number,
+	@statement_reference,
+	@supplier_id,
+	@price_type_id,
+	@shipper_id,
+	@store_id,
+	@details,
+	0,
+	@transaction_master_id = @transaction_master_id output;

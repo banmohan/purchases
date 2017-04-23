@@ -149,14 +149,14 @@ namespace MixERP.Purchases
 		public static string Item => I18NResource.GetString(ResourceDirectory, "Item");
 
 		/// <summary>
-		///Terms
-		/// </summary>
-		public static string Terms => I18NResource.GetString(ResourceDirectory, "Terms");
-
-		/// <summary>
 		///Item Cost Price Id
 		/// </summary>
 		public static string ItemCostPriceId => I18NResource.GetString(ResourceDirectory, "ItemCostPriceId");
+
+		/// <summary>
+		///Terms
+		/// </summary>
+		public static string Terms => I18NResource.GetString(ResourceDirectory, "Terms");
 
 		/// <summary>
 		///Supplier Id
@@ -167,6 +167,11 @@ namespace MixERP.Purchases
 		///Purchase Id
 		/// </summary>
 		public static string PurchaseId => I18NResource.GetString(ResourceDirectory, "PurchaseId");
+
+		/// <summary>
+		///Cancelled
+		/// </summary>
+		public static string Cancelled => I18NResource.GetString(ResourceDirectory, "Cancelled");
 
 		/// <summary>
 		///Quotation Id
@@ -264,6 +269,11 @@ namespace MixERP.Purchases
 		public static string ItemTypeName => I18NResource.GetString(ResourceDirectory, "ItemTypeName");
 
 		/// <summary>
+		///Cost Price Id
+		/// </summary>
+		public static string CostPriceId => I18NResource.GetString(ResourceDirectory, "CostPriceId");
+
+		/// <summary>
 		///Reference Number
 		/// </summary>
 		public static string ReferenceNumber => I18NResource.GetString(ResourceDirectory, "ReferenceNumber");
@@ -337,11 +347,6 @@ namespace MixERP.Purchases
 		///Barcode
 		/// </summary>
 		public static string Barcode => I18NResource.GetString(ResourceDirectory, "Barcode");
-
-		/// <summary>
-		///Selling Price Id
-		/// </summary>
-		public static string SellingPriceId => I18NResource.GetString(ResourceDirectory, "SellingPriceId");
 
 		/// <summary>
 		///Unit Id
@@ -972,6 +977,11 @@ namespace MixERP.Purchases
 		///Select Supplier
 		/// </summary>
 		public static string SelectSupplier => I18NResource.GetString(ResourceDirectory, "SelectSupplier");
+
+		/// <summary>
+		///Selling Price Id
+		/// </summary>
+		public static string SellingPriceId => I18NResource.GetString(ResourceDirectory, "SellingPriceId");
 
 		/// <summary>
 		///Shipper
