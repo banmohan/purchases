@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -21,7 +22,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
                             (
                                 @OfficeId, @UserId, @LoginId, @ValueDate::date, @BookDate::date, 
                                 @CostCenterId, @ReferenceNumber, @StatementReference, 
-                                @SupplierId, @PriceTypeId, @ShipperId, ARRAY[{0}]
+                                @SupplierId, @PriceTypeId, @ShipperId, @StoreId, ARRAY[{0}], @InvoiceDiscount
                             );";
 
             sql = string.Format(sql, this.GetParametersForDetails(model.Details));
@@ -41,8 +42,11 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
                     command.Parameters.AddWithNullableValue("@SupplierId", model.SupplierId);
                     command.Parameters.AddWithNullableValue("@PriceTypeId", model.PriceTypeId);
                     command.Parameters.AddWithNullableValue("@ShipperId", model.ShipperId);
+                    command.Parameters.AddWithNullableValue("@StoreId", model.StoreId);
 
                     command.Parameters.AddRange(this.AddParametersForDetails(model.Details).ToArray());
+
+                    command.Parameters.AddWithNullableValue("@InvoiceDiscount", model.Discount);
 
                     connection.Open();
                     var awaiter = await command.ExecuteScalarAsync().ConfigureAwait(false);
@@ -62,7 +66,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
             for (int i = 0; i < details.Count; i++)
             {
                 items.Add(string.Format(CultureInfo.InvariantCulture,
-                    "ROW(@StoreId{0}, @TransactionType{0}, @ItemId{0}, @Quantity{0}, @UnitId{0},@Price{0}, @DiscountRate{0}, @Tax{0}, @ShippingCharge{0})::purchase.purchase_detail_type",
+                    "ROW(@StoreId{0}, @TransactionType{0}, @ItemId{0}, @Quantity{0}, @UnitId{0}, @Price{0}, @DiscountRate{0},  @Discount{0}, @ShippingCharge{0}, @IsTaxed{0})::purchase.purchase_detail_type",
                     i.ToString(CultureInfo.InvariantCulture)));
             }
 
@@ -84,7 +88,8 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
                     parameters.Add(new NpgsqlParameter("@UnitId" + i, details[i].UnitId));
                     parameters.Add(new NpgsqlParameter("@Price" + i, details[i].Price));
                     parameters.Add(new NpgsqlParameter("@DiscountRate" + i, details[i].DiscountRate));
-                    parameters.Add(new NpgsqlParameter("@Tax" + i, details[i].Tax));
+                    parameters.Add(new NpgsqlParameter("@Discount" + i, details[i].Discount));
+                    parameters.Add(new NpgsqlParameter("@IsTaxed" + i, details[i].IsTaxed));
                     parameters.Add(new NpgsqlParameter("@ShippingCharge" + i, details[i].ShippingCharge));
                 }
             }

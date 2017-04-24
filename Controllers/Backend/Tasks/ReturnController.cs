@@ -1,10 +1,14 @@
+using System;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Frapid.ApplicationState.Cache;
-using Frapid.Dashboard;
-using MixERP.Purchases.ViewModels;
 using Frapid.Areas.CSRF;
+using Frapid.Dashboard;
 using Frapid.DataAccess.Models;
+using MixERP.Purchases.DAL.Backend.Tasks;
+using MixERP.Purchases.QueryModels;
+using MixERP.Purchases.ViewModels;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
@@ -25,6 +29,25 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
         public ActionResult Index()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Return/Index.cshtml", this.Tenant));
+        }
+
+        [Route("dashboard/purchase/tasks/return/search")]
+        [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/return")]
+        [AccessPolicy("purchase", "purchase_returns", AccessTypeEnum.Read)]
+        [HttpPost]
+        public async Task<ActionResult> SearchAsync(ReturnSearch search)
+        {
+            var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
+
+            try
+            {
+                var result = await PurchaseReturns.GetSearchViewAsync(this.Tenant, meta.OfficeId, search).ConfigureAwait(true);
+                return this.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
+            }
         }
 
         [Route("dashboard/purchase/tasks/return/verification")]
@@ -59,8 +82,15 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
             model.OfficeId = meta.OfficeId;
             model.LoginId = meta.LoginId;
 
-            long tranId = await DAL.Backend.Tasks.PurchaseReturns.PostAsync(this.Tenant, model).ConfigureAwait(true);
-            return this.Ok(tranId);
+            try
+            {
+                long tranId = await PurchaseReturns.PostAsync(this.Tenant, model).ConfigureAwait(true);
+                return this.Ok(tranId);
+            }
+            catch (Exception ex)
+            {
+                return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
+            }
         }
     }
 }

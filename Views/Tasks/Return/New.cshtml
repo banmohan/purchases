@@ -1,15 +1,18 @@
-﻿@using MixERP.Purchases.Extensions
+﻿@using Frapid.ApplicationState.Cache
+@using MixERP.Purchases.Extensions
 @model dynamic
 
 @{
     ViewBag.Title = I18N.Purchase;
     Layout = ViewBag.PurchaseLayoutPath;
+    var meta = AppUsers.GetCurrent(TenantConvention.GetTenant());
+    var setup = MixERP.Inventory.Cache.Setup.Get(TenantConvention.GetTenant(), meta.OfficeId);
 }
 
-@Html.PartialView("Shared/ItemList.cshtml", TenantConvention.GetTenant())
-
-
-<script>
+@if (setup.UsePosCheckoutScreen)
+{
+    @Html.PartialView("Shared/ItemList.cshtml", TenantConvention.GetTenant())
+    <script>
     $(".page.title").html(window.translate("PurchaseReturn"));
     $("#CheckoutButton").off("click").on("click", function () {
 
@@ -27,17 +30,15 @@
                 $.each(items, function () {
                     const el = $(this);
                     const itemId = window.parseInt2(el.attr("data-item-id"));
-                    const quantity = window.parseInt2(el.find("input.quantity").val());
+                    const quantity = window.parseFloat2(el.find("input.quantity").val());
                     const unitId = window.parseInt2(el.find("select.unit").val());
                     const price = window.parseFloat2(el.find("input.price").val() || 0);
                     const discountRate = window.parseFloat2(el.find("input.discount").val() || 0);
-                    const tax = window.parseFloat2(el.find(".tax-amount").html() || 0);
 
                     model.push({
                         StoreId: $("#StoreSelect").val(),
                         ItemId: itemId,
                         Quantity: quantity,
-                        Tax: tax,
                         UnitId: unitId,
                         Price: price,
                         DiscountRate: discountRate
@@ -57,6 +58,7 @@
             const priceTypeId = $("#PriceTypeSelect").val();
             const shipperId = $("#ShipperSelect").val();
             const storeId = $("#StoreSelect").val();
+            const discount = window.parseFloat2($("#DiscountInputText").val());
             const details = getDetails();
 
             return {
@@ -70,6 +72,7 @@
                 PriceTypeId: priceTypeId,
                 ShipperId: shipperId,
                 StoreId: storeId,
+                Discount: discount,
                 Details: details
             };
         };
@@ -108,4 +111,13 @@
             window.logAjaxErrorMessage(xhr);
         });
     });
-</script>
+
+    window.overridePath = "/dashboard/purchase/tasks/return";
+    </script>
+}
+else
+{
+    @Html.PartialView("Tasks/Return/ClassicCheckout.cshtml", TenantConvention.GetTenant())
+}
+
+

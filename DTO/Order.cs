@@ -21,8 +21,13 @@ namespace MixERP.Purchases.DTO
         public string ReferenceNumber { get; set; }
         public string Terms { get; set; }
         public string InternalMemo { get; set; }
-        public int AuditUserId { get; set; }
-        public DateTimeOffset AuditTs { get; set; }
+        public decimal TaxableTotal { get; set; }
+        public decimal Discount { get; set; }
+        public decimal TaxRate { get; set; }
+        public decimal Tax { get; set; }
+        public decimal NontaxableTotal { get; set; }
+        public int? AuditUserId { get; set; }
+        public DateTimeOffset? AuditTs { get; set; }
         public bool Deleted { get; set; }
 
         [Ignore]

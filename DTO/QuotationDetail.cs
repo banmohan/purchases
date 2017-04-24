@@ -11,11 +11,12 @@ namespace MixERP.Purchases.DTO
         public long QuotationId { get; set; }
         public DateTime ValueDate { get; set; }
         public int ItemId { get; set; }
-        public decimal Quantity { get; set; }
-        public int UnitId { get; set; }
         public decimal Price { get; set; }
         public decimal DiscountRate { get; set; }
-        public decimal Tax { get; set; }
+        public decimal Discount { get; set; }
+        public bool IsTaxed { get; set; }
         public decimal ShippingCharge { get; set; }
+        public int UnitId { get; set; }
+        public decimal Quantity { get; set; }
     }
 }

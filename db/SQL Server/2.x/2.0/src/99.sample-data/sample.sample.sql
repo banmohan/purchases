@@ -24,18 +24,19 @@ SELECT TOP 1 @login_id = account.logins.login_id
 FROM account.logins
 WHERE account.logins.user_id = @user_id;
 
-INSERT INTO @details
+INSERT INTO @details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge)
 SELECT
 	@store_id,
 	'Dr',
 	item_id,
 	100,
 	unit_id,
-	purchase.get_item_cost_price(item_id, @supplier_id, unit_id),
+	purchase.get_item_cost_price(@office_id, item_id, @supplier_id, unit_id),
 	0,
 	0,
 	0        
 FROM inventory.items;
+
 
 
 EXECUTE purchase.post_purchase
@@ -50,5 +51,7 @@ EXECUTE purchase.post_purchase
 	@supplier_id,
 	@price_type_id,
 	@shipper_id,
+	@store_id,
 	@details,
-	@transaction_master_id = @transaction_master_id OUTPUT;
+	0,
+	@transaction_master_id = @transaction_master_id output;

@@ -17,8 +17,8 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
                             (
                                 @TransactionMasterId::bigint, @OfficeId::integer, @UserId::integer, @LoginId::bigint, 
                                 @ValueDate::date, @BookDate::date, 
-                                @CostCenterId::integer, @SupplierId::integer, @PriceTypeId::integer, @ShipperId::integer,
-                                @ReferenceNumber::national character varying(24), @StatementReference::text, ARRAY[{0}]
+                                @StoreId::integer, @CostCenterId::integer, @SupplierId::integer, @PriceTypeId::integer, @ShipperId::integer,
+                                @ReferenceNumber::national character varying(24), @StatementReference::text, ARRAY[{0}], @InvoiceDiscount
                             );";
 
             sql = string.Format(sql, new PurchaseEntry.PostgreSQL().GetParametersForDetails(model.Details));
@@ -33,6 +33,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
                     command.Parameters.AddWithNullableValue("@LoginId", model.LoginId);
                     command.Parameters.AddWithNullableValue("@ValueDate", model.ValueDate);
                     command.Parameters.AddWithNullableValue("@BookDate", model.BookDate);
+                    command.Parameters.AddWithNullableValue("@StoreId", model.StoreId);
                     command.Parameters.AddWithNullableValue("@CostCenterId", model.CostCenterId);
                     command.Parameters.AddWithNullableValue("@ReferenceNumber", model.ReferenceNumber);
                     command.Parameters.AddWithNullableValue("@StatementReference", model.StatementReference);
@@ -41,6 +42,8 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
                     command.Parameters.AddWithNullableValue("@ShipperId", model.ShipperId);
 
                     command.Parameters.AddRange(new PurchaseEntry.PostgreSQL().AddParametersForDetails(model.Details).ToArray());
+
+                    command.Parameters.AddWithNullableValue("@InvoiceDiscount", model.Discount);
 
                     connection.Open();
                     var awaiter = await command.ExecuteScalarAsync().ConfigureAwait(false);

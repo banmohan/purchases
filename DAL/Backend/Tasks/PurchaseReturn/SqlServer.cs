@@ -15,8 +15,8 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
 
             string sql = @"EXECUTE purchase.post_return
                                 @TransactionMasterId, @OfficeId, @UserId, @LoginId, @ValueDate, @BookDate, 
-                                @CostCenterId, @SupplierId, @PriceTypeId, @ShipperId,
-                                @ReferenceNumber, @StatementReference, @Details, @TranMasterId OUTPUT;";
+                                @StoreId, @CostCenterId, @SupplierId, @PriceTypeId, @ShipperId,
+                                @ReferenceNumber, @StatementReference, @Details, @InvoiceDiscount, @TranMasterId OUTPUT;";
 
             sql = string.Format(sql, new PurchaseEntry.PostgreSQL().GetParametersForDetails(model.Details));
 
@@ -30,6 +30,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
                     command.Parameters.AddWithNullableValue("@LoginId", model.LoginId);
                     command.Parameters.AddWithNullableValue("@ValueDate", model.ValueDate);
                     command.Parameters.AddWithNullableValue("@BookDate", model.BookDate);
+                    command.Parameters.AddWithNullableValue("@StoreId", model.StoreId);
                     command.Parameters.AddWithNullableValue("@CostCenterId", model.CostCenterId);
                     command.Parameters.AddWithNullableValue("@ReferenceNumber", model.ReferenceNumber);
                     command.Parameters.AddWithNullableValue("@StatementReference", model.StatementReference);
@@ -37,11 +38,12 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseReturn
                     command.Parameters.AddWithNullableValue("@PriceTypeId", model.PriceTypeId);
                     command.Parameters.AddWithNullableValue("@ShipperId", model.ShipperId);
 
-                    using (var details = new PurchaseEntry.SqlServer().GetDetails(model.Details))
+                    using (var details = PurchaseEntry.SqlServer.GetDetails(model.Details))
                     {
                         command.Parameters.AddWithNullableValue("@Details", details, "purchase.purchase_detail_type");
                     }
 
+                    command.Parameters.AddWithNullableValue("@InvoiceDiscount", model.Discount);
                     command.Parameters.Add("@TranMasterId", SqlDbType.BigInt).Direction = ParameterDirection.Output;
 
                     connection.Open();

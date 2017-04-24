@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -18,7 +19,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
             string sql = @"EXECUTE purchase.post_purchase
                                 @OfficeId, @UserId, @LoginId, @ValueDate, @BookDate, 
                                 @CostCenterId, @ReferenceNumber, @StatementReference, 
-                                @SupplierId, @PriceTypeId, @ShipperId, @Details,
+                                @SupplierId, @PriceTypeId, @ShipperId, @StoreId, @Details, @InvoiceDiscount,
                                 @TransactionMasterId OUTPUT
                             ;";
 
@@ -37,12 +38,14 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
                     command.Parameters.AddWithNullableValue("@SupplierId", model.SupplierId);
                     command.Parameters.AddWithNullableValue("@PriceTypeId", model.PriceTypeId);
                     command.Parameters.AddWithNullableValue("@ShipperId", model.ShipperId);
+                    command.Parameters.AddWithNullableValue("@StoreId", model.StoreId);
 
-                    using (var details = this.GetDetails(model.Details))
+                    using (var details = GetDetails(model.Details))
                     {
                         command.Parameters.AddWithNullableValue("@Details", details, "purchase.purchase_detail_type");
                     }
 
+                    command.Parameters.AddWithNullableValue("@InvoiceDiscount", model.Discount);
                     command.Parameters.Add("@TransactionMasterId", SqlDbType.BigInt).Direction = ParameterDirection.Output;
 
                     connection.Open();
@@ -52,7 +55,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
             }
         }
 
-        public DataTable GetDetails(IEnumerable<PurchaseDetailType> details)
+        public static DataTable GetDetails(IEnumerable<PurchaseDetailType> details)
         {
             var table = new DataTable();
             table.Columns.Add("StoreId", typeof(int));
@@ -62,8 +65,9 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
             table.Columns.Add("UnitId", typeof(int));
             table.Columns.Add("Price", typeof(decimal));
             table.Columns.Add("DiscountRate", typeof(decimal));
-            table.Columns.Add("Tax", typeof(decimal));
+            table.Columns.Add("Discount", typeof(decimal));
             table.Columns.Add("ShippingCharge", typeof(decimal));
+            table.Columns.Add("IsTaxed", typeof(bool));
 
             foreach (var detail in details)
             {
@@ -75,8 +79,9 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PurchaseEntry
                 row["UnitId"] = detail.UnitId;
                 row["Price"] = detail.Price;
                 row["DiscountRate"] = detail.DiscountRate;
-                row["Tax"] = detail.Tax;
+                row["Discount"] = detail.Discount;
                 row["ShippingCharge"] = detail.ShippingCharge;
+                row["IsTaxed"] = detail.IsTaxed;
 
                 table.Rows.Add(row);
             }

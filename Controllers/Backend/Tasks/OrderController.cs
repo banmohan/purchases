@@ -3,12 +3,12 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Frapid.ApplicationState.Cache;
+using Frapid.Areas.CSRF;
 using Frapid.Dashboard;
+using Frapid.DataAccess.Models;
 using MixERP.Purchases.DAL.Backend.Tasks;
 using MixERP.Purchases.DTO;
 using MixERP.Purchases.QueryModels;
-using Frapid.Areas.CSRF;
-using Frapid.DataAccess.Models;
 
 namespace MixERP.Purchases.Controllers.Backend.Tasks
 {
@@ -44,6 +44,25 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
             }
         }
 
+        [Route("dashboard/purchase/tasks/order/search")]
+        [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/order")]
+        [AccessPolicy("purchase", "orders", AccessTypeEnum.Read)]
+        [HttpPost]
+        public async Task<ActionResult> SearchAsync(OrderSearch search)
+        {
+            var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
+
+            try
+            {
+                var result = await Orders.GetSearchViewAsync(this.Tenant, meta.OfficeId, search).ConfigureAwait(true);
+                return this.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [Route("dashboard/purchase/tasks/order")]
         [MenuPolicy]
         [AccessPolicy("purchase", "orders", AccessTypeEnum.Read)]
@@ -66,6 +85,28 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
         public ActionResult New()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Order/New.cshtml", this.Tenant));
+        }
+
+        [Route("dashboard/purchase/tasks/order/{id}/cancel")]
+        [HttpDelete]
+        [AccessPolicy("purchase", "orders", AccessTypeEnum.Delete)]
+        public async Task<ActionResult> CancelAsync(long id)
+        {
+            if (id <= 0)
+            {
+                return this.Failed("Invalid id supplied.", HttpStatusCode.BadRequest);
+            }
+
+            var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
+            try
+            {
+                await Orders.CancelAsync(this.Tenant, id, meta).ConfigureAwait(true);
+                return this.Ok();
+            }
+            catch (Exception ex)
+            {
+                return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
+            }
         }
 
         [Route("dashboard/purchase/tasks/order/new")]

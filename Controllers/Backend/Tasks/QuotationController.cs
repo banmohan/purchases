@@ -44,6 +44,25 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
             }
         }
 
+        [Route("dashboard/purchase/tasks/quotation/search")]
+        [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/quotation")]
+        [AccessPolicy("purchase", "quotations", AccessTypeEnum.Read)]
+        [HttpPost]
+        public async Task<ActionResult> SearchAsync(QuotationSearch search)
+        {
+            var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
+
+            try
+            {
+                var result = await Quotations.GetSearchViewAsync(this.Tenant, meta.OfficeId, search).ConfigureAwait(true);
+                return this.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [Route("dashboard/purchase/tasks/quotation")]
         [MenuPolicy]
         [AccessPolicy("purchase", "quotations", AccessTypeEnum.Read)]
@@ -65,6 +84,30 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
         public ActionResult New()
         {
             return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Quotation/New.cshtml", this.Tenant));
+        }
+
+
+
+        [Route("dashboard/purchase/tasks/quotation/{id}/cancel")]
+        [HttpDelete]
+        [AccessPolicy("purchase", "quotations", AccessTypeEnum.Delete)]
+        public async Task<ActionResult> CancelAsync(long id)
+        {
+            if (id <= 0)
+            {
+                return this.Failed("Invalid id supplied.", HttpStatusCode.BadRequest);
+            }
+
+            var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
+            try
+            {
+                await Quotations.CancelAsync(this.Tenant, id, meta).ConfigureAwait(true);
+                return this.Ok();
+            }
+            catch (Exception ex)
+            {
+                return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
+            }
         }
 
         [Route("dashboard/purchase/tasks/quotation/new")]

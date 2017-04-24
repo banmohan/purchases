@@ -3,33 +3,16 @@
 
 @{
     ViewBag.Title = I18N.PurchaseReturns;
-    Layout = ViewBag.PurchaseLayoutPath;
+    Layout = ViewBag.SalesLayoutPath;
 }
 
-@Html.FinancePartialView("Shared/JournalView.cshtml", TenantConvention.GetTenant())
+@Html.FinancePartialView("Shared/SearchView.cshtml", TenantConvention.GetTenant())
+
+
+<script src="/Areas/MixERP.Purchases/scripts/tasks/return/index.js"></script>
 
 <script>
-    window.prepareView({
-        Title: window.translate("PurchaseReturns"),
-        Book: "Purchase Return",
-        ChecklistUrl: "/dashboard/purchase/tasks/return/checklist/{tranId}",
-        AdviceButtons: [
-            {
-                Title: window.translate("ViewPurchaseReturn"),
-                Href: "javascript:void(0);",
-                OnClick: "showReturn({tranId});"
-            }
-        ]
-    });
-
-    function showReturn(tranId) {
-        $(".advice.modal iframe").attr("src", `/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Return.xml?transaction_master_id=${tranId}`);
-
-        setTimeout(function () {
-            $(".advice.modal")
-                .modal('setting', 'transition', 'horizontal flip')
-                .modal("show");
-
-        }, 300);
-    };
+	setTimeout(function(){
+	    prepareView(model);
+	}, 500);
 </script>

@@ -2,62 +2,25 @@
 @model dynamic
 
 @{
-    ViewBag.Title = I18N.PurchaseEntryVerification;
-    Layout = ViewBag.PurchaseLayoutPath;
+    ViewBag.Title = I18N.PurchaseEntries;
+    Layout = ViewBag.SalesLayoutPath;
 }
 
+@Html.FinancePartialView("Shared/SearchView.cshtml", TenantConvention.GetTenant())
 
-@Html.FinancePartialView("Shared/Verification.cshtml", TenantConvention.GetTenant())
+<script src="/Areas/MixERP.Purchases/scripts/tasks/entry/index.js"></script>
 
 <script>
-    window.prepareVerification({
-        Title: window.translate("PurchaseEntryVerification"),
-        AddNewText: window.translate("AddNew"),
-        AddNewUrl: "/dashboard/purchase/tasks/entry/new",
-        ReturnText: window.translate("Return"),
-        ReturnUrl: "javascript:void(0);",
-        Book: "Purchase Entry",
-        ChecklistUrl: "/dashboard/purchase/tasks/entry/checklist/{tranId}",
-        AdviceButtons: [
-            {
-                Title: window.translate("ViewPurchaseInvoice"),
-                Href: "javascript:void(0);",
-                OnClick: "showInvoice({tranId});"
-            }
-        ]
-    });
+	setTimeout(function(){
+	    var annotationStatus = window.Enumerable.From(window.model.Annotation).Where(function(x) {
+	        return x.Id === "Status";
+	    }).FirstOrDefault();
 
-    $("#ReturnButton").click(function () {
-        function getSelectedItem() {
-            const selected = $("#JournalView").find("input:checked").first();
+	    annotationStatus.DefaultValue = "Unverified";
+	    window.model.HasVerification = true;
+	    window.model.Title = window.translate("PurchaseEntryVerification");
 
-            if (selected.length) {
-                const row = selected.parent().parent().parent();
-                const id = row.find("td:nth-child(3)").html();
-                return window.parseInt2(id);
-            };
-
-            return 0;
-        };
-
-        const selected = getSelectedItem();
-        if (selected) {
-            const url = "/dashboard/purchase/tasks/return/new?TransactionMasterId=" + selected;
-            document.location = url;
-            return;
-        };
-
-        window.displayMessage(window.translate("PleaseSelectItemFromGrid"));
-    });
-
-    function showInvoice(tranId) {
-        $(".advice.modal iframe").attr("src", "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Invoice.xml?transaction_master_id=" + tranId);
-
-        setTimeout(function () {
-            $(".advice.modal")
-                .modal('setting', 'transition', 'horizontal flip')
-                .modal("show");
-
-        }, 300);
-    };
+	    prepareView(model);
+	}, 500);
 </script>
+

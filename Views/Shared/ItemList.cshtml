@@ -62,17 +62,11 @@
             </div>
             <div class="tender info">
                 <div class="page title">@I18N.Purchase</div>
-                <div id="SummaryItems" class="two summary items">
+                <div id="SummaryItems" class="one summary items">
                     <div class="amount item">
                         <div class="description">@I18N.Amount</div>
                         <div class="money">
                             <span></span>
-                        </div>
-                    </div>
-                    <div class="store item">
-                        <div class="description">@I18N.Store</div>
-                        <div class="control">
-                            <select id="StoreSelect"></select>
                         </div>
                     </div>
                 </div>
@@ -95,6 +89,20 @@
                         <div class="description">@I18N.BookDate</div>
                         <div class="control">
                             <input type="text" class="date" id="BookDateInputDate" />
+                        </div>
+                    </div>
+                </div>
+                <div class="two summary items">
+                    <div class="store item">
+                        <div class="description">@I18N.Store</div>
+                        <div class="control">
+                            <select id="StoreSelect"></select>
+                        </div>
+                    </div>
+                    <div class="discount item">
+                        <div class="description">@I18N.Discount</div>
+                        <div class="control">
+                            <input type="text" id="DiscountInputText" />
                         </div>
                     </div>
                 </div>

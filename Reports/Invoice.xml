@@ -52,6 +52,14 @@
         <td>{i18n.SupplierName}</td>
         <td>{DataSource[0].supplier_name}</td>
       </tr>
+        <tr>
+          <td>{i18n.CostCenter}</td>
+          <td>{DataSource[0].cost_center_name}</td>
+        </tr>
+        <tr>
+          <td>{i18n.StatementReference}</td>
+          <td>{DataSource[0].statement_reference}</td>
+        </tr>
     </table>
     <br />
   </TopSection>
@@ -67,37 +75,87 @@
     </GridViews>
   </Body>
   <BottomSection>
-    <h3>{i18n.OtherDetails}</h3>
-    <p>
-      <table class="table horizontal">
-        <tr>
-          <td>{i18n.CostCenter}</td>
-          <td>{DataSource[0].cost_center_name}</td>
-        </tr>
-        <tr>
-          <td>{i18n.StatementReference}</td>
-          <td>{DataSource[0].statement_reference}</td>
-        </tr>
-      </table>
-    </p>
+	<table class="right aligned" style="width:300px;position:absolute;right:8px;">
+		<tr>
+			<td>
+				{i18n.TaxableTotal}
+			</td>
+			<td style="width:100px">
+				{DataSource[0].taxable_total}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				{i18n.Discount}
+			</td>
+			<td>
+				{DataSource[0].discount}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				{i18n.Tax} ({DataSource[0].tax_rate}%)
+			</td>
+			<td>
+				{DataSource[0].tax}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				{i18n.SubTotal}
+			</td>
+			<td>
+				{DataSource[0].sub_total}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				{i18n.NonTaxableTotal}
+			</td>
+			<td>
+				{DataSource[0].nontaxable_total}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				{i18n.GrandTotal}
+			</td>
+			<td>
+				{DataSource[0].total}
+			</td>
+		</tr>
+	</table>
   </BottomSection>
   <DataSources>
     <DataSource>
       <Query>
         SELECT
-        finance.transaction_master.transaction_master_id,
-        finance.transaction_master.transaction_ts,
-        finance.transaction_master.value_date,
-        account.users.name AS entered_by,
-        core.verification_statuses.verification_status_name AS status,
-        verified_by_user.name AS verified_by,
-        finance.transaction_master.verification_reason,
-        finance.transaction_master.transaction_code,
-        core.offices.office_name,
-        finance.cost_centers.cost_center_name,
-        finance.transaction_master.statement_reference,
-        inventory.suppliers.supplier_name,
-        'Credit' AS purchase_type
+			finance.transaction_master.transaction_master_id,
+			finance.transaction_master.transaction_ts,
+			finance.transaction_master.value_date,
+			account.users.name AS entered_by,
+			core.verification_statuses.verification_status_name AS status,
+			verified_by_user.name AS verified_by,
+			finance.transaction_master.verification_reason,
+			finance.transaction_master.transaction_code,
+			core.offices.office_name,
+			finance.cost_centers.cost_center_name,
+			finance.transaction_master.statement_reference,
+			inventory.suppliers.supplier_name,
+			'Credit' AS purchase_type,
+			inventory.checkouts.taxable_total,
+			inventory.checkouts.discount,
+			inventory.checkouts.tax_rate,
+			inventory.checkouts.tax,
+			
+			COALESCE(inventory.checkouts.taxable_total, 0) +
+			COALESCE(inventory.checkouts.tax, 0) -
+			COALESCE(inventory.checkouts.discount, 0) AS sub_total,
+			inventory.checkouts.nontaxable_total,
+			COALESCE(inventory.checkouts.taxable_total, 0) + 
+			COALESCE(inventory.checkouts.tax, 0) + 
+			COALESCE(inventory.checkouts.nontaxable_total, 0) - 
+			COALESCE(inventory.checkouts.discount, 0) AS total
         FROM finance.transaction_master
         INNER JOIN core.offices
         ON finance.transaction_master.office_id = core.offices.office_id
@@ -124,16 +182,16 @@
     <DataSource>
       <Query>
 		SELECT
-		inventory.stores.store_name,
-		inventory.items.item_code,
-		inventory.items.item_name,
-		inventory.checkout_details.quantity,
-		inventory.units.unit_name,
-		inventory.checkout_details.price,
-		inventory.checkout_details.price * inventory.checkout_details.quantity AS amount,
-		inventory.checkout_details.discount,
-		inventory.checkout_details.tax,
-		(inventory.checkout_details.price * inventory.checkout_details.quantity) - COALESCE(inventory.checkout_details.discount, 0) + COALESCE(inventory.checkout_details.tax, 0) AS total
+			inventory.stores.store_name,
+			inventory.items.item_code,
+			inventory.items.item_name,
+			inventory.checkout_details.quantity,
+			inventory.units.unit_name,
+			inventory.checkout_details.price,
+			inventory.checkout_details.price * inventory.checkout_details.quantity AS amount,
+			inventory.checkout_details.shipping_charge,
+			inventory.checkout_details.discount,
+			(inventory.checkout_details.price * inventory.checkout_details.quantity) - COALESCE(inventory.checkout_details.discount, 0) + COALESCE(inventory.checkout_details.shipping_charge, 0) AS total
 		FROM inventory.checkout_details
 		INNER JOIN inventory.stores
 		ON inventory.stores.store_id = inventory.checkout_details.store_id

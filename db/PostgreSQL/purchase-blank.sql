@@ -40,6 +40,19 @@ CREATE UNIQUE INDEX item_cost_prices_item_id_unit_id_supplier_id_uix
 ON purchase.item_cost_prices(item_id, unit_id, supplier_id)
 WHERE NOT deleted;
 
+
+CREATE TABLE purchase.supplierwise_cost_prices
+(
+	cost_price_id							BIGSERIAL PRIMARY KEY,
+	item_id									integer NOT NULL REFERENCES inventory.items,
+	supplier_id								integer NOT NULL REFERENCES inventory.suppliers,
+	unit_id									integer NOT NULL REFERENCES inventory.units,
+	price									numeric(30, 6),
+    audit_user_id                           integer REFERENCES account.users,
+    audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
+	deleted									boolean DEFAULT(false)
+);
+
 CREATE TABLE purchase.purchases
 (
     purchase_id                             BIGSERIAL PRIMARY KEY,
@@ -72,6 +85,12 @@ CREATE TABLE purchase.quotations
     reference_number                        national character varying(24),
 	terms									national character varying(500),
     internal_memo                           national character varying(500),
+	taxable_total 							numeric(30, 6) NOT NULL DEFAULT(0),
+	discount 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
+	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								boolean NOT NULL DEFAULT(false),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
@@ -84,8 +103,9 @@ CREATE TABLE purchase.quotation_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
-    discount_rate                           public.decimal_strict2 NOT NULL DEFAULT(0),    
-    tax                                     public.money_strict2 NOT NULL DEFAULT(0),    
+	discount_rate							numeric(30, 6) NOT NULL,
+    discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
+	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                public.decimal_strict2 NOT NULL
@@ -107,6 +127,12 @@ CREATE TABLE purchase.orders
     reference_number                        national character varying(24),
     terms                                   national character varying(500),
     internal_memo                           national character varying(500),
+	taxable_total 							numeric(30, 6) NOT NULL DEFAULT(0),
+	discount 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
+	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								boolean NOT NULL DEFAULT(false),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
@@ -119,8 +145,9 @@ CREATE TABLE purchase.order_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
-    discount_rate                           public.decimal_strict2 NOT NULL DEFAULT(0),    
-    tax                                     public.money_strict2 NOT NULL DEFAULT(0),    
+	discount_rate							numeric(30, 6) NOT NULL,
+    discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
+	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                public.decimal_strict2 NOT NULL
@@ -175,79 +202,103 @@ AS
     unit_id           	integer,
     price               public.money_strict,
     discount_rate       public.money_strict2,
-    tax                 public.money_strict2,
-    shipping_charge     public.money_strict2
+    discount       		public.money_strict2,
+    shipping_charge     public.money_strict2,
+	is_taxed			boolean
 );
 
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/02.functions-and-logic/purchase.get_item_cost_price.sql --<--<--
-DROP FUNCTION IF EXISTS purchase.get_item_cost_price(_item_id integer, _supplier_id bigint, _unit_id integer);
+DROP FUNCTION IF EXISTS purchase.get_item_cost_price(_office_id integer, _item_id integer, _supplier_id bigint, _unit_id integer);
 
-CREATE FUNCTION purchase.get_item_cost_price(_item_id integer, _supplier_id bigint, _unit_id integer)
-RETURNS public.money_strict2
-STABLE
+CREATE FUNCTION purchase.get_item_cost_price(_office_id integer, _item_id integer, _supplier_id bigint, _unit_id integer)
+RETURNS numeric(30, 6)
 AS
 $$
-    DECLARE _price              public.money_strict2;
+    DECLARE _price              numeric(30, 6);
     DECLARE _costing_unit_id    integer;
-    DECLARE _factor             decimal(30, 6);
-  
+    DECLARE _factor             numeric(30, 6);
+    DECLARE _includes_tax       boolean;
+    DECLARE _tax_rate           decimal(30, 6);
 BEGIN
-    --Fist pick the catalog price which matches all these fields:
-    --Item, Customer Type, Price Type, and Unit.
-    --This is the most effective price.
-    SELECT 
-        purchase.item_cost_prices.price, 
-        purchase.item_cost_prices.unit_id
-    INTO 
+	SELECT inventory.items.cost_price_includes_tax INTO _includes_tax
+	FROM inventory.items
+	WHERE inventory.items.item_id = _item_id;
+
+	SELECT
+        purchase.supplierwise_cost_prices.price,
+		purchase.supplierwise_cost_prices.unit_id
+    INTO
         _price,
         _costing_unit_id
-    FROM purchase.item_cost_prices
-    WHERE purchase.item_cost_prices.item_id=_item_id
-    AND purchase.item_cost_prices.supplier_id =_supplier_id
-    AND purchase.item_cost_prices.unit_id = _unit_id
-    AND NOT purchase.item_cost_prices.deleted;
+	FROM purchase.supplierwise_cost_prices
+	WHERE NOT purchase.supplierwise_cost_prices.deleted
+	AND purchase.supplierwise_cost_prices.supplier_id = _supplier_id
+	AND purchase.supplierwise_cost_prices.item_id = _item_id;
 
-
-    IF(_costing_unit_id IS NULL) THEN
-        --We do not have a cost price of this item for the unit supplied.
-        --Let's see if this item has a price for other units.
-        SELECT 
-            purchase.item_cost_prices.price, 
-            purchase.item_cost_prices.unit_id
-        INTO 
-            _price, 
+	
+	IF(_price IS NULL) THEN
+        --Pick the catalog price which matches all these fields:
+        --Item, Customer Type, Price Type, and Unit.
+        --This is the most effective price.
+		SELECT 
+			purchase.item_cost_prices.price, 
+			 purchase.item_cost_prices.unit_id
+        INTO
+            _price,
             _costing_unit_id
-        FROM purchase.item_cost_prices
-        WHERE purchase.item_cost_prices.item_id=_item_id
-        AND purchase.item_cost_prices.supplier_id =_supplier_id
-	AND NOT purchase.item_cost_prices.deleted;
-    END IF;
+		FROM purchase.item_cost_prices
+		WHERE purchase.item_cost_prices.item_id = _item_id
+		AND purchase.item_cost_prices.supplier_id = _supplier_id
+		AND purchase.item_cost_prices.unit_id = _unit_id
+		AND NOT purchase.item_cost_prices.deleted;
+
+		IF(_costing_unit_id IS NULL) THEN
+			--We do not have a cost price of this item for the unit supplied.
+			--Let's see if this item has a price for other units.
+			SELECT 
+				 purchase.item_cost_prices.price, 
+				 purchase.item_cost_prices.unit_id
+			INTO
+                _price,
+                _costing_unit_id
+			FROM purchase.item_cost_prices
+			WHERE purchase.item_cost_prices.item_id = _item_id
+			AND purchase.item_cost_prices.supplier_id = _supplier_id
+			AND NOT purchase.item_cost_prices.deleted;
+		END IF;
 
     
-    IF(_price IS NULL) THEN
-        --This item does not have cost price defined in the catalog.
-        --Therefore, getting the default cost price from the item definition.
-        SELECT 
-            cost_price, 
-            unit_id
-        INTO 
-            _price, 
-            _costing_unit_id
-        FROM inventory.items
-        WHERE inventory.items.item_id = _item_id
-		AND NOT inventory.items.deleted;
+		IF(_price IS NULL) THEN
+			--This item does not have cost price defined in the catalog.
+			--Therefore, getting the default cost price from the item definition.
+			SELECT 
+				cost_price, 
+				unit_id
+			INTO
+                _price,
+                _costing_unit_id
+			FROM inventory.items
+			WHERE inventory.items.item_id = _item_id
+			AND NOT inventory.items.deleted;
+		END IF;
+	END IF;
+
+    IF(_includes_tax) THEN
+        _tax_rate       := finance.get_sales_tax_rate(_office_id);
+        _price          := _price / ((100 + _tax_rate)/ 100);
     END IF;
 
         --Get the unitary conversion factor if the requested unit does not match with the price defition.
-    _factor := inventory.convert_unit(_unit_id, _costing_unit_id);
+    _factor             := inventory.convert_unit(_unit_id, _costing_unit_id);
     RETURN _price * _factor;
 END
 $$
 LANGUAGE plpgsql;
 
---SELECT * FROM purchase.get_item_cost_price(6, 1, 7);
+
+--SELECT purchase.get_item_cost_price(1, 6, 1, 7);
 
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/02.functions-and-logic/purchase.get_order_view.sql --<--<--
@@ -511,7 +562,9 @@ DROP FUNCTION IF EXISTS purchase.post_purchase
     _supplier_id                            integer,
     _price_type_id                          integer,
     _shipper_id                             integer,
-    _details                                purchase.purchase_detail_type[]
+    _store_id                               integer,
+    _details                                purchase.purchase_detail_type[],
+    _invoice_discount				        numeric(30, 6)
 );
 
 
@@ -528,7 +581,9 @@ CREATE FUNCTION purchase.post_purchase
     _supplier_id                            integer,
     _price_type_id                          integer,
     _shipper_id                             integer,
-    _details                                purchase.purchase_detail_type[]
+    _store_id                               integer,
+    _details                                purchase.purchase_detail_type[],
+    _invoice_discount				        numeric(30, 6) DEFAULT(0)
 )
 RETURNS bigint
 AS
@@ -544,10 +599,13 @@ $$
     DECLARE _is_periodic                    boolean = inventory.is_periodic_inventory(_office_id);
     DECLARE _tran_counter                   integer;
     DECLARE _transaction_code               text;
+	DECLARE _taxable_total					numeric(30, 6);
     DECLARE _tax_total                      public.money_strict2;
+	DECLARE _nontaxable_total				numeric(30, 6);
     DECLARE _tax_account_id                 integer;
     DECLARE _shipping_charge                public.money_strict2;
-    DECLARE _book_name                      national character varying(100) = 'Purchase';
+    DECLARE _sales_tax_rate                 numeric(30, 6);
+    DECLARE _book_name                      national character varying(100) = 'Purchase Entry';
 BEGIN
     IF NOT finance.can_post_transaction(_login_id, _user_id, _office_id, _book_name, _value_date) THEN
         RETURN 0;
@@ -555,10 +613,16 @@ BEGIN
 
     _tax_account_id                         := finance.get_sales_tax_account_id_by_office_id(_office_id);
 
-    IF(_supplier_id IS NULL) THEN
+    IF(COALESCE(_supplier_id, 0) = 0) THEN
         RAISE EXCEPTION '%', 'Invalid supplier';
     END IF;
     
+    SELECT finance.tax_setups.sales_tax_rate
+    INTO _sales_tax_rate 
+    FROM finance.tax_setups
+    WHERE NOT finance.tax_setups.deleted
+    AND finance.tax_setups.office_id = _office_id;
+
     DROP TABLE IF EXISTS temp_checkout_details CASCADE;
     CREATE TEMPORARY TABLE temp_checkout_details
     (
@@ -569,13 +633,14 @@ BEGIN
         item_id                         	integer, 
         quantity                        	public.integer_strict,
         unit_id                         	integer,
-        base_quantity                   	decimal(30, 6),
+        base_quantity                   	numeric(30, 6),
         base_unit_id                    	integer,
         price                           	public.money_strict NOT NULL DEFAULT(0),
         cost_of_goods_sold              	public.money_strict2 NOT NULL DEFAULT(0),
-        discount_rate                       decimal(30, 6),
+        discount_rate                       numeric(30, 6),
         discount                        	public.money_strict2 NOT NULL DEFAULT(0),
-        tax                                 public.money_strict2 NOT NULL DEFAULT(0),
+        is_taxable_item                     boolean,
+        amount                              public.money_strict2,
         shipping_charge                     public.money_strict2 NOT NULL DEFAULT(0),
         purchase_account_id             	integer, 
         purchase_discount_account_id    	integer, 
@@ -584,8 +649,8 @@ BEGIN
 
 
 
-    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
-    SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
+    INSERT INTO temp_checkout_details(store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge)
+    SELECT store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge
     FROM explode_array(_details);
 
 
@@ -595,9 +660,35 @@ BEGIN
         base_unit_id                    	= inventory.get_root_unit_id(unit_id),
         purchase_account_id             	= inventory.get_purchase_account_id(item_id),
         purchase_discount_account_id    	= inventory.get_purchase_discount_account_id(item_id),
-        inventory_account_id            	= inventory.get_inventory_account_id(item_id),
-        discount                            = ROUND((price * quantity) * (discount_rate / 100), 2);
+        inventory_account_id            	= inventory.get_inventory_account_id(item_id);
     
+    UPDATE temp_checkout_details
+    SET
+        discount                        = COALESCE(ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2), 0)
+    WHERE COALESCE(discount, 0) = 0;
+
+    UPDATE temp_checkout_details
+    SET
+        discount_rate                   = COALESCE(ROUND(100 * discount / ((price * quantity) + shipping_charge), 2), 0)
+    WHERE COALESCE(discount_rate, 0) = 0;
+
+    UPDATE temp_checkout_details 
+    SET is_taxable_item = inventory.items.is_taxable_item
+    FROM inventory.items
+    WHERE inventory.items.item_id = temp_checkout_details.item_id;
+
+    UPDATE temp_checkout_details
+    SET amount = (COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0);
+
+    IF EXISTS
+    (
+        SELECT 1
+        FROM temp_checkout_details
+        WHERE amount < 0
+    ) THEN
+        RAISE EXCEPTION '%', 'A line amount cannot be less than zero.';
+    END IF;
+
     IF EXISTS
     (
             SELECT 1 FROM temp_checkout_details AS details
@@ -608,10 +699,25 @@ BEGIN
         USING ERRCODE='P3201';
     END IF;
 
-    SELECT SUM(COALESCE(discount, 0))                               INTO _discount_total FROM temp_checkout_details;
-    SELECT SUM(COALESCE(price, 0) * COALESCE(quantity, 0))          INTO _grand_total FROM temp_checkout_details;
-    SELECT SUM(COALESCE(shipping_charge, 0))                        INTO _shipping_charge FROM temp_checkout_details;
-   SELECT SUM(COALESCE(tax, 0))                                     INTO _tax_total FROM temp_checkout_details;
+    SELECT 
+        COALESCE(SUM(CASE WHEN is_taxable_item = true THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0),
+        COALESCE(SUM(CASE WHEN is_taxable_item = false THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0)
+    INTO
+        _taxable_total,
+        _nontaxable_total
+    FROM temp_checkout_details;
+
+    IF(_invoice_discount > _taxable_total) THEN
+        RAISE EXCEPTION 'The invoice discount cannot be greater than total taxable amount.';
+    END IF;
+
+    SELECT ROUND(SUM(COALESCE(discount, 0)), 2)                         INTO _discount_total FROM temp_checkout_details;
+    SELECT ROUND(SUM(COALESCE(price, 0) * COALESCE(quantity, 0)), 2)    INTO _grand_total FROM temp_checkout_details;
+    SELECT ROUND(SUM(COALESCE(shipping_charge, 0)), 2)                  INTO _shipping_charge FROM temp_checkout_details;
+
+    _tax_total := ROUND((COALESCE(_taxable_total, 0) - COALESCE(_invoice_discount, 0)) * (_sales_tax_rate / 100), 2);
+    _grand_total := COALESCE(_taxable_total, 0) + COALESCE(_nontaxable_total, 0) + COALESCE(_tax_total, 0) - COALESCE(_discount_total, 0)  - COALESCE(_invoice_discount, 0);
+    _payable := _grand_total;
 
 
     DROP TABLE IF EXISTS temp_transaction_details;
@@ -628,7 +734,6 @@ BEGIN
         amount_in_local_currency    		public.money_strict
     ) ON COMMIT DROP;
 
-    _payable                                := _grand_total - COALESCE(_discount_total, 0) + COALESCE(_shipping_charge, 0) + COALESCE(_tax_total, 0);
     _default_currency_code              	:= core.get_currency_code_by_office_id(_office_id);
     _transaction_master_id  				:= nextval(pg_get_serial_sequence('finance.transaction_master', 'transaction_master_id'));
     _checkout_id            				:= nextval(pg_get_serial_sequence('inventory.checkouts', 'checkout_id'));
@@ -661,6 +766,7 @@ BEGIN
         SELECT 'Dr', _tax_account_id, _statement_reference, _default_currency_code, _tax_total, 1, _default_currency_code, _tax_total;
     END IF;	
 
+ 
     INSERT INTO temp_transaction_details(tran_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
     SELECT 'Cr', inventory.get_account_id_by_supplier_id(_supplier_id), _statement_reference, _default_currency_code, _payable, 1, _default_currency_code, _payable;
 
@@ -671,6 +777,14 @@ BEGIN
     UPDATE temp_transaction_details     SET transaction_master_id   = _transaction_master_id;
     UPDATE temp_checkout_details           SET checkout_id         = _checkout_id;
     
+    IF
+    (
+        SELECT SUM(CASE WHEN tran_type = 'Cr' THEN 1 ELSE -1 END * amount_in_local_currency)
+        FROM temp_transaction_details
+    ) != 0 THEN
+        RAISE EXCEPTION 'Could not balance the Journal Entry. Nothing was saved.';
+    END IF;
+
     INSERT INTO finance.transaction_master(transaction_master_id, transaction_counter, transaction_code, book, value_date, book_date, user_id, login_id, office_id, cost_center_id, reference_number, statement_reference) 
     SELECT _transaction_master_id, _tran_counter, _transaction_code, _book_name, _value_date, _book_date, _user_id, _login_id, _office_id, _cost_center_id, _reference_number, _statement_reference;
 
@@ -681,14 +795,14 @@ BEGIN
     ORDER BY tran_type DESC;
 
 
-    INSERT INTO inventory.checkouts(value_date, book_date, checkout_id, transaction_master_id, transaction_book, posted_by, shipper_id, office_id)
-    SELECT _value_date, _book_date, _checkout_id, _transaction_master_id, _book_name, _user_id, _shipper_id, _office_id;
+    INSERT INTO inventory.checkouts(value_date, book_date, checkout_id, transaction_master_id, transaction_book, posted_by, shipper_id, office_id, discount, taxable_total, tax_rate, tax, nontaxable_total)
+    SELECT _value_date, _book_date, _checkout_id, _transaction_master_id, _book_name, _user_id, _shipper_id, _office_id, _invoice_discount, _taxable_total, _sales_tax_rate, _tax_total, _nontaxable_total;
 
     INSERT INTO purchase.purchases(checkout_id, supplier_id, price_type_id)
     SELECT _checkout_id, _supplier_id, _price_type_id;
 
-    INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, tax, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
-    SELECT _checkout_id, _value_date, _book_date, store_id, transaction_type, item_id, price, discount, cost_of_goods_sold, tax, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
+    INSERT INTO inventory.checkout_details(checkout_id, value_date, book_date, store_id, transaction_type, item_id, price, discount_rate, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity)
+    SELECT _checkout_id, _value_date, _book_date, store_id, transaction_type, item_id, price, discount_rate, discount, cost_of_goods_sold, shipping_charge, unit_id, quantity, base_unit_id, base_quantity
     FROM temp_checkout_details;
     
     PERFORM finance.auto_verify(_transaction_master_id, _office_id);
@@ -699,9 +813,9 @@ LANGUAGE plpgsql;
 
 
 
--- SELECT * FROM purchase.post_purchase(1, 1, 1, finance.get_value_date(1), finance.get_value_date(1), 1, '', '', 1, 1, NULL,
+-- SELECT * FROM purchase.post_purchase(1, 1, 11, finance.get_value_date(1), finance.get_value_date(1), 1, '', '', 1, 1, NULL, 1,
 -- ARRAY[
--- ROW(1, 'Dr', 1, 1, 1,180000, 0, 10, 200)::purchase.purchase_detail_type,
+-- ROW(1, 'Dr', 1, 1, 1,180000, 1, 10, 200)::purchase.purchase_detail_type,
 -- ROW(1, 'Dr', 2, 1, 7,130000, 300, 10, 30)::purchase.purchase_detail_type,
 -- ROW(1, 'Dr', 3, 1, 1,110000, 5000, 10, 50)::purchase.purchase_detail_type]);
 -- 
@@ -716,13 +830,15 @@ DROP FUNCTION IF EXISTS purchase.post_return
     _login_id                               bigint,
     _value_date                             date,
     _book_date                              date,
+    _store_id								integer,
     _cost_center_id                         integer,
     _supplier_id                            integer,
     _price_type_id                          integer,
     _shipper_id                             integer,
     _reference_number                       national character varying(24),
-    _statement_reference                    text,
-    _details                                purchase.purchase_detail_type[]
+    _statement_reference                    national character varying(2000),
+    _details                                purchase.purchase_detail_type[],
+	_invoice_discount						numeric(30, 6)
 );
 
 CREATE FUNCTION purchase.post_return
@@ -733,199 +849,245 @@ CREATE FUNCTION purchase.post_return
     _login_id                               bigint,
     _value_date                             date,
     _book_date                              date,
+    _store_id								integer,
     _cost_center_id                         integer,
     _supplier_id                            integer,
     _price_type_id                          integer,
     _shipper_id                             integer,
     _reference_number                       national character varying(24),
-    _statement_reference                    text,
-    _details                                purchase.purchase_detail_type[]
+    _statement_reference                    national character varying(2000),
+    _details                                purchase.purchase_detail_type[],
+	_invoice_discount						numeric(30, 6)
 )
 RETURNS bigint
 AS
 $$
-    DECLARE _purchase_id                    bigint;
-    DECLARE _original_price_type_id         integer;
-    DECLARE _tran_master_id                 bigint;
-    DECLARE _checkout_detail_id             bigint;
-    DECLARE _tran_counter                   integer;
-    DECLARE _transaction_code               text;
-    DECLARE _checkout_id                    bigint;
-    DECLARE _grand_total                    public.money_strict;
-    DECLARE _discount_total                 public.money_strict2;
-    DECLARE _tax_total                      public.money_strict2;
-    DECLARE _credit_account_id              integer;
-    DECLARE _default_currency_code          national character varying(12);
-    DECLARE _sm_id                          bigint;
-    DECLARE this                            RECORD;
-    DECLARE _is_periodic                    boolean = inventory.is_periodic_inventory(_office_id);
-    DECLARE _book_name                      text='Purchase Return';
-    DECLARE _receivable                     public.money_strict;
-    DECLARE _tax_account_id                 integer;
-BEGIN    
+	DECLARE _reversal_tran_id		bigint;
+	DECLARE _new_tran_id			bigint;
+    DECLARE _book_name              national character varying(50) = 'Purchase Return';
+    DECLARE _tran_counter           integer;
+    DECLARE _tran_code              national character varying(50);
+    DECLARE _checkout_id            bigint;
+    DECLARE _grand_total            numeric(30, 6);
+    DECLARE _discount_total         numeric(30, 6);
+    DECLARE _is_credit              bit;
+    DECLARE _default_currency_code  national character varying(12);
+    DECLARE _cost_of_goods_sold     numeric(30, 6);
+    DECLARE _ck_id                  bigint;
+    DECLARE _purchase_id            bigint;
+    DECLARE _tax_total              numeric(30, 6);
+    DECLARE _tax_account_id         integer;
+	DECLARE _fiscal_year_code		national character varying(12);
+    DECLARE _can_post_transaction   bit;
+    DECLARE _error_message          text;
+	DECLARE _original_checkout_id	bigint;
+	DECLARE _original_supplier_id	integer;
+	DECLARE _difference				purchase.purchase_detail_type;
+BEGIN
+
+	SELECT 
+		_original_supplier_id = purchase.purchases.supplier_id,
+		_original_checkout_id = inventory.checkouts.checkout_id
+	FROM purchase.purchases
+	INNER JOIN inventory.checkouts
+	ON inventory.checkouts.checkout_id = purchase.purchases.checkout_id
+	INNER JOIN finance.transaction_master
+	ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
+	AND finance.transaction_master.verification_status_id > 0
+	AND finance.transaction_master.transaction_master_id = _transaction_master_id;
+
+	DROP TABLE IF EXISTS _new_checkout_items;
+	CREATE TEMPORARY TABLE _new_checkout_items
+	(
+		store_id					integer,
+		transaction_type			national character varying(2),
+		item_id						integer,
+		quantity					numeric(30, 6),
+		unit_id						integer,
+        base_quantity				numeric(30, 6),
+        base_unit_id                integer,                
+		price						numeric(30, 6),
+		discount_rate				numeric(30, 6),
+		discount					numeric(30, 6),
+		shipping_charge				numeric(30, 6)
+	) ON COMMIT DROP;
+	
+        
     IF NOT finance.can_post_transaction(_login_id, _user_id, _office_id, _book_name, _value_date) THEN
         RETURN 0;
     END IF;
 
-    CREATE TEMPORARY TABLE temp_checkout_details
-    (
-        id                                  SERIAL PRIMARY KEY,
-        checkout_id                         bigint, 
-        transaction_type                    national character varying(2), 
-        store_id                            integer,
-        item_code                           text,
-        item_id                             integer, 
-        quantity                            public.integer_strict,
-        unit_name                           text,
-        unit_id                             integer,
-        base_quantity                       decimal(30, 6),
-        base_unit_id                        integer,                
-        price                               public.money_strict,
-        discount_rate                       decimal(30, 6),
-        discount                            public.money_strict2,
-        tax                                 public.money_strict2,
-        shipping_charge                     public.money_strict2,
-        purchase_account_id                 integer, 
-        purchase_discount_account_id        integer, 
-        inventory_account_id                integer
-    ) ON COMMIT DROP;
+    _tax_account_id := finance.get_sales_tax_account_id_by_office_id(_office_id);
 
-    CREATE TEMPORARY TABLE temp_transaction_details
-    (
-        transaction_master_id               BIGINT, 
-        transaction_type                    national character varying(2), 
-        account_id                          integer, 
-        statement_reference                 text, 
-        currency_code                       national character varying(12), 
-        amount_in_currency                  public.money_strict, 
-        local_currency_code                 national character varying(12), 
-        er                                  decimal_strict, 
-        amount_in_local_currency            public.money_strict
-    ) ON COMMIT DROP;
-   
+    
+    IF(_original_supplier_id IS NULL) THEN
+        RAISE EXCEPTION '%', 'Invalid transaction.';
+    END IF;
 
-    SELECT purchase.purchases.purchase_id INTO _purchase_id
+    IF(_original_supplier_id != _supplier_id) THEN
+        RAISE EXCEPTION '%', 'This supplier is not associated with the purchase you are trying to return.';
+    END IF;
+
+    IF(NOT purchase.validate_items_for_return(_transaction_master_id, _details)) THEN
+        RETURN 0;
+    END IF;
+
+
+    _default_currency_code      := core.get_currency_code_by_office_id(_office_id);
+    _tran_counter               := finance.get_new_transaction_counter(_value_date);
+    _tran_code                  := finance.get_transaction_code(_value_date, _office_id, _user_id, _login_id);
+
+    SELECT _purchase_id = purchase.purchases.purchase_id 
     FROM purchase.purchases
     INNER JOIN inventory.checkouts
     ON inventory.checkouts.checkout_id = purchase.purchases.checkout_id
-    INNER JOIN finance.transaction_master
-    ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
-    WHERE finance.transaction_master.transaction_master_id = _transaction_master_id;
+    AND inventory.checkouts.transaction_master_id = _transaction_master_id;
 
-    SELECT purchase.purchases.price_type_id INTO _original_price_type_id
-    FROM purchase.purchases
-    WHERE purchase.purchases.purchase_id = _purchase_id;
 
-    IF(_price_type_id != _original_price_type_id) THEN
-        RAISE EXCEPTION 'Please select the right price type.'
-        USING ERRCODE='P3271';
-    END IF;
-    
-	SELECT checkout_id INTO _sm_id 
-	FROM inventory.checkouts 
-	WHERE inventory.checkouts.transaction_master_id = _transaction_master_id
-	AND NOT inventory.checkouts.deleted;
 
-    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge)
-	SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, tax, shipping_charge
-	FROM explode_array(_details);
 
-    UPDATE temp_checkout_details 
+    --Returned items are subtracted
+    INSERT INTO _new_checkout_items(store_id, item_id, quantity, unit_id, price, discount_rate, shipping_charge)
+    SELECT store_id, item_id, quantity *-1, unit_id, price *-1, discount_rate, shipping_charge *-1
+    FROM _details;
+
+
+    --Original items are added
+    INSERT INTO _new_checkout_items(store_id, item_id, quantity, unit_id, price, discount_rate, shipping_charge)
+    SELECT 
+        inventory.checkout_details.store_id, 
+        inventory.checkout_details.item_id,
+        inventory.checkout_details.quantity,
+        inventory.checkout_details.unit_id,
+        inventory.checkout_details.price,
+        inventory.checkout_details.discount_rate,
+        inventory.checkout_details.shipping_charge
+    FROM inventory.checkout_details
+    WHERE checkout_id = _original_checkout_id;
+
+    UPDATE _new_checkout_items 
     SET
         base_quantity                   = inventory.get_base_quantity_by_unit_id(unit_id, quantity),
         base_unit_id                    = inventory.get_root_unit_id(unit_id),
-        purchase_account_id             = inventory.get_purchase_account_id(item_id),
-        purchase_discount_account_id    = inventory.get_purchase_discount_account_id(item_id),
-        inventory_account_id            = inventory.get_inventory_account_id(item_id),
-        discount                        = ROUND((price * quantity) * (discount_rate / 100), 2);
+        discount                        = ROUND(((price * quantity) + shipping_charge) * (discount_rate / 100), 2);
 
 
     IF EXISTS
     (
-        SELECT 1 FROM temp_checkout_details AS details
-        WHERE inventory.is_valid_unit_id(details.unit_id, details.item_id) = false
-        LIMIT 1
+        SELECT item_id, COUNT(DISTINCT unit_id) 
+        FROM _new_checkout_items
+        GROUP BY item_id
+        HAVING COUNT(DISTINCT unit_id) > 1
     ) THEN
-        RAISE EXCEPTION 'Item/unit mismatch.'
-        USING ERRCODE='P3201';
+        RAISE EXCEPTION '%', 'A return entry must exactly macth the unit of measure provided during purchase.';
     END IF;
 
-    
-    _tax_account_id                     := finance.get_sales_tax_account_id_by_office_id(_office_id);
-    _default_currency_code              := core.get_currency_code_by_office_id(_office_id);
-    _tran_master_id                     := nextval(pg_get_serial_sequence('finance.transaction_master', 'transaction_master_id'));
-    _checkout_id                        := nextval(pg_get_serial_sequence('inventory.checkouts', 'checkout_id'));
-    _tran_counter                       := finance.get_new_transaction_counter(_value_date);
-    _transaction_code                   := finance.get_transaction_code(_value_date, _office_id, _user_id, _login_id);
-       
-    SELECT SUM(COALESCE(tax, 0))                                INTO _tax_total FROM temp_checkout_details;
-    SELECT SUM(COALESCE(discount, 0))                           INTO _discount_total FROM temp_checkout_details;
-    SELECT SUM(COALESCE(price, 0) * COALESCE(quantity, 0))      INTO _grand_total FROM temp_checkout_details;
+    IF EXISTS
+    (
+        SELECT item_id, COUNT(DISTINCT ABS(price))
+        FROM _new_checkout_items
+        GROUP BY item_id
+        HAVING COUNT(DISTINCT ABS(price)) > 1
+    ) THEN
+        RAISE EXCEPTION '%', 'A return entry must exactly macth the price provided during purchase.';
+    END IF;
 
-    _receivable := _grand_total + _tax_total - COALESCE(_discount_total, 0);
+    IF EXISTS
+    (
+        SELECT item_id, COUNT(DISTINCT discount_rate) 
+        FROM _new_checkout_items
+        GROUP BY item_id
+        HAVING COUNT(DISTINCT discount_rate) > 1
+    ) THEN
+        RAISE EXCEPTION '%', 'A return entry must exactly macth the discount rate provided during purchase.';
+    END IF;
 
 
+    IF EXISTS
+    (
+        SELECT item_id, COUNT(DISTINCT store_id) 
+        FROM _new_checkout_items
+        GROUP BY item_id
+        HAVING COUNT(DISTINCT store_id) > 1
+    ) THEN
+        RAISE EXCEPTION '%', 'A return entry must exactly macth the store provided during purchase.';
+    END IF;
 
-    IF(_is_periodic = true) THEN        
-        INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
-        SELECT 'Cr', purchase_account_id, _statement_reference, _default_currency_code, SUM(COALESCE(price, 0) * COALESCE(quantity, 0)), 1, _default_currency_code, SUM(COALESCE(price, 0) * COALESCE(quantity, 0))
-        FROM temp_checkout_details
-        GROUP BY purchase_account_id;
+    INSERT INTO _difference(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, shipping_charge)
+    SELECT store_id, 'Dr', item_id, SUM(quantity), unit_id, SUM(price), discount_rate, SUM(shipping_charge)
+    FROM _new_checkout_items
+    GROUP BY store_id, item_id, unit_id, discount_rate;
+
+        
+    DELETE FROM _difference
+    WHERE quantity = 0;
+
+    --> REVERSE THE ORIGINAL TRANSACTION
+    INSERT INTO finance.transaction_master(transaction_counter, transaction_code, book, value_date, book_date, user_id, login_id, office_id, cost_center_id, reference_number, statement_reference)
+    SELECT _tran_counter, _tran_code, _book_name, _value_date, _book_date, _user_id, _login_id, _office_id, _cost_center_id, _reference_number, _statement_reference
+    RETURNING finance.transaction_master.transaction_master_id INTO _reversal_tran_id;
+
+
+    INSERT INTO finance.transaction_details(transaction_master_id, office_id, value_date, book_date, tran_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
+    SELECT 
+        _reversal_tran_id, 
+        office_id, 
+        value_date, 
+        book_date, 
+        CASE WHEN tran_type = 'Dr' THEN 'Cr' ELSE 'Dr' END, 
+        account_id, 
+        _statement_reference, 
+        currency_code, 
+        amount_in_currency, 
+        er, 
+        local_currency_code, 
+        amount_in_local_currency
+    FROM finance.transaction_details
+    WHERE finance.transaction_details.transaction_master_id = _transaction_master_id;
+
+    IF EXISTS(SELECT * FROM _difference) THEN
+        --> ADD A NEW PURCHASE INVOICE
+         _new_tran_id := purchase.post_purchase
+            _office_id,
+            _user_id,
+            _login_id,
+            _value_date,
+            _book_date,
+            _cost_center_id,
+            _reference_number,
+            _statement_reference,
+            _supplier_id,
+            _price_type_id,
+            _shipper_id,
+            _store_id,
+            _difference,
+            _invoice_discount;
     ELSE
-        --Perpetutal Inventory Accounting System
-        INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
-        SELECT 'Cr', inventory_account_id, _statement_reference, _default_currency_code, SUM(COALESCE(price, 0) * COALESCE(quantity, 0)), 1, _default_currency_code, SUM(COALESCE(price, 0) * COALESCE(quantity, 0))
-        FROM temp_checkout_details
-        GROUP BY inventory_account_id;
+        _tran_counter               := finance.get_new_transaction_counter(_value_date);
+        _tran_code                  := finance.get_transaction_code(_value_date, _office_id, _user_id, _login_id);
+
+        INSERT INTO finance.transaction_master(transaction_counter, transaction_code, book, value_date, book_date, user_id, login_id, office_id, cost_center_id, reference_number, statement_reference)
+        SELECT _tran_counter, _tran_code, _book_name, _value_date, _book_date, _user_id, _login_id, _office_id, _cost_center_id, _reference_number, _statement_reference
+        RETURNING finance.transaction_master.transaction_master_id INTO _new_tran_id;
     END IF;
 
+    INSERT INTO inventory.checkouts(transaction_book, value_date, book_date, transaction_master_id, office_id, posted_by, discount, taxable_total, tax_rate, tax, nontaxable_total) 
+    SELECT _book_name, _value_date, _book_date, _new_tran_id, office_id, _user_id, discount, taxable_total, tax_rate, tax, nontaxable_total
+    FROM inventory.checkouts
+    WHERE inventory.checkouts.checkout_id = _original_checkout_id
+    RETURNING inventory.checkouts.checkout_id INTO _checkout_id;
 
-    IF(COALESCE(_discount_total, 0) > 0) THEN
-        INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
-        SELECT 'Dr', purchase_discount_account_id, _statement_reference, _default_currency_code, SUM(COALESCE(discount, 0)), 1, _default_currency_code, SUM(COALESCE(discount, 0))
-        FROM temp_checkout_details
-        GROUP BY purchase_discount_account_id;
-    END IF;
+    INSERT INTO inventory.checkout_details(value_date, book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, is_taxed, cost_of_goods_sold, discount)
+    SELECT _value_date, _book_date, _checkout_id, 
+    CASE WHEN transaction_type = 'Dr' THEN 'Cr' ELSE 'Dr' END, 
+    store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, is_taxed, cost_of_goods_sold, discount
+    FROM inventory.checkout_details
+    WHERE inventory.checkout_details.checkout_id = _original_checkout_id;
 
-    IF(COALESCE(_tax_total, 0) > 0) THEN
-        INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
-        SELECT 'Cr', _tax_account_id, _statement_reference, _default_currency_code, _tax_total, 1, _default_currency_code, _tax_total;
-    END IF;
+    INSERT INTO purchase.purchase_returns(purchase_id, checkout_id, supplier_id)
+    SELECT _purchase_id, _checkout_id, _supplier_id;
 
-    --RAISE EXCEPTION '%', array_to_string(ARRAY(SELECT temp_transaction_details.*::text FROM temp_transaction_details), E'\n');
-
-    INSERT INTO temp_transaction_details(transaction_type, account_id, statement_reference, currency_code, amount_in_currency, er, local_currency_code, amount_in_local_currency)
-    SELECT 'Dr', inventory.get_account_id_by_supplier_id(_supplier_id), _statement_reference, _default_currency_code, _receivable, 1, _default_currency_code, _receivable;
-
-
-    UPDATE temp_transaction_details        SET transaction_master_id   = _tran_master_id;
-    UPDATE temp_checkout_details           SET checkout_id             = _checkout_id;
-
-
-
-    INSERT INTO finance.transaction_master(transaction_master_id, transaction_counter, transaction_code, book, value_date, book_date, user_id, login_id, office_id, cost_center_id, reference_number, statement_reference) 
-    SELECT _tran_master_id, _tran_counter, _transaction_code, _book_name, _value_date, _book_date, _user_id, _login_id, _office_id, _cost_center_id, _reference_number, _statement_reference;
-
-
-    INSERT INTO finance.transaction_details(office_id, value_date, book_date, transaction_master_id, tran_type, account_id, statement_reference, currency_code, amount_in_currency, local_currency_code, er, amount_in_local_currency)
-    SELECT _office_id, _value_date, _book_date, transaction_master_id, transaction_type, account_id, statement_reference, currency_code, amount_in_currency, local_currency_code, er, amount_in_local_currency
-    FROM temp_transaction_details
-    ORDER BY transaction_type DESC;
-
-
-    INSERT INTO inventory.checkouts(value_date, book_date, checkout_id, transaction_master_id, transaction_book, posted_by, office_id, shipper_id)
-    SELECT _value_date, _book_date, _checkout_id, _tran_master_id, _book_name, _user_id, _office_id, _shipper_id;
-            
-    INSERT INTO inventory.checkout_details(value_date, book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, tax, shipping_charge)
-    SELECT _value_date, _book_date, checkout_id, transaction_type, store_id, item_id, quantity, unit_id, base_quantity, base_unit_id, price, discount, tax, shipping_charge
-    FROM temp_checkout_details;
-
-    INSERT INTO purchase.purchase_returns(checkout_id, purchase_id, supplier_id)
-    SELECT _checkout_id, _purchase_id, _supplier_id;
-
-    
-    PERFORM finance.auto_verify(_transaction_master_id, _office_id);
-    RETURN _tran_master_id;
+    RETURN _new_tran_id;
 END
 $$
 LANGUAGE plpgsql;
@@ -1126,6 +1288,307 @@ LANGUAGE plpgsql;
 --     NULL -- _bank_tran_code                             national character varying(128),
 -- );
 
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/02.functions-and-logic/purchase.validate_items_for_return.sql --<--<--
+DROP FUNCTION IF EXISTS purchase.validate_items_for_return
+(
+    _transaction_master_id                  bigint, 
+    _details                                purchase.purchase_detail_type[]
+);
+
+CREATE FUNCTION purchase.validate_items_for_return
+(
+    _transaction_master_id                  bigint, 
+    _details                                purchase.purchase_detail_type[]
+)
+RETURNS boolean
+AS
+$$
+    DECLARE _checkout_id                    bigint = 0;
+    DECLARE _is_purchase                    boolean = false;
+    DECLARE _item_id                        integer = 0;
+    DECLARE _factor_to_base_unit            numeric(30, 6);
+    DECLARE _returned_in_previous_batch     public.decimal_strict2 = 0;
+    DECLARE _in_verification_queue          public.decimal_strict2 = 0;
+    DECLARE _actual_price_in_root_unit      public.money_strict2 = 0;
+    DECLARE _price_in_root_unit             public.money_strict2 = 0;
+    DECLARE _item_in_stock                  public.decimal_strict2 = 0;
+    DECLARE _error_item_id                  integer;
+    DECLARE _error_quantity                 numeric(30, 6);
+    DECLARE _error_unit                     text;
+    DECLARE _error_amount                   numeric(30, 6);
+    DECLARE _original_purchase_id           bigint;
+    DECLARE this                            RECORD; 
+BEGIN        
+    _checkout_id                            := inventory.get_checkout_id_by_transaction_master_id(_transaction_master_id);
+
+    SELECT purchase.purchases.purchase_id
+    INTO _original_purchase_id
+    FROM purchase.purchases
+    INNER JOIN inventory.checkouts
+    ON inventory.checkouts.checkout_id = purchase.purchases.checkout_id
+    WHERE inventory.checkouts.transaction_master_id = _transaction_master_id;
+    
+    DROP TABLE IF EXISTS details_temp;
+    CREATE TEMPORARY TABLE details_temp
+    (
+        store_id            integer,
+        item_id             integer,
+        item_in_stock       numeric(30, 6),
+        quantity            public.decimal_strict,        
+        unit_id             integer,
+        price               public.money_strict,
+        discount_rate       public.decimal_strict2,
+        discount            money_strict2,
+		is_taxed			boolean,
+        shipping_charge     money_strict2,
+        root_unit_id        integer,
+        base_quantity       numeric(30, 6)
+    ) ON COMMIT DROP;
+
+    INSERT INTO details_temp(store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge)
+    SELECT store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge
+    FROM explode_array(_details);
+
+    UPDATE details_temp
+    SET 
+        item_in_stock = inventory.count_item_in_stock(item_id, unit_id, store_id);
+       
+    UPDATE details_temp
+    SET root_unit_id = inventory.get_root_unit_id(unit_id);
+
+    UPDATE details_temp
+    SET base_quantity = inventory.convert_unit(unit_id, root_unit_id) * quantity;
+
+
+    --Determine whether the quantity of the returned item(s) is less than or equal to the same on the actual transaction
+    DROP TABLE IF EXISTS item_summary_temp;
+    CREATE TEMPORARY TABLE item_summary_temp
+    (
+        store_id                    integer,
+        item_id                     integer,
+        root_unit_id                integer,
+        returned_quantity           numeric(30, 6),
+        actual_quantity             numeric(30, 6),
+        returned_in_previous_batch  numeric(30, 6),
+        in_verification_queue       numeric(30, 6)
+    ) ON COMMIT DROP;
+    
+    INSERT INTO item_summary_temp(store_id, item_id, root_unit_id, returned_quantity)
+    SELECT
+        store_id,
+        item_id,
+        root_unit_id, 
+        SUM(base_quantity)
+    FROM details_temp
+    GROUP BY 
+        store_id, 
+        item_id,
+        root_unit_id;
+
+    UPDATE item_summary_temp
+    SET actual_quantity = 
+    (
+        SELECT SUM(base_quantity)
+        FROM inventory.checkout_details
+        WHERE inventory.checkout_details.checkout_id = _checkout_id
+        AND inventory.checkout_details.item_id = item_summary_temp.item_id
+    );
+
+    UPDATE item_summary_temp
+    SET returned_in_previous_batch = 
+    (
+        SELECT 
+            COALESCE(SUM(base_quantity), 0)
+        FROM inventory.checkout_details
+        WHERE checkout_id IN
+        (
+            SELECT checkout_id
+            FROM inventory.checkouts
+            INNER JOIN finance.transaction_master
+            ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
+            WHERE finance.transaction_master.verification_status_id > 0
+            AND inventory.checkouts.transaction_master_id IN 
+            (
+                SELECT inventory.checkouts.transaction_master_id
+                FROM inventory.checkouts
+                INNER JOIN purchase.purchase_returns
+                ON purchase.purchase_returns.checkout_id = inventory.checkouts.checkout_id
+                INNER JOIN finance.transaction_master
+                ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id                
+            WHERE finance.transaction_master.verification_status_id > 0
+                AND purchase.purchase_returns.purchase_id = _original_purchase_id
+            )
+        )
+        AND item_id = item_summary_temp.item_id
+    );
+
+    UPDATE item_summary_temp
+    SET in_verification_queue = 
+    (
+        SELECT 
+            COALESCE(SUM(base_quantity), 0)
+        FROM inventory.checkout_details
+        WHERE checkout_id IN
+        (
+            SELECT checkout_id
+            FROM inventory.checkouts
+            INNER JOIN finance.transaction_master
+            ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
+            WHERE finance.transaction_master.verification_status_id > 0
+            AND inventory.checkouts.transaction_master_id IN 
+            (
+                SELECT inventory.checkouts.transaction_master_id
+                FROM inventory.checkouts
+                INNER JOIN purchase.purchase_returns
+                ON purchase.purchase_returns.checkout_id = inventory.checkouts.checkout_id
+                INNER JOIN finance.transaction_master
+                ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id                
+            WHERE finance.transaction_master.verification_status_id = 0
+                AND purchase.purchase_returns.purchase_id = _original_purchase_id
+            )
+        )
+        AND item_id = item_summary_temp.item_id
+    );
+    
+    --Determine whether the price of the returned item(s) is less than or equal to the same on the actual transaction
+    DROP TABLE IF EXISTS cumulative_pricing_temp;
+    CREATE TEMPORARY TABLE cumulative_pricing_temp
+    (
+        item_id                     integer,
+        base_price                  numeric(30, 6),
+        allowed_returns             numeric(30, 6)
+    ) ON COMMIT DROP;
+
+    INSERT INTO cumulative_pricing_temp
+    SELECT 
+        item_id,
+        MIN(price  / base_quantity * quantity) as base_price,
+        SUM(base_quantity) OVER(ORDER BY item_id, base_quantity) as allowed_returns
+    FROM inventory.checkout_details 
+    WHERE checkout_id = _checkout_id
+    GROUP BY item_id, base_quantity;
+
+    IF EXISTS(SELECT 0 FROM details_temp WHERE store_id IS NULL OR store_id <= 0) THEN
+        RAISE EXCEPTION 'Invalid store.'
+        USING ERRCODE='P3012';
+    END IF;
+
+    IF EXISTS(SELECT 0 FROM details_temp WHERE item_id IS NULL OR item_id <= 0) THEN
+        RAISE EXCEPTION 'Invalid item.'
+        USING ERRCODE='P3051';
+    END IF;
+
+    IF EXISTS(SELECT 0 FROM details_temp WHERE unit_id IS NULL OR unit_id <= 0) THEN
+        RAISE EXCEPTION 'Invalid unit.'
+        USING ERRCODE='P3052';
+    END IF;
+
+    IF EXISTS(SELECT 0 FROM details_temp WHERE quantity IS NULL OR quantity <= 0) THEN
+        RAISE EXCEPTION 'Invalid quantity.'
+        USING ERRCODE='P3301';
+    END IF;
+
+    IF(_checkout_id  IS NULL OR _checkout_id  <= 0) THEN
+        RAISE EXCEPTION 'Invalid transaction id.'
+        USING ERRCODE='P3302';
+    END IF;
+
+    IF NOT EXISTS
+    (
+        SELECT * FROM finance.transaction_master
+        WHERE transaction_master_id = _transaction_master_id
+        AND verification_status_id > 0
+    ) THEN
+        RAISE EXCEPTION 'Invalid or rejected transaction.'
+        USING ERRCODE='P5301';
+    END IF;
+        
+    SELECT item_id INTO _item_id
+    FROM details_temp
+    WHERE item_id NOT IN
+    (
+        SELECT item_id FROM inventory.checkout_details
+        WHERE checkout_id = _checkout_id
+    )
+    LIMIT 1;
+
+    IF(COALESCE(_item_id, 0) != 0) THEN
+        RAISE EXCEPTION '%', format('The item %1$s is not associated with this transaction.', inventory.get_item_name_by_item_id(_item_id))
+        USING ERRCODE='P4020';
+    END IF;
+
+
+    IF NOT EXISTS
+    (
+        SELECT * FROM inventory.checkout_details
+        INNER JOIN details_temp
+        ON inventory.checkout_details.item_id = details_temp.item_id
+        WHERE checkout_id = _checkout_id
+        AND inventory.get_root_unit_id(details_temp.unit_id) = inventory.get_root_unit_id(inventory.checkout_details.unit_id)
+        LIMIT 1
+    ) THEN
+        RAISE EXCEPTION 'Invalid or incompatible unit specified'
+        USING ERRCODE='P3053';
+    END IF;
+
+    SELECT 
+        item_id,
+        returned_quantity,
+        inventory.get_unit_name_by_unit_id(root_unit_id)
+    INTO
+        _error_item_id,
+        _error_quantity,
+        _error_unit
+    FROM item_summary_temp
+    WHERE returned_quantity + returned_in_previous_batch + in_verification_queue > actual_quantity
+    LIMIT 1;
+
+    IF(_error_item_id IS NOT NULL) THEN    
+        RAISE EXCEPTION 'The returned quantity (% %) of % is greater than actual quantity.', _error_quantity, _error_unit, inventory.get_item_name_by_item_id(_error_item_id)
+        USING ERRCODE='P5203';
+    END IF;
+
+    FOR this IN
+    SELECT item_id, base_quantity, (price / base_quantity * quantity)::numeric(30, 6) as price
+    FROM details_temp
+    LOOP
+        SELECT 
+            item_id,
+            base_price
+        INTO
+            _error_item_id,
+            _error_amount
+        FROM cumulative_pricing_temp
+        WHERE item_id = this.item_id
+        AND base_price <  this.price
+        AND allowed_returns >= this.base_quantity
+        LIMIT 1;
+        
+        IF (_error_item_id IS NOT NULL) THEN
+            RAISE EXCEPTION 'The returned base amount % of % cannot be greater than actual amount %.', this.price, inventory.get_item_name_by_item_id(_error_item_id), _error_amount
+            USING ERRCODE='P5204';
+
+            RETURN FALSE;
+        END IF;
+    END LOOP;
+    
+    RETURN TRUE;
+END
+$$
+LANGUAGE plpgsql;
+
+-- SELECT * FROM purchase.validate_items_for_return
+-- (
+--     6,
+--     ARRAY[
+--         ROW(1, 'Dr', 1, 1, 1,180000, 0, 200, 0)::purchase.purchase_detail_type,
+--         ROW(1, 'Dr', 2, 1, 7,130000, 300, 30, 0)::purchase.purchase_detail_type,
+--         ROW(1, 'Dr', 3, 1, 1,110000, 5000, 50, 0)::purchase.purchase_detail_type
+--     ]
+-- );
+
+
+
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/03.menus/menus.sql --<--<--
 DELETE FROM auth.menu_access_policy
 WHERE menu_id IN
@@ -1161,10 +1624,12 @@ SELECT * FROM core.create_menu('MixERP.Purchases', 'Setup', 'Setup', 'square out
 SELECT * FROM core.create_menu('MixERP.Purchases', 'Suppliers', 'Suppliers', '/dashboard/purchase/setup/suppliers', 'users', 'Setup');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'PriceTypes', 'Price Types', '/dashboard/purchase/setup/price-types', 'dollar', 'Setup');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'CostPrices', 'Cost Prices', '/dashboard/purchase/setup/cost-prices', 'rupee', 'Setup');
+SELECT * FROM core.create_menu('MixERP.Purchases', 'SupplierwiseCostPrices', 'Supplierwise Cost Prices', '/dashboard/purchase/setup/cost-prices/supplier', 'rupee', 'Setup');
 
 SELECT * FROM core.create_menu('MixERP.Purchases', 'Reports', 'Reports', '', 'block layout', '');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'AccountPayables', 'Account Payables', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/AccountPayables.xml', 'spy', 'Reports');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'TopSuppliers', 'Top Suppliers', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/TopSuppliers.xml', 'spy', 'Reports');
+SELECT * FROM core.create_menu('MixERP.Purchases', 'PurchasesByOffice', 'Purchases by Office', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/PurchasesByOffice.xml', 'building', 'Reports');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'LowInventoryProducts', 'Low Inventory Products', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/LowInventory.xml', 'warning', 'Reports');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'OutOfStockProducts', 'Out of Stock Products', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/OutOfStock.xml', 'remove circle', 'Reports');
 SELECT * FROM core.create_menu('MixERP.Purchases', 'SupplierContacts', 'Supplier Contacts', '/dashboard/reports/view/Areas/MixERP.Purchases/Reports/SupplierContacts.xml', 'remove circle', 'Reports');
@@ -1356,6 +1821,167 @@ ON inventory.units.unit_id = inventory.items.unit_id
 WHERE NOT inventory.items.deleted
 AND inventory.items.allow_purchase
 AND inventory.items.maintain_inventory;
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.views/purchase.order_search_view.sql --<--<--
+DROP VIEW IF EXISTS purchase.order_search_view;
+
+CREATE VIEW purchase.order_search_view
+AS
+SELECT
+	purchase.orders.order_id,
+	inventory.get_supplier_name_by_supplier_id(purchase.orders.supplier_id) AS supplier,
+	purchase.orders.value_date,
+	purchase.orders.expected_delivery_date AS expected_date,
+	COALESCE(purchase.orders.taxable_total, 0) + 
+	COALESCE(purchase.orders.tax, 0) + 
+	COALESCE(purchase.orders.nontaxable_total, 0) - 
+	COALESCE(purchase.orders.discount, 0) AS total_amount,
+	COALESCE(purchase.orders.reference_number, '') AS reference_number,
+	COALESCE(purchase.orders.terms, '') AS terms,
+	COALESCE(purchase.orders.internal_memo, '') AS memo,
+	account.get_name_by_user_id(purchase.orders.user_id) AS posted_by,
+	core.get_office_name_by_office_id(purchase.orders.office_id) AS office,
+	purchase.orders.transaction_timestamp AS posted_on,
+	purchase.orders.office_id,
+	purchase.orders.discount,
+	purchase.orders.tax,
+	purchase.orders.cancelled
+FROM purchase.orders;
+
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.views/purchase.purchase_search_view.sql --<--<--
+DROP VIEW IF EXISTS purchase.purchase_search_view;
+
+CREATE VIEW purchase.purchase_search_view
+AS
+SELECT 
+    CAST(finance.transaction_master.transaction_master_id AS varchar(100)) AS tran_id, 
+    finance.transaction_master.transaction_code AS tran_code,
+    finance.transaction_master.value_date,
+    finance.transaction_master.book_date,
+    inventory.get_supplier_name_by_supplier_id(purchase.purchases.supplier_id) AS supplier,
+	SUM(CASE WHEN finance.transaction_details.tran_type = 'Dr' THEN finance.transaction_details.amount_in_local_currency ELSE 0 END) AS amount,
+    finance.transaction_master.reference_number,
+    finance.transaction_master.statement_reference,
+    account.get_name_by_user_id(finance.transaction_master.user_id) as posted_by,
+    core.get_office_name_by_office_id(finance.transaction_master.office_id) as office,
+    finance.get_verification_status_name_by_verification_status_id(finance.transaction_master.verification_status_id) as status,
+    account.get_name_by_user_id(finance.transaction_master.verified_by_user_id) as verified_by,
+    finance.transaction_master.last_verified_on AS verified_on,
+    finance.transaction_master.verification_reason AS reason,    
+    finance.transaction_master.transaction_ts AS posted_on,
+	finance.transaction_master.office_id
+FROM finance.transaction_master
+INNER JOIN inventory.checkouts
+ON inventory.checkouts.transaction_master_id = finance.transaction_master.transaction_master_id
+INNER JOIN purchase.purchases
+ON inventory.checkouts.checkout_id = purchase.purchases.checkout_id
+INNER JOIN finance.transaction_details
+ON finance.transaction_details.transaction_master_id = finance.transaction_master.transaction_master_id
+WHERE NOT finance.transaction_master.deleted
+GROUP BY
+finance.transaction_master.transaction_master_id,
+finance.transaction_master.transaction_code,
+purchase.purchases.supplier_id,
+finance.transaction_master.value_date,
+finance.transaction_master.book_date,
+finance.transaction_master.reference_number,
+finance.transaction_master.statement_reference,
+finance.transaction_master.user_id,
+finance.transaction_master.office_id,
+finance.transaction_master.verification_status_id,
+finance.transaction_master.verified_by_user_id,
+finance.transaction_master.last_verified_on,
+finance.transaction_master.verification_reason,
+finance.transaction_master.transaction_ts;
+
+
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.views/purchase.quotation_search_view.sql --<--<--
+DROP VIEW IF EXISTS purchase.quotation_search_view;
+
+CREATE VIEW purchase.quotation_search_view
+AS
+SELECT
+	purchase.quotations.quotation_id,
+	inventory.get_supplier_name_by_supplier_id(purchase.quotations.supplier_id) AS supplier,
+	purchase.quotations.value_date,
+	purchase.quotations.expected_delivery_date AS expected_date,
+	COALESCE(purchase.quotations.taxable_total, 0) + 
+	COALESCE(purchase.quotations.tax, 0) + 
+	COALESCE(purchase.quotations.nontaxable_total, 0) - 
+	COALESCE(purchase.quotations.discount, 0) AS total_amount,
+	COALESCE(purchase.quotations.reference_number, '') AS reference_number,
+	COALESCE(purchase.quotations.terms, '') AS terms,
+	COALESCE(purchase.quotations.internal_memo, '') AS memo,
+	account.get_name_by_user_id(purchase.quotations.user_id) AS posted_by,
+	core.get_office_name_by_office_id(purchase.quotations.office_id) AS office,
+	purchase.quotations.transaction_timestamp AS posted_on,
+	purchase.quotations.office_id,
+	purchase.quotations.discount,
+	purchase.quotations.tax,
+	purchase.quotations.cancelled
+FROM purchase.quotations;
+
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.views/purchase.return_search_view.sql --<--<--
+DROP VIEW IF EXISTS purchase.return_search_view;
+
+CREATE VIEW purchase.return_search_view
+AS
+SELECT 
+	finance.transaction_master.transaction_master_id AS tran_id,
+	finance.transaction_master.transaction_code AS tran_code,
+	purchase.purchase_returns.supplier_id,
+	inventory.get_supplier_name_by_supplier_id(purchase.purchase_returns.supplier_id) AS supplier,
+	inventory.checkouts.taxable_total + inventory.checkouts.nontaxable_total + inventory.checkouts.tax - inventory.checkouts.discount AS amount,
+	finance.transaction_master.value_date,
+	finance.transaction_master.book_date,
+	finance.transaction_master.reference_number,
+	finance.transaction_master.statement_reference,
+	account.get_name_by_user_id(finance.transaction_master.user_id) AS posted_by,
+	core.get_office_name_by_office_id(finance.transaction_master.office_id) AS office,
+	core.verification_statuses.verification_status_name AS status,
+	account.get_name_by_user_id(finance.transaction_master.verified_by_user_id) AS verified_by,
+	finance.transaction_master.last_verified_on,
+	finance.transaction_master.verification_reason AS reason,
+	finance.transaction_master.office_id
+FROM purchase.purchase_returns
+INNER JOIN inventory.checkouts
+ON inventory.checkouts.checkout_id = purchase.purchase_returns.checkout_id
+INNER JOIN finance.transaction_master
+ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
+LEFT JOIN core.verification_statuses
+ON core.verification_statuses.verification_status_id = finance.transaction_master.verification_status_id;
+
+
+-->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/05.views/purchase.supplier_payment_search_view.sql --<--<--
+DROP VIEW IF EXISTS purchase.supplier_payment_search_view;
+
+CREATE VIEW purchase.supplier_payment_search_view
+AS
+SELECT
+	purchase.supplier_payments.transaction_master_id::text AS tran_id,
+	finance.transaction_master.transaction_code AS tran_code,
+	purchase.supplier_payments.supplier_id,
+	inventory.get_supplier_name_by_supplier_id(purchase.supplier_payments.supplier_id) AS supplier,
+	COALESCE(purchase.supplier_payments.amount, purchase.supplier_payments.check_amount, COALESCE(purchase.supplier_payments.tender, 0) - COALESCE(purchase.supplier_payments.change, 0)) AS amount,
+	finance.transaction_master.value_date,
+	finance.transaction_master.book_date,
+	COALESCE(finance.transaction_master.reference_number, '') AS reference_number,
+	COALESCE(finance.transaction_master.statement_reference, '') AS statement_reference,
+	account.get_name_by_user_id(finance.transaction_master.user_id) AS posted_by,
+	core.get_office_name_by_office_id(finance.transaction_master.office_id) AS office,
+	finance.get_verification_status_name_by_verification_status_id(finance.transaction_master.verification_status_id) AS status,
+	COALESCE(account.get_name_by_user_id(finance.transaction_master.verified_by_user_id), '') AS verified_by,
+	finance.transaction_master.last_verified_on,
+	finance.transaction_master.verification_reason AS reason,
+	finance.transaction_master.office_id
+FROM purchase.supplier_payments
+INNER JOIN finance.transaction_master
+ON purchase.supplier_payments.transaction_master_id = finance.transaction_master.transaction_master_id
+WHERE NOT finance.transaction_master.deleted;
+
 
 -->-->-- src/Frapid.Web/Areas/MixERP.Purchases/db/PostgreSQL/2.x/2.0/src/99.ownership.sql --<--<--
 DO

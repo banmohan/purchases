@@ -65,7 +65,7 @@ WriteLiteral("\r\n\r\n<link");
 
 WriteLiteral(" rel=\"stylesheet\"");
 
-WriteLiteral(" href=\"/Areas/MixERP.Purchases/Styles/checkout.css\"");
+WriteLiteral(" href=\"/Areas/MixERP.Purchases/styles/checkout.css\"");
 
 WriteLiteral("></link>\r\n<input");
 
@@ -202,31 +202,6 @@ WriteLiteral("                        ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n                    </span>\r\n                    <span");
-
-WriteLiteral(" class=\"office info\"");
-
-WriteAttribute("title", Tuple.Create(" title=\"", 1247), Tuple.Create("\"", 1271)
-            
-            #line 33 "..\..\Views\Shared\ItemList.cshtml"
-, Tuple.Create(Tuple.Create("", 1255), Tuple.Create<System.Object, System.Int32>(I18N.OfficeName
-            
-            #line default
-            #line hidden
-, 1255), false)
-);
-
-WriteLiteral(">\r\n");
-
-WriteLiteral("                        ");
-
-            
-            #line 34 "..\..\Views\Shared\ItemList.cshtml"
-                   Write(meta.OfficeName);
-
-            
-            #line default
-            #line hidden
 WriteLiteral("\r\n                    </span>\r\n                </div>\r\n\r\n                <div");
 
 WriteLiteral(" class=\"right\"");
@@ -261,7 +236,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("                    ");
 
             
-            #line 52 "..\..\Views\Shared\ItemList.cshtml"
+            #line 49 "..\..\Views\Shared\ItemList.cshtml"
                Write(I18N.Clear);
 
             
@@ -279,14 +254,14 @@ WriteLiteral(">\r\n                <input");
 
 WriteLiteral(" type=\"search\"");
 
-WriteAttribute("placeholder", Tuple.Create(" placeholder=\"", 2032), Tuple.Create("\"", 2058)
+WriteAttribute("placeholder", Tuple.Create(" placeholder=\"", 1888), Tuple.Create("\"", 1914)
             
-            #line 57 "..\..\Views\Shared\ItemList.cshtml"
-, Tuple.Create(Tuple.Create("", 2046), Tuple.Create<System.Object, System.Int32>(I18N.Search
+            #line 54 "..\..\Views\Shared\ItemList.cshtml"
+, Tuple.Create(Tuple.Create("", 1902), Tuple.Create<System.Object, System.Int32>(I18N.Search
             
             #line default
             #line hidden
-, 2046), false)
+, 1902), false)
 );
 
 WriteLiteral(" />\r\n\r\n            </div>\r\n            <div");
@@ -316,7 +291,7 @@ WriteLiteral(" class=\"page title\"");
 WriteLiteral(">");
 
             
-            #line 67 "..\..\Views\Shared\ItemList.cshtml"
+            #line 64 "..\..\Views\Shared\ItemList.cshtml"
                                    Write(I18N.Purchase);
 
             
@@ -326,7 +301,7 @@ WriteLiteral("</div>\r\n                <div");
 
 WriteLiteral(" id=\"SummaryItems\"");
 
-WriteLiteral(" class=\"two summary items\"");
+WriteLiteral(" class=\"one summary items\"");
 
 WriteLiteral(">\r\n                    <div");
 
@@ -339,7 +314,7 @@ WriteLiteral(" class=\"description\"");
 WriteLiteral(">");
 
             
-            #line 70 "..\..\Views\Shared\ItemList.cshtml"
+            #line 67 "..\..\Views\Shared\ItemList.cshtml"
                                             Write(I18N.Amount);
 
             
@@ -350,33 +325,7 @@ WriteLiteral("</div>\r\n                        <div");
 WriteLiteral(" class=\"money\"");
 
 WriteLiteral(">\r\n                            <span></span>\r\n                        </div>\r\n   " +
-"                 </div>\r\n                    <div");
-
-WriteLiteral(" class=\"store item\"");
-
-WriteLiteral(">\r\n                        <div");
-
-WriteLiteral(" class=\"description\"");
-
-WriteLiteral(">");
-
-            
-            #line 76 "..\..\Views\Shared\ItemList.cshtml"
-                                            Write(I18N.Store);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</div>\r\n                        <div");
-
-WriteLiteral(" class=\"control\"");
-
-WriteLiteral(">\r\n                            <select");
-
-WriteLiteral(" id=\"StoreSelect\"");
-
-WriteLiteral("></select>\r\n                        </div>\r\n                    </div>\r\n         " +
-"       </div>\r\n                <div");
+"                 </div>\r\n                </div>\r\n                <div");
 
 WriteLiteral(" class=\"one summary items\"");
 
@@ -391,7 +340,7 @@ WriteLiteral(" class=\"description\"");
 WriteLiteral(">");
 
             
-            #line 84 "..\..\Views\Shared\ItemList.cshtml"
+            #line 75 "..\..\Views\Shared\ItemList.cshtml"
                                             Write(I18N.Supplier);
 
             
@@ -421,7 +370,7 @@ WriteLiteral(" class=\"description\"");
 WriteLiteral(">");
 
             
-            #line 92 "..\..\Views\Shared\ItemList.cshtml"
+            #line 83 "..\..\Views\Shared\ItemList.cshtml"
                                             Write(I18N.ValueDate);
 
             
@@ -451,7 +400,7 @@ WriteLiteral(" class=\"description\"");
 WriteLiteral(">");
 
             
-            #line 98 "..\..\Views\Shared\ItemList.cshtml"
+            #line 89 "..\..\Views\Shared\ItemList.cshtml"
                                             Write(I18N.BookDate);
 
             
@@ -476,6 +425,64 @@ WriteLiteral(" class=\"two summary items\"");
 
 WriteLiteral(">\r\n                    <div");
 
+WriteLiteral(" class=\"store item\"");
+
+WriteLiteral(">\r\n                        <div");
+
+WriteLiteral(" class=\"description\"");
+
+WriteLiteral(">");
+
+            
+            #line 97 "..\..\Views\Shared\ItemList.cshtml"
+                                            Write(I18N.Store);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</div>\r\n                        <div");
+
+WriteLiteral(" class=\"control\"");
+
+WriteLiteral(">\r\n                            <select");
+
+WriteLiteral(" id=\"StoreSelect\"");
+
+WriteLiteral("></select>\r\n                        </div>\r\n                    </div>\r\n         " +
+"           <div");
+
+WriteLiteral(" class=\"discount item\"");
+
+WriteLiteral(">\r\n                        <div");
+
+WriteLiteral(" class=\"description\"");
+
+WriteLiteral(">");
+
+            
+            #line 103 "..\..\Views\Shared\ItemList.cshtml"
+                                            Write(I18N.Discount);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</div>\r\n                        <div");
+
+WriteLiteral(" class=\"control\"");
+
+WriteLiteral(">\r\n                            <input");
+
+WriteLiteral(" type=\"text\"");
+
+WriteLiteral(" id=\"DiscountInputText\"");
+
+WriteLiteral(" />\r\n                        </div>\r\n                    </div>\r\n                " +
+"</div>\r\n                <div");
+
+WriteLiteral(" class=\"two summary items\"");
+
+WriteLiteral(">\r\n                    <div");
+
 WriteLiteral(" class=\"cost center item\"");
 
 WriteLiteral(">\r\n                        <div");
@@ -485,7 +492,7 @@ WriteLiteral(" class=\"description\"");
 WriteLiteral(">");
 
             
-            #line 106 "..\..\Views\Shared\ItemList.cshtml"
+            #line 111 "..\..\Views\Shared\ItemList.cshtml"
                                             Write(I18N.CostCenter);
 
             
@@ -511,7 +518,7 @@ WriteLiteral(" class=\"description\"");
 WriteLiteral(">");
 
             
-            #line 112 "..\..\Views\Shared\ItemList.cshtml"
+            #line 117 "..\..\Views\Shared\ItemList.cshtml"
                                             Write(I18N.Shipper);
 
             
@@ -541,7 +548,7 @@ WriteLiteral(" class=\"description\"");
 WriteLiteral(">");
 
             
-            #line 120 "..\..\Views\Shared\ItemList.cshtml"
+            #line 125 "..\..\Views\Shared\ItemList.cshtml"
                                             Write(I18N.ReferenceNumberAbbreviated);
 
             
@@ -569,7 +576,7 @@ WriteLiteral(" class=\"description\"");
 WriteLiteral(">");
 
             
-            #line 126 "..\..\Views\Shared\ItemList.cshtml"
+            #line 131 "..\..\Views\Shared\ItemList.cshtml"
                                             Write(I18N.Memo);
 
             
@@ -609,7 +616,7 @@ WriteLiteral("></i>\r\n");
 WriteLiteral("                            ");
 
             
-            #line 136 "..\..\Views\Shared\ItemList.cshtml"
+            #line 141 "..\..\Views\Shared\ItemList.cshtml"
                        Write(I18N.Checkout);
 
             
@@ -630,7 +637,7 @@ WriteLiteral("></i>\r\n");
 WriteLiteral("                            ");
 
             
-            #line 140 "..\..\Views\Shared\ItemList.cshtml"
+            #line 145 "..\..\Views\Shared\ItemList.cshtml"
                        Write(I18N.Cls);
 
             

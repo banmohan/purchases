@@ -10,9 +10,10 @@
 
 <script>
     window.overridePath = "/dashboard/purchase/tasks/entry";
+    window.tranId = "@Model";
 
     window.prepareChecklist({
-        TranId: "@Model",
+        TranId: window.tranId,
         Title: window.translate("PurchaseQuotationChecklist") + " #@Model",
         ViewText: window.translate("ViewPurchaseQuotations"),
         ViewUrl: "/dashboard/purchase/tasks/quotation",
@@ -21,5 +22,27 @@
         ReportPath: "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Quotation.xml?quotation_id=@Model"
     });
 
-    $(".withdraw.button").remove();
-</script>
+    $("#WithdrawDiv").remove();
+    $(".withdraw.button").text(window.translate("Cancel")).off("click").on("click", function () {
+        function request(id) {
+            var url = "/dashboard/purchase/tasks/quotation/{id}/cancel";
+            url = url.replace("{id}", id);
+
+            return window.getAjaxRequest(url, "DELETE");
+        };
+
+        if (!window.confirmAction()) {
+            return;
+        };
+
+        const ajax = request(window.tranId);
+
+        ajax.success(function () {
+            window.displaySuccess();
+            document.location = document.location;
+        });
+
+        ajax.fail(function (xhr) {
+            window.logAjaxErrorMessage(xhr);
+        });
+    });</script>

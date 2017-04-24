@@ -11,12 +11,12 @@
         </td>
       </tr>
       <tr>
-        <td>{i18n.TransactionDate}</td>
-        <td>{DataSource[0].transaction_timestamp}</td>
-      </tr>
-      <tr>
         <td>{i18n.ValueDate}</td>
         <td>{DataSource[0].value_date}</td>
+      </tr>
+      <tr>
+        <td>{i18n.ExpectedDeliveryDate}</td>
+        <td>{DataSource[0].expected_delivery_date}</td>
       </tr>
       <tr>
         <td>{i18n.EnteredBy}</td>
@@ -30,12 +30,20 @@
         <td>{i18n.SupplierName}</td>
         <td>{DataSource[0].supplier_name}</td>
       </tr>
+      <tr>
+        <td>{i18n.Terms}</td>
+        <td> {DataSource[0].terms}</td>
+      </tr>
+      <tr>
+        <td>{i18n.Cancelled}</td>
+        <td> {DataSource[0].cancelled}</td>
+      </tr>
     </table>
     <br />
   </TopSection>
   <Body>
     <Content>
-      <h2>{i18n.OrderItems}</h2>
+      <h2>{i18n.OrderDetails}</h2>
     </Content>
     <GridViews>
       <GridView>
@@ -45,62 +53,121 @@
     </GridViews>
   </Body>
   <BottomSection>
-    <h3>{i18n.OtherDetails}</h3>
-    <p>
-      <table class="table horizontal">
-        <tr>
-          <td>{i18n.Terms}</td>
-          <td>{DataSource[0].terms}</td>
-        </tr>
-        <tr>
-          <td>{i18n.InternalMemo}</td>
-          <td>{DataSource[0].internal_memo}</td>
-        </tr>
-      </table>
-    </p>
+  <br />
+	<table class="right aligned" style="width:300px;position:absolute;right:8px;">
+		<tr>
+			<td>
+				{i18n.TaxableTotal}
+			</td>
+			<td data-remove-row-on-zero="" style="width:100px">
+				{DataSource[0].taxable_total}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				{i18n.Discount}
+			</td>
+			<td data-remove-row-on-zero="">
+				{DataSource[0].discount}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				{i18n.Tax} ({DataSource[0].tax_rate}%)
+			</td>
+			<td data-remove-row-on-zero="">
+				{DataSource[0].tax}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				{i18n.SubTotal}
+			</td>
+			<td data-remove-row-on-zero="">
+				{DataSource[0].sub_total}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				{i18n.NonTaxableTotal}
+			</td>
+			<td data-remove-row-on-zero="">
+				{DataSource[0].nontaxable_total}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				{i18n.GrandTotal}
+			</td>
+			<td data-remove-row-on-zero="">
+				{DataSource[0].total}
+			</td>
+		</tr>
+	</table>
   </BottomSection>
   <DataSources>
     <DataSource>
       <Query>
-		SELECT
+        SELECT
 			purchase.orders.order_id,
-			purchase.orders.transaction_timestamp,
+			account.users.name AS entered_by,
 			purchase.orders.value_date,
-			account.get_name_by_user_id(purchase.orders.user_id) AS entered_by,
-			core.get_office_name_by_office_id(purchase.orders.office_id) AS office_name,
+			purchase.orders.expected_delivery_date,
+			core.offices.office_name,
 			purchase.orders.terms,
+			purchase.orders.cancelled,
 			purchase.orders.internal_memo,
-			inventory.get_supplier_name_by_supplier_id(purchase.orders.supplier_id) AS supplier_name    
-		FROM purchase.orders
-		WHERE purchase.orders.order_id = @order_id;
+			inventory.suppliers.supplier_name,
+			purchase.orders.taxable_total,
+			purchase.orders.discount,
+			purchase.orders.tax_rate,
+			purchase.orders.tax,
+			COALESCE(purchase.orders.taxable_total, 0) +
+			COALESCE(purchase.orders.tax, 0) -
+			COALESCE(purchase.orders.discount, 0) AS sub_total,
+			purchase.orders.nontaxable_total,
+			COALESCE(purchase.orders.taxable_total, 0) + 
+			COALESCE(purchase.orders.tax, 0) + 
+			COALESCE(purchase.orders.nontaxable_total, 0) - 
+			COALESCE(purchase.orders.discount, 0) AS total
+        FROM purchase.orders
+        INNER JOIN core.offices
+        ON purchase.orders.office_id = core.offices.office_id
+        INNER JOIN account.users
+        ON purchase.orders.user_id = account.users.user_id
+        LEFT JOIN inventory.suppliers
+        ON purchase.orders.supplier_id = inventory.suppliers.supplier_id
+        WHERE purchase.orders.order_id=@order_id;
       </Query>
       <Parameters>
-        <Parameter Name="@order_id" Type="long" />
+        <Parameter Name="@order_id" Type="Number" />
       </Parameters>
     </DataSource>
     <DataSource>
       <Query>
-		SELECT
-			purchase.order_details.item_id,
-			inventory.items.item_code,
-			inventory.items.item_name,
-			purchase.order_details.quantity,
-			inventory.get_unit_name_by_unit_id(purchase.order_details.unit_id) AS unit,
-			purchase.order_details.price,
-			purchase.order_details.price * purchase.order_details.quantity AS amount,
-			purchase.order_details.discount_rate,
-			ROUND((purchase.order_details.price * purchase.order_details.quantity) * ((100 - purchase.order_details.discount_rate)/100), 4) AS total
-		FROM purchase.order_details
-		INNER JOIN inventory.items
-		ON inventory.items.item_id = purchase.order_details.item_id
-		WHERE purchase.order_details.order_id = @order_id
-		ORDER BY purchase.order_details.order_detail_id;
+			SELECT
+				inventory.items.item_code,
+				inventory.items.item_name,
+				purchase.order_details.price,
+				purchase.order_details.quantity,
+				inventory.units.unit_name,
+				ROUND(purchase.order_details.price * purchase.order_details.quantity, 4) AS amount,
+				purchase.order_details.discount,
+				purchase.order_details.shipping_charge,
+				ROUND((purchase.order_details.price * purchase.order_details.quantity) - purchase.order_details.discount + purchase.order_details.shipping_charge, 4) AS total
+			FROM purchase.order_details
+			INNER JOIN inventory.items
+			ON purchase.order_details.item_id = inventory.items.item_id
+			INNER JOIN inventory.units
+			ON purchase.order_details.unit_id = inventory.units.unit_id
+			WHERE purchase.order_details.order_id = @order_id
+			ORDER BY purchase.order_details.order_detail_id;
       </Query>
       <Parameters>
         <Parameter Name="@order_id" Type="long" />
       </Parameters>
-      <RunningTotalTextColumnIndex>3</RunningTotalTextColumnIndex>
-      <RunningTotalFieldIndices>5,6,7,8,9</RunningTotalFieldIndices>
+      <RunningTotalTextColumnIndex>4</RunningTotalTextColumnIndex>
+      <RunningTotalFieldIndices>5,6,7,8</RunningTotalFieldIndices>
     </DataSource>
   </DataSources>
 </FrapidReport>

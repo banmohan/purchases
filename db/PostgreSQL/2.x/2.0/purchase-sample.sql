@@ -36,29 +36,30 @@ BEGIN
             item_id,
             100,
             unit_id,
-            purchase.get_item_cost_price(item_id, _supplier_id, unit_id),
+            purchase.get_item_cost_price(_office_id, item_id, _supplier_id, unit_id),
             0,
             0,
-            0)::purchase.purchase_detail_type
+            0, true)::purchase.purchase_detail_type
             
         FROM inventory.items
     ) INTO _details;
 
-    PERFORM purchase.post_purchase
-    (
-        _office_id,
-        _user_id,
-        _login_id,
-        _value_date,
-        _book_date,
-        _cost_center_id,
-        _reference_number,
-        _statement_reference,
-        _supplier_id,
-        _price_type_id,
-        _shipper_id,
-        _details
-    );    
+    --TODO
+    -- PERFORM purchase.post_purchase
+    -- (
+    --     _office_id,
+    --     _user_id,
+    --     _login_id,
+    --     _value_date,
+    --     _book_date,
+    --     _cost_center_id,
+    --     _reference_number,
+    --     _statement_reference,
+    --     _supplier_id,
+    --     _price_type_id,
+    --     _shipper_id,
+    --     _details
+    -- );    
 END
 $$
 LANGUAGE plpgsql;

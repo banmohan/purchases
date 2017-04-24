@@ -15,7 +15,7 @@
 <div id="receipt" class="ui very relaxed padded segment" style="padding: 3em;">
     <div class="ui container">
         <div class="ui huge header">@I18N.PaymentToSupplier</div>
-        <div class="ui form">
+        <div class="ui flat form">
             <div class="fields">
                 <div class="six wide field">
                     <label for="SupplierIdSelect">@I18N.SelectSupplier</label>
@@ -27,8 +27,7 @@
                 </div>
             </div>
         </div>
-        <div class="ui divider"></div>
-        <div class="ui two column relaxed grid receipt form">
+        <div class="ui two column relaxed grid receipt flat form">
             <div class="column">
                 <div class="field">
                     <label for="DueAmountInputText">@I18N.TotalDueAmountInBaseCurrency
@@ -43,7 +42,7 @@
 
                 <div class="field">
                     <label for="CurrencyCodeSelect">@I18N.PaidCurrency</label>
-                    <select id="CurrencyCodeSelect" class="ui search dropdown text-right"></select>
+                    <select id="CurrencyCodeSelect" data-persist class="ui search dropdown text-right"></select>
                 </div>
                 <div class="field">
                     <label for="AmountInputText">@I18N.PaidAmountInAboveCurrency

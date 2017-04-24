@@ -9,7 +9,7 @@
 });
 
 var itemTemplate =
-    `<div class="item" id="pos-{ItemId}" data-cost-price="{CostPrice}" data-photo="{Photo}" data-unit-id="{UnitId}" data-valid-units="{ValidUnits}" data-brand="{BrandName}" data-item-group="{ItemGroupName}" data-item-name="{ItemName}" data-item-code="{ItemCode}" data-item-id="{ItemId}" data-price="{Price}">
+    `<div class="item" id="pos-{ItemId}" data-cost-price="{CostPrice}" data-photo="{Photo}" data-unit-id="{UnitId}" data-valid-units="{ValidUnits}" data-brand="{BrandName}" data-item-group="{ItemGroupName}" data-item-name="{ItemName}" data-item-code="{ItemCode}" data-item-id="{ItemId}" data-price="{Price}" data-is-taxable-item="{IsTaxableItem}">
 	<div class="photo block">
 		<img src="{Photo}">
 	</div>
@@ -27,14 +27,6 @@ var itemTemplate =
 			<span class="discount rate"></span>
 			<span>&nbsp; =&nbsp; </span>
 			<span class="discounted amount"></span>
-		</div>
-		<div class ="tax info" style="display:none;">
-			<span>Add Tax </span>
-			<span class ="tax-amount"></span>
-			<span> (</span>
-			<span class ="tax-rate"></span>
-			<span>%) = </span>
-			<span class ="amount-plus-tax"></span>
 		</div>
 		<div>
 			<select class="unit inverted" data-item-id="{ItemId}">
@@ -140,12 +132,12 @@ function initializeClickAndAction() {
 
         var barCode = el.attr("data-barcode");
         var brand = el.attr("data-brand");
-        var unitId = el.attr("data-unit-id");
+        var unitId = window.parseInt2(el.attr("data-unit-id"));
         var validUnits = el.attr("data-valid-units");
         var itemGroup = el.attr("data-item-group");
         var itemName = el.attr("data-item-name");
         var itemCode = el.attr("data-item-code");
-        var itemId = el.attr("data-item-id");
+        var itemId = window.parseInt2(el.attr("data-item-id"));
         var price = window.parseFloat2(costPrice || 0);
         var isTaxableItem = el.attr("data-is-taxable-item") === "true";
         var taxRate = window.parseFloat2($("#SalesTaxRateHidden").val());
@@ -164,7 +156,7 @@ function initializeClickAndAction() {
             var existingQuantitySpan = existingEl.find("span.quantity");
             var existingQuantityInput = existingEl.find("input.quantity");
 
-            var quantity = window.parseInt2(existingQuantitySpan.text() || 0);
+            var quantity = window.parseFloat2(existingQuantitySpan.text() || 0);
             quantity++;
 
             existingQuantitySpan.text(quantity);
@@ -187,6 +179,7 @@ function initializeClickAndAction() {
         template = template.replace(/{Price}/g, price);
         template = template.replace(/{UnitId}/g, unitId);
         template = template.replace(/{ValidUnits}/g, validUnits);
+        template = template.replace(/{IsTaxableItem}/g, isTaxableItem.toString());
 
         var item = $(template);
         var quantityInput = item.find("input.quantity");
@@ -224,7 +217,7 @@ function initializeClickAndAction() {
             const quantityEl = el.find("input.quantity");
             const discountEl = el.find("input.discount");
 
-            const quantity = window.parseInt2(quantityEl.val() || 0);
+            const quantity = window.parseFloat2(quantityEl.val() || 0);
             const discountRate = window.parseFloat2(discountEl.val().replace("%", ""));
             const price = window.parseFloat2(el.find("input.price").val());
 
@@ -243,19 +236,6 @@ function initializeClickAndAction() {
                 el.find("span.discounted.amount").html(window.getFormattedNumber(discountedAmount));
             } else {
                 el.find(".discount.info").hide();
-            };
-
-            if (isTaxableItem) {
-                const tax = window.round((discountedAmount || amount) * taxRate / 100, 2);
-                const amountPlusTax = window.round((discountedAmount || amount) + tax, 2);
-
-                //alert(discountedAmount);
-                //alert(amount);
-
-                el.find(".tax.info .tax-amount").html(window.getFormattedNumber(tax));
-                el.find(".tax.info .tax-rate").html(window.getFormattedNumber(window.round(taxRate, 2)));
-                el.find(".tax.info .amount-plus-tax").html(window.getFormattedNumber(amountPlusTax));
-                el.find(".tax.info").show();
             };
 
             window.updateTotal();
@@ -353,21 +333,27 @@ function initializeClickAndAction() {
 };
 
 $("#SummaryItems div.discount .money input, " +
-    "#ReceiptSummary div.tender .money input").keyup(function() {
+    "#ReceiptSummary div.tender .money input, #DiscountInputText").keyup(function() {
     window.updateTotal();
 });
 
 function updateTotal() {
     const candidates = $("#PurchaseItems div.item");
     const amountEl = $("#SummaryItems div.amount .money");
+    var taxRate = window.parseFloat2($("#SalesTaxRateHidden").val());
 
+    window.setRegionalFormat();
+
+    var discount = window.parseFloat2($("#DiscountInputText").val());
     var totalPrice = 0;
-    //var totalQuantity = 0;
+    var taxableTotal = 0;
+    var nonTaxableTotal = 0;
 
     $.each(candidates, function () {
         const el = $(this);
         const quantityEl = el.find("input.quantity");
         const discountEl = el.find("input.discount");
+        const isTaxable = el.attr("data-is-taxable-item") === "true";
 
         const quantity = window.parseFloat2(quantityEl.val()) || 0;
         const discountRate = window.parseFloat2(discountEl.val()) || 0;
@@ -375,12 +361,23 @@ function updateTotal() {
 
         const amount = price * quantity;
         const discountedAmount = amount * ((100 - discountRate) / 100);
-        const amountPlusTax = window.parseFloat2(el.find(".amount-plus-tax").html());
-        totalPrice += (amountPlusTax || discountedAmount || amount);
+
+        if (isTaxable) {
+            taxableTotal += discountedAmount;
+        } else {
+            nonTaxableTotal += discountedAmount;
+        };
     });
 
 
+    //Discount applies before tax
+    taxableTotal -= discount;
+    const tax = taxableTotal * (taxRate/100);
+    totalPrice = taxableTotal + tax + nonTaxableTotal;
+
     totalPrice = window.round(totalPrice, 2);
+    taxableTotal = window.round(taxableTotal, 2);
+    nonTaxableTotal = window.round(nonTaxableTotal, 2);
 
     amountEl.html(window.getFormattedNumber(totalPrice));
 };
@@ -461,6 +458,13 @@ function displayProducts(category, searchQuery) {
     $.each(groupItems, function() {
         const product = this;
 
+        var costPrice = product.CostPrice;
+
+        if (product.CostPriceIncludesTax) {
+            costPrice = (100 * costPrice) / (100 + window.parseFloat2(product.SalesTaxRate));
+            costPrice = window.round(costPrice, 2);
+        };
+
         const item = $("<div class='item' />");
         item.attr("data-item-id", product.ItemId);
         item.attr("data-item-code", product.ItemCode);
@@ -471,7 +475,9 @@ function displayProducts(category, searchQuery) {
         item.attr("data-valid-units", product.ValidUnits);
         item.attr("data-barcode", product.Barcode);
         item.attr("data-photo", product.Photo);
-        item.attr("data-cost-price", product.CostPrice);
+        item.attr("data-cost-price", costPrice);
+        item.attr("data-sales-tax-rate", product.SalesTaxRate);
+        item.attr("data-cost-price-includes-tax", product.CostPriceIncludesTax);
         item.attr("data-is-taxable-item", product.IsTaxableItem);
 
         if (product.HotItem) {
@@ -481,7 +487,7 @@ function displayProducts(category, searchQuery) {
         const info = $("<div class='info' />");
 
         const price = $("<div class='price' />");
-        price.html(window.getFormattedNumber(product.CostPrice));
+        price.html(window.getFormattedNumber(costPrice));
 
         price.appendTo(info);
 
@@ -527,23 +533,23 @@ function clearScreen() {
 
 
 function loadStores() {
-    displayFieldBinder($("#StoreSelect"), "/api/forms/inventory/stores/display-fields");
+    window.displayFieldBinder($("#StoreSelect"), "/api/forms/inventory/stores/display-fields", true);
 };
 
 function loadShippers() {
-    displayFieldBinder($("#ShipperSelect"), "/api/forms/inventory/shippers/display-fields");
+    window.displayFieldBinder($("#ShipperSelect"), "/api/forms/inventory/shippers/display-fields", true);
 };
 
 function loadCostCenters() {
-    displayFieldBinder($("#CostCenterSelect"), "/api/forms/finance/cost-centers/display-fields");
+    window.displayFieldBinder($("#CostCenterSelect"), "/api/forms/finance/cost-centers/display-fields", true);
 };
 
 function loadPriceTypes() {
-    displayFieldBinder($("#PriceTypeSelect"), "/api/forms/purchase/price-types/display-fields");
+    window.displayFieldBinder($("#PriceTypeSelect"), "/api/forms/purchase/price-types/display-fields", true);
 };
 
 function loadSuppliers() {
-    displayFieldBinder($("#SupplierSelect"), "/api/forms/inventory/suppliers/display-fields");
+    window.displayFieldBinder($("#SupplierSelect"), "/api/forms/inventory/suppliers/display-fields");
 };
 
 loadStores();

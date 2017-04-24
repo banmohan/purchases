@@ -1,0 +1,170 @@
+﻿@model dynamic
+
+<div class="ui attached price list segment" style="padding: 4em;">
+    <div class="ui container">
+        <div class="ui huge header">Supplierwise Cost Prices</div>
+        <div class="ui divider"></div>
+        <div class="ui flat form">
+            <div class="fields">
+                <div class="eight wide field">
+                    <label>@I18N.SelectSupplier</label>
+                    <select id="SupplierIdSelect" data-api="/api/forms/inventory/suppliers/display-fields"></select>
+                </div>
+                <div class="field">
+                    <label>&nbsp;</label>
+                    <button id="ShowButton" class="ui positive button">@I18N.Show</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui header">Price List</div>
+        <table class="ui attached form table">
+            <thead>
+                <tr>
+                    <th>
+                        @I18N.ItemId
+                    </th>
+                    <th>
+                        @I18N.ItemCode
+                    </th>
+                    <th>
+                        @I18N.ItemName
+                    </th>
+                    <th>
+                        @I18N.Unit
+                    </th>
+                    <th style="width: 200px;">
+                        @I18N.Price
+                    </th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="vpad8"></div>
+        <button id="SaveButton" class="ui positive button">@I18N.Save</button>
+    </div>
+</div>
+
+<script>
+    function displayPriceList(target, model) {
+        const template = `<tr data-unit-id="{UnitId}" data-item-id="{ItemId}">
+                <td>
+                    {ItemId}
+                </td>
+                <td>
+                    {ItemCode}
+                </td>
+                <td>
+                    {ItemName}
+                </td>
+                <td>
+                    {Unit}
+                </td>
+                <td>
+                    <input type="text" class="item price currency" value='{Price}' />
+                </td>
+            </tr>`;
+
+        for (let i = 0; i < model.length; i++) {
+            const price = model[i];
+
+            let item = template;
+            item = item.replace(/{ItemId}/g, price.ItemId);
+            item = item.replace(/{ItemCode}/g, price.ItemCode);
+            item = item.replace(/{ItemName}/g, price.ItemName);
+            item = item.replace(/{Unit}/g, price.Unit);
+            item = item.replace(/{UnitId}/g, price.UnitId);
+            item = item.replace(/{Price}/g, price.Price);
+
+            $(item).appendTo(target);
+        };
+
+        window.setRegionalFormat();
+    };
+
+    $("#SaveButton").off("click").on("click", function () {
+        function request(supplierId, model) {
+            var url = "/dashboard/purchase/setup/cost-prices/{supplierId}/price-list";
+            url = url.replace("{supplierId}", supplierId);
+
+            const data = JSON.stringify(model);
+
+            return window.getAjaxRequest(url, "POST", data);
+        };
+
+        function getModel(supplierId) {
+            const candidates = $(".price.list .table tbody tr");
+            const model = [];
+
+            $.each(candidates, function () {
+                const row = $(this);
+
+                const itemId = window.parseInt2(row.attr("data-item-id"));
+                const unitId = window.parseInt2(row.attr("data-unit-id"));
+                const price = window.parseFloat2(row.find("input.price").val());
+
+                if (price) {
+                    model.push({
+                        SupplierId: supplierId,
+                        ItemId: itemId,
+                        UnitId: unitId,
+                        Price: price
+                    });
+                };
+            });
+
+            return model;
+        };
+
+        const supplierId = window.parseInt2($("#SupplierIdSelect").val());
+        if (!supplierId) {
+            return;
+        };
+
+        $("#SaveButton").addClass("loading").prop("disabled", true);
+        const model = getModel(supplierId);
+
+        const ajax = request(supplierId, model);
+
+        ajax.success(function () {
+            $("#SaveButton").removeClass("loading").prop("disabled", false);
+            window.displaySuccess();
+        });
+
+        ajax.fail(function (xhr) {
+            $("#SaveButton").removeClass("loading").prop("disabled", false);
+            window.logAjaxErrorMessage(xhr);
+        });
+    });
+
+    $("#ShowButton").off("click").on("click", function () {
+        function request(supplierId) {
+            var url = "/dashboard/purchase/setup/cost-prices/{supplierId}/price-list";
+            url = url.replace("{supplierId}", supplierId);
+            return window.getAjaxRequest(url);
+        };
+
+        const supplierId = window.parseInt2($("#SupplierIdSelect").val());
+        if (!supplierId) {
+            return;
+        };
+
+        $(".price.list.segment").addClass("loading");
+        const target = $(".price.list .table tbody");
+        target.html("");
+
+        const ajax = request(supplierId);
+
+        ajax.success(function (response) {
+            $(".price.list.segment").removeClass("loading");
+            displayPriceList(target, response);
+        });
+
+        ajax.fail(function (xhr) {
+            $(".price.list.segment").removeClass("loading");
+            window.logAjaxErrorMessage(xhr);
+        });
+    });
+
+    window.initializeSelectApis();
+</script>

@@ -39,6 +39,19 @@ CREATE UNIQUE INDEX item_cost_prices_item_id_unit_id_supplier_id_uix
 ON purchase.item_cost_prices(item_id, unit_id, supplier_id)
 WHERE NOT deleted;
 
+
+CREATE TABLE purchase.supplierwise_cost_prices
+(
+	cost_price_id							BIGSERIAL PRIMARY KEY,
+	item_id									integer NOT NULL REFERENCES inventory.items,
+	supplier_id								integer NOT NULL REFERENCES inventory.suppliers,
+	unit_id									integer NOT NULL REFERENCES inventory.units,
+	price									numeric(30, 6),
+    audit_user_id                           integer REFERENCES account.users,
+    audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
+	deleted									boolean DEFAULT(false)
+);
+
 CREATE TABLE purchase.purchases
 (
     purchase_id                             BIGSERIAL PRIMARY KEY,
@@ -71,6 +84,12 @@ CREATE TABLE purchase.quotations
     reference_number                        national character varying(24),
 	terms									national character varying(500),
     internal_memo                           national character varying(500),
+	taxable_total 							numeric(30, 6) NOT NULL DEFAULT(0),
+	discount 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
+	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								boolean NOT NULL DEFAULT(false),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
@@ -83,8 +102,9 @@ CREATE TABLE purchase.quotation_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
-    discount_rate                           public.decimal_strict2 NOT NULL DEFAULT(0),    
-    tax                                     public.money_strict2 NOT NULL DEFAULT(0),    
+	discount_rate							numeric(30, 6) NOT NULL,
+    discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
+	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                public.decimal_strict2 NOT NULL
@@ -106,6 +126,12 @@ CREATE TABLE purchase.orders
     reference_number                        national character varying(24),
     terms                                   national character varying(500),
     internal_memo                           national character varying(500),
+	taxable_total 							numeric(30, 6) NOT NULL DEFAULT(0),
+	discount 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax_rate 								numeric(30, 6) NOT NULL DEFAULT(0),
+	tax 									numeric(30, 6) NOT NULL DEFAULT(0),
+	nontaxable_total 						numeric(30, 6) NOT NULL DEFAULT(0),
+	cancelled								boolean NOT NULL DEFAULT(false),
     audit_user_id                           integer REFERENCES account.users,
     audit_ts                                TIMESTAMP WITH TIME ZONE DEFAULT(NOW()),
 	deleted									boolean DEFAULT(false)
@@ -118,8 +144,9 @@ CREATE TABLE purchase.order_details
     value_date                              date NOT NULL,
     item_id                                 integer NOT NULL REFERENCES inventory.items,
     price                                   public.money_strict NOT NULL,
-    discount_rate                           public.decimal_strict2 NOT NULL DEFAULT(0),    
-    tax                                     public.money_strict2 NOT NULL DEFAULT(0),    
+	discount_rate							numeric(30, 6) NOT NULL,
+    discount                           		public.decimal_strict2 NOT NULL DEFAULT(0),    
+	is_taxed 								boolean NOT NULL,
     shipping_charge                         public.money_strict2 NOT NULL DEFAULT(0),    
     unit_id                                 integer NOT NULL REFERENCES inventory.units,
     quantity                                public.decimal_strict2 NOT NULL
@@ -174,7 +201,8 @@ AS
     unit_id           	integer,
     price               public.money_strict,
     discount_rate       public.money_strict2,
-    tax                 public.money_strict2,
-    shipping_charge     public.money_strict2
+    discount       		public.money_strict2,
+    shipping_charge     public.money_strict2,
+	is_taxed			boolean
 );
 

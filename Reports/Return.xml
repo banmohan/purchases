@@ -52,6 +52,18 @@
         <td>{i18n.SupplierName}</td>
         <td>{DataSource[0].supplier_name}</td>
       </tr>
+      <tr>
+        <td>{i18n.CostCenter}</td>
+        <td>{DataSource[0].cost_center_name}</td>
+      </tr>
+      <tr>
+        <td>{i18n.ReferenceNumber}</td>
+        <td>{DataSource[0].reference_number}</td>
+      </tr>
+      <tr>
+        <td>{i18n.StatementReference}</td>
+        <td>{DataSource[0].statement_reference}</td>
+      </tr>
     </table>
     <br />
   </TopSection>
@@ -67,63 +79,153 @@
     </GridViews>
   </Body>
   <BottomSection>
-    <h3>{i18n.OtherDetails}</h3>
-    <p>
-      <table class="table horizontal">
-        <tr>
-          <td>{i18n.CostCenter}</td>
-          <td>{DataSource[0].cost_center_name}</td>
-        </tr>
-        <tr>
-          <td>{i18n.ReferenceNumber}</td>
-          <td>{DataSource[0].reference_number}</td>
-        </tr>
-        <tr>
-          <td>{i18n.StatementReference}</td>
-          <td>{DataSource[0].statement_reference}</td>
-        </tr>
-      </table>
-    </p>
+  <br/>
+    <table class="right aligned" style="width:300px;position:absolute;right:8px;">
+      <tr>
+        <td>
+          {i18n.TaxableTotal}
+        </td>
+        <td data-remove-row-on-zero="" style="width:100px">
+          {DataSource[0].taxable_total}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.Discount}
+        </td>
+        <td data-remove-row-on-zero="">
+          {DataSource[0].discount}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.Tax} ({DataSource[0].tax_rate}%)
+        </td>
+        <td data-remove-row-on-zero="">
+          {DataSource[0].tax}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.SubTotal}
+        </td>
+        <td data-remove-row-on-zero="">
+          {DataSource[0].sub_total}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.NonTaxableTotal}
+        </td>
+        <td data-remove-row-on-zero="">
+          {DataSource[0].nontaxable_total}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {i18n.GrandTotal}
+        </td>
+        <td data-remove-row-on-zero="">
+          {DataSource[0].total}
+        </td>
+      </tr>
+    </table>
   </BottomSection>
   <DataSources>
     <DataSource>
       <Query>
         SELECT
-        finance.transaction_master.transaction_master_id,
-        finance.transaction_master.transaction_ts,
-        finance.transaction_master.value_date,
-        account.users.name AS entered_by,
-        core.verification_statuses.verification_status_name AS status,
-        verified_by_user.name AS verified_by,
-        finance.transaction_master.verification_reason,
-        finance.transaction_master.transaction_code,
-        core.offices.office_name,
-        finance.cost_centers.cost_center_name,
-        finance.transaction_master.reference_number,
-        finance.transaction_master.statement_reference,
-        inventory.suppliers.supplier_name,
-        inventory.shippers.company_name AS shipper_name
+    			finance.transaction_master.transaction_master_id,
+    			finance.transaction_master.transaction_ts,
+    			finance.transaction_master.value_date,
+    			account.users.name AS entered_by,
+    			core.verification_statuses.verification_status_name AS status,
+    			verified_by_user.name AS verified_by,
+    			finance.transaction_master.verification_reason,
+    			finance.transaction_master.transaction_code,
+    			core.offices.office_name,
+    			finance.cost_centers.cost_center_name,
+    			finance.transaction_master.reference_number,
+    			finance.transaction_master.statement_reference,
+    			inventory.suppliers.supplier_name,
+    			inventory.shippers.company_name AS shipper_name,
+			SUM
+			(
+				CASE WHEN inventory.get_return_type(inventory.checkouts.checkout_id) = 'Dr' THEN 1 ELSE -1 END *
+				inventory.checkouts.taxable_total
+			) AS taxable_total,
+			SUM
+			(
+				CASE WHEN inventory.get_return_type(inventory.checkouts.checkout_id) = 'Dr' THEN 1 ELSE -1 END *
+				inventory.checkouts.discount
+			) AS discount,
+			AVG
+			(
+				inventory.checkouts.tax_rate
+			) AS tax_rate,
+			SUM
+			(
+				CASE WHEN inventory.get_return_type(inventory.checkouts.checkout_id) = 'Dr' THEN 1 ELSE -1 END *
+				inventory.checkouts.tax
+			) AS tax,			
+			SUM
+			(
+				CASE WHEN inventory.get_return_type(inventory.checkouts.checkout_id) = 'Dr' THEN 1 ELSE -1 END *
+
+				(COALESCE(inventory.checkouts.taxable_total, 0) +
+				COALESCE(inventory.checkouts.tax, 0) -
+					COALESCE(inventory.checkouts.discount, 0))
+			) AS sub_total,
+
+			SUM
+			(
+				CASE WHEN inventory.get_return_type(inventory.checkouts.checkout_id) = 'Dr' THEN 1 ELSE -1 END *
+				inventory.checkouts.nontaxable_total
+			) AS nontaxable_total,
+			SUM
+			(
+				CASE WHEN inventory.get_return_type(inventory.checkouts.checkout_id) = 'Dr' THEN 1 ELSE -1 END *
+				(COALESCE(inventory.checkouts.taxable_total, 0) + 
+				COALESCE(inventory.checkouts.tax, 0) + 
+				COALESCE(inventory.checkouts.nontaxable_total, 0) - 
+				COALESCE(inventory.checkouts.discount, 0))
+			) AS total
         FROM finance.transaction_master
-        INNER JOIN core.offices
+        LEFT JOIN core.offices
         ON finance.transaction_master.office_id = core.offices.office_id
-        INNER JOIN finance.cost_centers
+        LEFT JOIN finance.cost_centers
         ON finance.transaction_master.cost_center_id = finance.cost_centers.cost_center_id
-        INNER JOIN inventory.checkouts
-        ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
-        INNER JOIN account.users
+        LEFT JOIN account.users
         ON finance.transaction_master.user_id = account.users.user_id
-        INNER JOIN purchase.purchase_returns
+        LEFT JOIN inventory.checkouts
+        ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
+        LEFT JOIN purchase.purchase_returns
         ON purchase.purchase_returns.checkout_id = inventory.checkouts.checkout_id
-        INNER JOIN inventory.suppliers
+        LEFT JOIN inventory.suppliers
         ON purchase.purchase_returns.supplier_id = inventory.suppliers.supplier_id
-        INNER JOIN core.verification_statuses
+        LEFT JOIN core.verification_statuses
         ON finance.transaction_master.verification_status_id = core.verification_statuses.verification_status_id
         LEFT JOIN account.users AS verified_by_user
         ON finance.transaction_master.verified_by_user_id = verified_by_user.user_id
         LEFT JOIN inventory.shippers
         ON inventory.checkouts.shipper_id = inventory.shippers.shipper_id
-        WHERE finance.transaction_master.book = 'Purchase Return'
-        AND finance.transaction_master.transaction_master_id=@transaction_master_id;
+		WHERE finance.transaction_master.book = 'Purchase Return'
+        AND finance.transaction_master.transaction_master_id = @transaction_master_id
+		GROUP BY
+    			finance.transaction_master.transaction_master_id,
+    			finance.transaction_master.transaction_ts,
+    			finance.transaction_master.value_date,
+    			account.users.name,
+    			core.verification_statuses.verification_status_name,
+    			verified_by_user.name,
+    			finance.transaction_master.verification_reason,
+    			finance.transaction_master.transaction_code,
+    			core.offices.office_name,
+    			finance.cost_centers.cost_center_name,
+    			finance.transaction_master.reference_number,
+    			finance.transaction_master.statement_reference,
+    			inventory.suppliers.supplier_name,
+    			inventory.shippers.company_name;
       </Query>
       <Parameters>
         <Parameter Name="@transaction_master_id" Type="long" />
@@ -131,38 +233,40 @@
     </DataSource>
     <DataSource>
       <Query>
-        SELECT
-        inventory.stores.store_name,
-        inventory.items.item_code,
-        inventory.items.item_name,
-        inventory.checkout_details.quantity,
-        inventory.units.unit_name,
-        inventory.checkout_details.price,
-        inventory.checkout_details.price * inventory.checkout_details.quantity AS amount,
-        inventory.checkout_details.discount,
-        (inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount AS total
-        FROM inventory.checkout_details
-        INNER JOIN inventory.items
-        ON inventory.checkout_details.item_id = inventory.items.item_id
-        INNER JOIN inventory.stores
-        ON inventory.stores.store_id = inventory.checkout_details.store_id
-        INNER JOIN inventory.units
-        ON inventory.checkout_details.unit_id = inventory.units.unit_id
-        WHERE checkout_id =
-        (
-        SELECT inventory.checkouts.checkout_id
-        FROM inventory.checkouts
-        INNER JOIN finance.transaction_master
-        ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
-        WHERE finance.transaction_master.book = 'Purchase Return'
-        AND inventory.checkouts.transaction_master_id=@transaction_master_id
-        )
-        ORDER BY checkout_detail_id;
+    		SELECT
+    			inventory.stores.store_name,
+    			inventory.items.item_code,
+    			inventory.items.item_name,
+    			inventory.checkout_details.price,
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * inventory.checkout_details.quantity AS quantity,
+    			inventory.units.unit_name,
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * ROUND(inventory.checkout_details.price * inventory.checkout_details.quantity, 4) AS amount,
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * inventory.checkout_details.shipping_charge AS shipping_charge,
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * inventory.checkout_details.discount AS discount,
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * ROUND((inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount, 4) AS sub_total,
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * ROUND((inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount, 4) AS total
+    		FROM inventory.checkout_details
+    		INNER JOIN inventory.stores
+    		ON inventory.stores.store_id = inventory.checkout_details.store_id
+    		INNER JOIN inventory.items
+    		ON inventory.checkout_details.item_id = inventory.items.item_id
+    		INNER JOIN inventory.units
+    		ON inventory.checkout_details.unit_id = inventory.units.unit_id
+    		WHERE checkout_id IN
+            (
+    			SELECT inventory.checkouts.checkout_id
+    			FROM inventory.checkouts
+    			INNER JOIN finance.transaction_master
+    			ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
+    			WHERE finance.transaction_master.book = 'Purchase Return'
+    			AND inventory.checkouts.transaction_master_id=@transaction_master_id
+            )
+            ORDER BY checkout_detail_id;
       </Query>
       <Parameters>
         <Parameter Name="@transaction_master_id" Type="long" />
       </Parameters>
-      <RunningTotalTextColumnIndex>4</RunningTotalTextColumnIndex>
+      <RunningTotalTextColumnIndex>5</RunningTotalTextColumnIndex>
       <RunningTotalFieldIndices>6,7,8,9,10</RunningTotalFieldIndices>
     </DataSource>
   </DataSources>
