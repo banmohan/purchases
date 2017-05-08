@@ -13,102 +13,101 @@
 {
     @Html.PartialView("Shared/ItemList.cshtml", TenantConvention.GetTenant())
     <script>
-    window.overrideUrl = "/dashboard/purchase/tasks/entry";
+        window.overrideUrl = "/dashboard/purchase/tasks/entry";
 
-    $("#CheckoutButton").off("click").on("click", function () {
+        $("#CheckoutButton").off("click").on("click", function () {
+            function request(model) {
+                const url = "/dashboard/purchase/tasks/entry/new";
+                const data = JSON.stringify(model);
+                return window.getAjaxRequest(url, "POST", data);
+            };
 
-        function request(model) {
-            const url = "/dashboard/purchase/tasks/entry/new";
-            const data = JSON.stringify(model);
-            return window.getAjaxRequest(url, "POST", data);
-        };
+            function getModel() {
+                function getDetails() {
+                    const items = $("#PurchaseItems .item");
+                    var model = [];
 
-        function getModel() {
-            function getDetails() {
-                const items = $("#PurchaseItems .item");
-                var model = [];
+                    $.each(items, function() {
+                        const el = $(this);
+                        const itemId = window.parseInt2(el.attr("data-item-id"));
+                        const quantity = window.parseFloat2(el.find("input.quantity").val());
+                        const unitId = window.parseInt2(el.find("select.unit").val());
+                        const price = window.parseFloat2(el.find("input.price").val() || 0);
+                        const discountRate = window.parseFloat2(el.find("input.discount").val() || 0);
 
-                $.each(items, function() {
-                    const el = $(this);
-                    const itemId = window.parseInt2(el.attr("data-item-id"));
-                    const quantity = window.parseFloat2(el.find("input.quantity").val());
-                    const unitId = window.parseInt2(el.find("select.unit").val());
-                    const price = window.parseFloat2(el.find("input.price").val() || 0);
-                    const discountRate = window.parseFloat2(el.find("input.discount").val() || 0);
-
-                    model.push({
-                        StoreId: $("#StoreSelect").val(),
-                        ItemId: itemId,
-                        Quantity: quantity,
-                        UnitId: unitId,
-                        Price: price,
-                        DiscountRate: discountRate
+                        model.push({
+                            StoreId: $("#StoreSelect").val(),
+                            ItemId: itemId,
+                            Quantity: quantity,
+                            UnitId: unitId,
+                            Price: price,
+                            DiscountRate: discountRate
+                        });
                     });
-                });
 
-                return model;
+                    return model;
+                };
+
+                const valueDate = $("#ValueDateInputDate").datepicker("getDate");
+                const bookDate = $("#BookDateInputDate").datepicker("getDate");
+                const costCenterId = $("#CostCenterSelect").val();
+                const referenceNumber = $("#ReferenceNumberInputText").val();
+                const statementReference = $("#StatementReferenceInputText").val();
+                const supplierId = $("#SupplierSelect").val();
+                const priceTypeId = $("#PriceTypeSelect").val();
+                const shipperId = $("#ShipperSelect").val();
+                const storeId = $("#StoreSelect").val();
+                const discount = window.parseFloat2($("#DiscountInputText").val());
+                const details = getDetails();
+
+                return {
+                    ValueDate: valueDate,
+                    BookDate: bookDate,
+                    CostCenterId: costCenterId,
+                    ReferenceNumber: referenceNumber,
+                    StatementReference: statementReference,
+                    SupplierId: supplierId,
+                    PriceTypeId: priceTypeId,
+                    ShipperId: shipperId,
+                    StoreId: storeId,
+                    Discount: discount,
+                    Details: details
+                };
             };
 
-            const valueDate = $("#ValueDateInputDate").datepicker("getDate");
-            const bookDate = $("#BookDateInputDate").datepicker("getDate");
-            const costCenterId = $("#CostCenterSelect").val();
-            const referenceNumber = $("#ReferenceNumberInputText").val();
-            const statementReference = $("#StatementReferenceInputText").val();
-            const supplierId = $("#SupplierSelect").val();
-            const priceTypeId = $("#PriceTypeSelect").val();
-            const shipperId = $("#ShipperSelect").val();
-            const storeId = $("#StoreSelect").val();
-            const discount = window.parseFloat2($("#DiscountInputText").val());
-            const details = getDetails();
+            const model = getModel();
 
-            return {
-                ValueDate: valueDate,
-                BookDate: bookDate,
-                CostCenterId: costCenterId,
-                ReferenceNumber: referenceNumber,
-                StatementReference: statementReference,
-                SupplierId: supplierId,
-                PriceTypeId: priceTypeId,
-                ShipperId: shipperId,
-                StoreId: storeId,
-                Discount: discount,
-                Details: details
+            if (!model.Details.length) {
+                alert(window.translate("PleaseSelectItem"));
+                return;
             };
-        };
 
-        const model = getModel();
+            const confirmed = confirm(window.translate("AreYouSure"));
 
-        if (!model.Details.length) {
-            alert(window.translate("PleaseSelectItem"));
-            return;
-        };
-
-        const confirmed = confirm(window.translate("AreYouSure"));
-
-        if (!confirmed) {
-            return;
-        };
+            if (!confirmed) {
+                return;
+            };
 
 
-        $("#CheckoutButton").addClass("loading");
+            $("#CheckoutButton").addClass("loading");
 
-        const ajax = request(model);
+            const ajax = request(model);
 
-        ajax.success(function(response) {
-            const id = response;
-            document.location = `/dashboard/purchase/tasks/entry/checklist/${id}`;
+            ajax.success(function(response) {
+                const id = response;
+                document.location = `/dashboard/purchase/tasks/entry/checklist/${id}`;
+            });
+
+            ajax.fail(function(xhr) {
+                $("#CheckoutButton").removeClass("loading");
+                window.logAjaxErrorMessage(xhr);
+            });
         });
 
-        ajax.fail(function(xhr) {
-            $("#CheckoutButton").removeClass("loading");
-            window.logAjaxErrorMessage(xhr);
-        });
-    });
-
-    window.overridePath = "/dashboard/purchase/tasks/entry";
-    </script>}
+        window.overridePath = "/dashboard/purchase/tasks/entry";
+    </script>
+}
 else
 {
     @Html.PartialView("Tasks/Entry/ClassicCheckout.cshtml", TenantConvention.GetTenant())
 }
-

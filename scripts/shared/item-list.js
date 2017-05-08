@@ -572,6 +572,10 @@ function getTaxRate() {
         return window.getAjaxRequest(url, "POST", filters);
     };
 
+    if (window.getQueryStringByName("type") === "nontaxable") {
+        return;
+    };
+
     const ajax = request();
 
     ajax.success(function(response) {
