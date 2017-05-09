@@ -24,6 +24,12 @@
 @Html.InventoryPartialView("Shared/ClassicCheckout.cshtml", TenantConvention.GetTenant())
 
 <script>
+    setTimeout(function() {
+        if (window.getQueryStringByName("type") === "nontaxable") {
+            $("#SalesTaxRateHidden").remove();
+        };
+    }, 1000);
+
     $("#SaveButton").off("click").on("click", function () {
         function request(model) {
             const url = "/dashboard/purchase/tasks/entry/new";
@@ -33,6 +39,15 @@
 
         function getModel() {
             const model = window.getModel();
+
+            if (window.getQueryStringByName("type") === "nontaxable") {
+                for (let i = 0; i < model.Details.length; i++) {
+                    model.Details[i].IsTaxed = false;
+                };
+
+                model.NonTaxableTotal += model.TaxableTotal;
+                model.TaxableTotal = 0;
+            };
 
             return model;
         };
@@ -65,7 +80,22 @@
     var model = {
         Title: window.translate("Purchase"),
         ProductApi: "/dashboard/purchase/tasks/items",
-        PriceTypeApi:"/api/forms/purchase/price-types/display-fields",
+        PriceTypeApi: "/api/forms/purchase/price-types/display-fields",
+        UpdateTotalExtension: function () {
+            if (window.getQueryStringByName("type") === "nontaxable") {
+                const taxableTotalEl = $("#TaxableTotalInputText");
+                const nonTaxableTotalEl = $("#NonTaxableTotalInputText");
+
+                let taxableTotal = window.parseFloat2(taxableTotalEl.val());
+                let nonTaxableTotal = window.parseFloat2(nonTaxableTotalEl.val());
+
+                nonTaxableTotal += taxableTotal;
+                taxableTotal = 0;
+
+                taxableTotalEl.val(window.getFormattedCurrency(taxableTotal));
+                nonTaxableTotalEl.val(window.getFormattedCurrency(nonTaxableTotal));
+            };
+        },
         UpdatePrice: function () {
             function request(itemId, supplierId, priceTypeId, unitId) {
                 var url = "/dashboard/purchase/tasks/cost-price/{itemId}/{supplierId}/{unitId}";
