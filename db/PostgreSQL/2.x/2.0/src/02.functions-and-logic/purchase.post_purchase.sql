@@ -90,6 +90,7 @@ BEGIN
         discount                        	public.money_strict2 NOT NULL DEFAULT(0),
         is_taxable_item                     boolean,
         amount                              public.money_strict2,
+        is_taxed                            boolean,
         shipping_charge                     public.money_strict2 NOT NULL DEFAULT(0),
         purchase_account_id             	integer, 
         purchase_discount_account_id    	integer, 
@@ -98,8 +99,8 @@ BEGIN
 
 
 
-    INSERT INTO temp_checkout_details(store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge)
-    SELECT store_id, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge
+    INSERT INTO temp_checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge)
+    SELECT store_id, 'Dr', item_id, quantity, unit_id, price, discount_rate, discount, is_taxed, shipping_charge
     FROM explode_array(_details);
 
 

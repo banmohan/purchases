@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -91,5 +92,34 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
                 return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
             }
         }
+
+        [Route("dashboard/purchase/entry/serial/{transactionMasterId}")]
+        [MenuPolicy(OverridePath = "/dashboard/purchase/tasks/entry")]
+        public async Task<ActionResult> Purchase(long transactionMasterId)
+        {
+            var model = await DAL.Backend.Tasks.SerialNumbers.GetDetails(this.Tenant, transactionMasterId);
+
+            return this.FrapidView(this.GetRazorView<AreaRegistration>("Tasks/Entry/SerialNumber.cshtml", this.Tenant), model);
+        }
+
+        [Route("dashboard/purchase/serial/post")]
+        [HttpPost]
+        public async Task<ActionResult> Post(List<DTO.SerialNumbers> model)
+        {
+            try
+            {
+                var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
+
+                bool result = await DAL.Backend.Tasks.SerialNumbers.Post(this.Tenant, meta, model)
+                    .ConfigureAwait(true);
+
+                return this.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
     }
 }

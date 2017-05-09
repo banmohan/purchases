@@ -20,4 +20,8 @@
         AddNewUrl: "/dashboard/purchase/tasks/entry/new",
         ReportPath: "/dashboard/reports/source/Areas/MixERP.Purchases/Reports/Invoice.xml?transaction_master_id=@Model"
     });
+
+    var el = $(".basic.buttons");
+    el.append(`<a class="ui basic button" href="/dashboard/purchase/entry/serial/@Model">${window.translate("UpdateSerialNumbers")}</a>`);
 </script>
+
