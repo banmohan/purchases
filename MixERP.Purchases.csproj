@@ -173,6 +173,7 @@
     <Compile Include="DAL\Backend\Tasks\Purchases.cs" />
     <Compile Include="DAL\Backend\Tasks\Quotations.cs" />
     <Compile Include="DAL\Backend\Tasks\Payments.cs" />
+    <Compile Include="DAL\Backend\Tasks\SerialNumbers.cs" />
     <Compile Include="DTO\ItemView.cs" />
     <Compile Include="DTO\Order.cs" />
     <Compile Include="DTO\OrderDetail.cs" />
@@ -180,6 +181,8 @@
     <Compile Include="DTO\Quotation.cs" />
     <Compile Include="DTO\QuotationDetail.cs" />
     <Compile Include="DTO\QuotationResultview.cs" />
+    <Compile Include="DTO\SerialNumber.cs" />
+    <Compile Include="DTO\SerialNumberView.cs" />
     <Compile Include="DTO\SupplierTransactionSummary.cs" />
     <Compile Include="DTO\SupplierwiseCostPrice.cs" />
     <Compile Include="Extensions\PartialViewExtensions.cs" />
@@ -196,6 +199,7 @@
     <Compile Include="ViewModels\Purchase.cs" />
     <Compile Include="ViewModels\PurchaseDetailType.cs" />
     <Compile Include="ViewModels\PurchaseReturn.cs" />
+    <Compile Include="ViewModels\SerialNumber.cs" />
     <Compile Include="Views\Shared\ItemList.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -271,6 +275,7 @@
     <Content Include="Views\Tasks\Entry\ClassicCheckout.cshtml" />
     <Content Include="Views\Tasks\Return\ClassicCheckout.cshtml" />
     <Content Include="Views\Setup\SupplierCostPrices.cshtml" />
+    <Content Include="Views\Tasks\Entry\SerialNumber.cshtml" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

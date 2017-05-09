@@ -1,0 +1,315 @@
+﻿@using Frapid.Framework.Extensions
+@using MixERP.Purchases.ViewModels
+@using Newtonsoft.Json
+@model SerialNumber
+
+@{
+    ViewBag.Title = "";
+    Layout = ViewBag.SerialLayoutPath;
+}
+
+@{
+    var inventoryInfo = Model.CheckoutInfos.ToList();
+    string serializedInfo = JsonConvert.SerializeObject(inventoryInfo);
+}
+<style>
+    .paged.segment {
+        padding: 3em 2em;
+    }
+
+    .ui.table {
+        width: 85%
+    }
+
+    #ItemDetailDiv {
+        border: 1px solid #e0e0e0;
+        border-radius: 0.3em;
+        padding-right: 10em;
+        padding-left: 2em;
+        margin-top: 1.7em;
+    }
+
+    a.remove-row {
+        cursor: pointer;
+    }
+</style>
+
+<div class="ui paged segment">
+    <div class="ui huge grey header">Update Serial Number(s)</div>
+    <div class="ui divider"></div>
+    <br />
+
+    <div class="ui form">
+        <div class="fields">
+            <input type="hidden" id="CheckoutInfoHidden" value="@serializedInfo" />
+            <div class="three wide field">
+                <div class="field">
+                    <label>Item</label>
+                    <select id="ItemIdSelect">
+                        @foreach (var item in inventoryInfo)
+                        {
+                            <option value="@item.ItemId">@item.ItemName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div id="ItemDetailDiv">
+            </div>
+        </div>
+
+        <div class="eight fields">
+            <div class="field">
+                <label>Batch Number</label>
+                <input type="text" id="BatchNumberInput" />
+            </div>
+            <div class="field">
+                <label>Serial Number</label>
+                <input type="text" id="SerialNumberInput" />
+            </div>
+            <div class="field">
+                <label>Expiry Date</label>
+                <input type="text" class="date" id="ExpiryDateInput" />
+            </div>
+            <div class="field" style="padding-top: 1.66em">
+                <button id="AddButton" class="ui small violet button">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <table class="ui selectable stripped table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Unit</th>
+                <th>Store</th>
+                <th>Batch Number</th>
+                <th>Serial Number</th>
+                <th>Expiry Date</th>
+                <th>Tran Type</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.SerialNumberViews)
+            {
+                <tr item-id="@item.ItemId">
+                    <td data-val="@item.ItemId">@item.ItemName</td>
+                    <td data-val="@item.UnitId">@item.UnitCode</td>
+                    <td data-val="@item.StoreId">@item.StoreName</td>
+                    <td data-val="@item.BatchNumber">@item.BatchNumber</td>
+                    <td data-val="@item.SerialNumber">@item.SerialNumber</td>
+                    <td data-val="@item.ExpiryDate"></td>
+                    <td data-val="@item.TransactionMasterId">@item.TransactionMasterId</td>
+                    <td class="center aligned"><a class="remove-row" title="Remove Row"><i class="red remove icon"></i></a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <br />
+
+    <button id="SaveButton" class="ui violet button">Save</button>
+</div>
+
+
+<script>
+    window.overridePath = "/dashboard/purchase/tasks/entry";
+    window.loadDatepicker();
+
+    var checkoutInfo;
+
+    function setItemDetails() {
+        const itemId = parseInt($("#ItemIdSelect").val() || 0);
+
+        const info = window.Enumerable.From(checkoutInfo)
+            .Where(function (x) {
+                return x.ItemId === itemId;
+            }).First();
+
+        const container = $("#ItemDetailDiv");
+        container.html("");
+
+        const ul = $("<ul/>");
+        ul.append($(`<li><strong>Total Quantity: </strong> ${info.Quantity} ${info.UnitName}</li>`));
+        ul.append($(`<li><strong>Store: </strong> ${info.StoreName}</li>`));
+        ul.append($(`<li><strong>Tran Type: </strong> ${info.TransactionType}</li>`));
+
+        container.append(ul);
+    }
+
+    function addRow(model) {
+        function getCell(text, val) {
+            const cell = $("<td/>");
+            if (text) {
+                if (typeof (text) === "number") {
+                    cell.addClass("right aligned");
+                }
+
+                cell.append(text);
+            };
+
+            if (val) {
+                cell.attr("data-val", val);
+            }
+
+            return cell;
+        }
+
+        const table = $("table.ui.table tbody");
+
+        const row = $(`<tr item-id="${model.ItemId}"/>`);
+        row.append(getCell(model.ItemName, model.ItemId));
+        row.append(getCell(model.UnitName, model.UnitId));
+        row.append(getCell(model.StoreName, model.StoreId));
+        row.append(getCell(model.BatchNumber, model.BatchNumber));
+        row.append(getCell(model.SerialNumber, model.SerialNumber));
+        row.append(getCell(window.moment(model.ExpiryDate).fromNow() || '', model.ExpiryDate));
+        row.append(getCell(model.TransactionType, model.TransactionType));
+        row.append($(`<td class="center aligned"><a class="remove-row" title="Remove Row"><i class="red remove icon"></i></a></td>`));
+
+        table.prepend(row);
+    };
+
+    $(document).ready(function () {
+        checkoutInfo = JSON.parse($("#CheckoutInfoHidden").val());
+
+        const rows = $("table.ui.table tbody tr");
+        $.each(rows, function(index, item) {
+            const td = $(item).find("td:eq(5)");
+
+            td.html(window.moment(td.attr("data-val")).fromNow() || '');
+        });
+
+        setItemDetails();
+    });
+
+    $("#ItemIdSelect").off("change").on("change", function () {
+        setItemDetails();
+    });
+
+    $("#AddButton").off("click").on("click", function () {
+
+        const itemId = parseInt($("#ItemIdSelect").val() || 0);
+        const batchNumber = $("#BatchNumberInput").val();
+        const serialNumber = $("#SerialNumberInput").val();
+        const expiryDate = $("#ExpiryDateInput").datepicker("getDate");
+
+        if (!batchNumber) {
+            window.makeDirty($("#BatchNumberInput"));
+            return;
+        } else {
+            window.removeDirty($("#BatchNumberInput"));
+        };
+
+        if (!serialNumber) {
+            window.makeDirty($("#SerialNumberInput"));
+            return;
+        } else {
+            window.removeDirty($("#SerialNumberInput"));
+        };
+
+        const rows = $("table.ui.table tbody tr");
+        const items = window.Enumerable.From(rows)
+            .Where(function(x) {
+                return $(x).attr("item-id") === itemId.toString();
+            }).ToArray();
+
+        const item = window.Enumerable.From(rows)
+            .Where(function (x) {
+                return $(x).find("td:eq(3)").attr("data-val") === batchNumber &&
+                    $(x).find("td:eq(4)").attr("data-val") === serialNumber;
+            }).ToArray();
+
+        if (item.length > 0) {
+            window.displayMessage(window.translate("DuplicateEntry"));
+            return;
+        }
+
+        const info = window.Enumerable.From(checkoutInfo)
+            .Where(function (x) {
+                return x.ItemId === itemId;
+            }).First();
+
+
+        if (items.length >= info.Quantity) {
+            window.displayMessage(`Total ${info.Quantity} ${info.UnitName}(s) of ${info.ItemName} is already added.`);
+            return;
+        }
+
+        const model = {
+            ItemId: itemId,
+            ItemName: info.ItemName,
+            UnitId: info.UnitId,
+            UnitName: info.UnitName,
+            StoreId: info.StoreId,
+            StoreName: info.StoreName,
+            BatchNumber: batchNumber,
+            SerialNumber: serialNumber,
+            ExpiryDate: expiryDate,
+            TransactionType: info.TransactionType
+        };
+
+        addRow(model);
+    });
+
+    $(document).on("click", "a.remove-row", function () {
+        const row = $(this).closest("tr");
+        const confirm = window.confirm(window.translate("AreYouSure"));
+        if (!confirm) {
+            return;
+        };
+
+        row.remove();
+    });
+
+    $("#SaveButton").off("click").on("click", function() {
+        const rows = $("table.ui.table tbody tr");
+        if (rows.length === 0) {
+            return;
+        };
+
+        var model = [];
+
+        $.each(rows, function (index, item) {
+            const el = $(item);
+
+            const itemId = parseInt(el.find("td:eq(0)").attr("data-val") || 0);
+            const unitId = parseInt(el.find("td:eq(1)").attr("data-val") || 0);
+            const batchNumber = el.find("td:eq(3)").attr("data-val") || '';
+            const serialNumber = el.find("td:eq(4)").attr("data-val") || '';
+            const expiryDate = new Date(el.find("td:eq(5)").attr("data-val"));
+
+            const info = window.Enumerable.From(checkoutInfo)
+                .Where(function (x) {
+                    return x.ItemId === itemId;
+                }).First();
+
+            const data = {
+                ItemId: itemId,
+                UnitId: unitId,
+                StoreId: info.StoreId,
+                BatchNumber: batchNumber,
+                SerialNumber: serialNumber,
+                ExpiryDate: expiryDate,
+                TransactionType: info.TransactionType,
+                CheckoutId: info.CheckoutId
+            };
+
+            model.push(data);
+        });
+
+        const url = "/dashboard/purchase/serial/post";
+        const ajax = window.getAjaxRequest(url, "POST", JSON.stringify(model));
+
+        ajax.success(function(response) {
+            if (response) {
+                window.displaySuccess();
+                location.href()
+            };
+        });
+
+        ajax.fail(function (xhr) {
+            window.logAjaxErrorMessage(xhr);
+        });
+    });
+
+</script>
