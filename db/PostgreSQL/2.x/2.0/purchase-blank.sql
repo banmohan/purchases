@@ -640,6 +640,7 @@ BEGIN
         discount_rate                       numeric(30, 6),
         discount                        	public.money_strict2 NOT NULL DEFAULT(0),
         is_taxable_item                     boolean,
+        is_taxed                            boolean,
         amount                              public.money_strict2,
         is_taxed                            boolean,
         shipping_charge                     public.money_strict2 NOT NULL DEFAULT(0),
@@ -679,6 +680,10 @@ BEGIN
     WHERE inventory.items.item_id = temp_checkout_details.item_id;
 
     UPDATE temp_checkout_details
+    SET is_taxed = false
+    WHERE NOT is_taxable_item;
+
+    UPDATE temp_checkout_details
     SET amount = (COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0);
 
     IF EXISTS
@@ -699,10 +704,10 @@ BEGIN
         RAISE EXCEPTION 'Item/unit mismatch.'
         USING ERRCODE='P3201';
     END IF;
-
+    
     SELECT 
-        COALESCE(SUM(CASE WHEN is_taxable_item = true THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0),
-        COALESCE(SUM(CASE WHEN is_taxable_item = false THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0)
+        COALESCE(SUM(CASE WHEN is_taxed = true THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0),
+        COALESCE(SUM(CASE WHEN is_taxed = false THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0)
     INTO
         _taxable_total,
         _nontaxable_total

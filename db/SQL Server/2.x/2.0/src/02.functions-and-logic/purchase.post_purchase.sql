@@ -119,7 +119,7 @@ BEGIN
 		AND finance.tax_setups.office_id = @office_id;
 
         INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge, is_taxed)
-        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge, is_taxed
+        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge, COALESCE(is_taxed, 1)
         FROM @details;
 
         UPDATE @checkout_details 
