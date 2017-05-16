@@ -39,7 +39,7 @@
             }
         }
     ],
-    AddNewButtonText: window.translate("AddNew"),
+    AddNewButtonText: window.translate("AddTaxable"),
     AddNewUrl: "/dashboard/purchase/tasks/entry/new",
     ReturnButtonText: "Return",
     SearchApi: "/dashboard/purchase/tasks/entry/search",
@@ -196,3 +196,7 @@ $("#ReturnButton").click(function () {
 
     window.displayMessage(window.translate("PleaseSelectItemFromGrid"));
 });
+
+const nonTaxableButton = $("<a href='/dashboard/purchase/tasks/entry/new?type=nontaxable' class='ui basic button' />").html(window.translate("AddNonTaxable"));
+const importButton = $("<a href='/dashboard/purchase/tasks/entry/new?type=import' class='ui basic button' />").html(window.translate("AddImport"));
+$("#AddNewButton").after(importButton).after(nonTaxableButton);

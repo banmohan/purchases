@@ -64,6 +64,7 @@ BEGIN
         discount_rate                       numeric(30, 6),
         discount                            numeric(30, 6) NOT NULL DEFAULT(0),
 		is_taxable_item						bit,
+		is_taxed							bit,
         amount								numeric(30, 6),
         shipping_charge                     numeric(30, 6) NOT NULL DEFAULT(0),
         purchase_account_id                 integer, 
@@ -117,8 +118,8 @@ BEGIN
 		WHERE finance.tax_setups.deleted = 0
 		AND finance.tax_setups.office_id = @office_id;
 
-        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge)
-        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge
+        INSERT INTO @checkout_details(store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge, is_taxed)
+        SELECT store_id, transaction_type, item_id, quantity, unit_id, price, discount_rate, discount, shipping_charge, COALESCE(is_taxed, 1)
         FROM @details;
 
         UPDATE @checkout_details 
@@ -148,6 +149,10 @@ BEGIN
 		ON inventory.items.item_id = checkout_details.item_id;
 
 		UPDATE @checkout_details
+		SET is_taxed = 0
+		WHERE is_taxable_item = 0;
+
+		UPDATE @checkout_details
 		SET amount = (COALESCE(price, 0) * COALESCE(quantity, 0)) - COALESCE(discount, 0) + COALESCE(shipping_charge, 0);
 
 		IF EXISTS
@@ -170,8 +175,8 @@ BEGIN
         END;
 
 		SELECT 
-			@taxable_total		= COALESCE(SUM(CASE WHEN is_taxable_item = 1 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0),
-			@nontaxable_total	= COALESCE(SUM(CASE WHEN is_taxable_item = 0 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0)
+			@taxable_total		= COALESCE(SUM(CASE WHEN is_taxed = 1 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0),
+			@nontaxable_total	= COALESCE(SUM(CASE WHEN is_taxed = 0 THEN 1 ELSE 0 END * COALESCE(amount, 0)), 0)
 		FROM @checkout_details;
 
 		IF(@invoice_discount > @taxable_total)
