@@ -91,7 +91,6 @@ BEGIN
         is_taxable_item                     boolean,
         is_taxed                            boolean,
         amount                              public.money_strict2,
-        is_taxed                            boolean,
         shipping_charge                     public.money_strict2 NOT NULL DEFAULT(0),
         purchase_account_id             	integer, 
         purchase_discount_account_id    	integer, 

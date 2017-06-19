@@ -105,8 +105,16 @@ namespace MixERP.Purchases.Controllers.Backend.Tasks
             }
 
             var meta = await AppUsers.GetCurrentAsync().ConfigureAwait(true);
-            var summary = await Payments.GetSupplierTransactionSummaryAsync(this.Tenant, meta.OfficeId, supplierId).ConfigureAwait(true);
-            return this.Ok(summary);
+
+            try
+            {
+                var summary = await Payments.GetSupplierTransactionSummaryAsync(this.Tenant, meta.OfficeId, supplierId).ConfigureAwait(true);
+                return this.Ok(summary);
+            }
+            catch (Exception ex)
+            {
+                return this.Failed(ex.Message, HttpStatusCode.InternalServerError);
+            }
         }
 
         [HttpPost]
