@@ -58,7 +58,7 @@ $$
 BEGIN
     _value_date                             := finance.get_value_date(_office_id);
     _book_date                              := _value_date;
-	_bank_account_id					    := _bank_id;    
+	_bank_account_id					    := finance.get_account_id_by_bank_account_id(_bank_id);    
 
     IF(finance.can_post_transaction(_login_id, _user_id, _office_id, _book, _value_date) = false) THEN
         RETURN 0;

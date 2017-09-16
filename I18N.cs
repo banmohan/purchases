@@ -179,11 +179,6 @@ namespace MixERP.Purchases
 		public static string QuotationId => I18NResource.GetString(ResourceDirectory, "QuotationId");
 
 		/// <summary>
-		///Expected Date
-		/// </summary>
-		public static string ExpectedDate => I18NResource.GetString(ResourceDirectory, "ExpectedDate");
-
-		/// <summary>
 		///Unit
 		/// </summary>
 		public static string Unit => I18NResource.GetString(ResourceDirectory, "Unit");
@@ -192,6 +187,11 @@ namespace MixERP.Purchases
 		///Item Group Name
 		/// </summary>
 		public static string ItemGroupName => I18NResource.GetString(ResourceDirectory, "ItemGroupName");
+
+		/// <summary>
+		///Expected Date
+		/// </summary>
+		public static string ExpectedDate => I18NResource.GetString(ResourceDirectory, "ExpectedDate");
 
 		/// <summary>
 		///Er Credit
@@ -279,14 +279,14 @@ namespace MixERP.Purchases
 		public static string ReferenceNumber => I18NResource.GetString(ResourceDirectory, "ReferenceNumber");
 
 		/// <summary>
-		///Last Verified On
-		/// </summary>
-		public static string LastVerifiedOn => I18NResource.GetString(ResourceDirectory, "LastVerifiedOn");
-
-		/// <summary>
 		///Item Code
 		/// </summary>
 		public static string ItemCode => I18NResource.GetString(ResourceDirectory, "ItemCode");
+
+		/// <summary>
+		///Last Verified On
+		/// </summary>
+		public static string LastVerifiedOn => I18NResource.GetString(ResourceDirectory, "LastVerifiedOn");
 
 		/// <summary>
 		///Check Date
