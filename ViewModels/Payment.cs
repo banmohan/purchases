@@ -28,6 +28,9 @@ namespace MixERP.Purchases.ViewModels
         public string StatementReference { get; set; }
         public int CostCenterId { get; set; }
 
+        public DateTime ValueDate { get; set; }
+        public DateTime BookDate { get; set; }
+
         public int? CashAccountId { get; set; }
         public int? CashRepositoryId { get; set; }
         public DateTime? PostedDate { get; set; }

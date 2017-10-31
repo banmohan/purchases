@@ -14,6 +14,7 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PaymentEntry
             string connectionString = FrapidDbServer.GetConnectionString(tenant);
             const string sql = @"SELECT * FROM purchase.post_supplier_payment
                             (
+                                @ValueDate::date, @BookDate::date,
                                 @UserId::integer, @OfficeId::integer, @LoginId::bigint, @SupplierId::integer, 
                                 @CurrencyCode::national character varying(12), @CashAccountId::integer, @Amount::public.money_strict, 
                                 @ExchangeRateDebit::public.decimal_strict, @ExchangeRateCredit::public.decimal_strict, 
@@ -27,6 +28,8 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PaymentEntry
             {
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
+                    command.Parameters.AddWithNullableValue("@ValueDate", model.ValueDate);
+                    command.Parameters.AddWithNullableValue("@BookDate", model.BookDate);
                     command.Parameters.AddWithNullableValue("@UserId", model.UserId);
                     command.Parameters.AddWithNullableValue("@OfficeId", model.OfficeId);
                     command.Parameters.AddWithNullableValue("@LoginId", model.LoginId);

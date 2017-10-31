@@ -13,7 +13,8 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PaymentEntry
         public async Task<long> PostAsync(string tenant, Payment model)
         {
             string connectionString = FrapidDbServer.GetConnectionString(tenant);
-            const string sql = @"EXECUTE purchase.post_supplier_payment                            
+            const string sql = @"EXECUTE purchase.post_supplier_payment
+                                    @ValueDate, @BookDate,
                                     @UserId, @OfficeId, @LoginId, @SupplierId, 
                                     @CurrencyCode, @CashAccountId, @Amount, 
                                     @ExchangeRateDebit, @ExchangeRateCredit, 
@@ -28,6 +29,8 @@ namespace MixERP.Purchases.DAL.Backend.Tasks.PaymentEntry
             {
                 using (var command = new SqlCommand(sql, connection))
                 {
+                    command.Parameters.AddWithNullableValue("@ValueDate", model.ValueDate);
+                    command.Parameters.AddWithNullableValue("@BookDate", model.BookDate);
                     command.Parameters.AddWithNullableValue("@UserId", model.UserId);
                     command.Parameters.AddWithNullableValue("@OfficeId", model.OfficeId);
                     command.Parameters.AddWithNullableValue("@LoginId", model.LoginId);

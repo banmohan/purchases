@@ -98,16 +98,16 @@ $("#SaveButton").off("click").on("click", function () {
 
     const model = getModel();
 
-    $("#SaveButton").addClass("loading");
+    $("#SaveButton").addClass("loading").prop("disabled", true);;
     const ajax = request(model);
 
     ajax.success(function (id) {
-        $("#SaveButton").removeClass("loading");
+        $("#SaveButton").removeClass("loading").prop("disabled", false);;
         window.location = `/dashboard/purchase/tasks/payment/checklist/${id}`;
     });
 
     ajax.fail(function (xhr) {
-        $("#SaveButton").removeClass("loading");
+        $("#SaveButton").removeClass("loading").prop("disabled", false);;
         window.logAjaxErrorMessage(xhr);
     });
 });
