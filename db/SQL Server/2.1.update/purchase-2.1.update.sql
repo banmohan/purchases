@@ -87,7 +87,7 @@ BEGIN
 			RAISERROR('Invalid exchange rate.', 16, 1);
 		END;
 
-		IF(local_currency_code = @base_currency_code AND @exchange_rate_credit != 1)
+		IF(@local_currency_code = @base_currency_code AND @exchange_rate_credit != 1)
 		BEGIN
 			RAISERROR('Invalid exchange rate.', 16, 1);
 		END;

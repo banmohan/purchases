@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FrapidReport>
+  <Header />
+  <Title>Purchase Summary</Title>
+  <TopSection>
+  </TopSection>
+  <Body>
+    <GridViews>
+      <GridView>
+        <GridViewDataSource Index="0">
+        </GridViewDataSource>
+      </GridView>
+    </GridViews>
+  </Body>
+  <DataSources>
+    <DataSource>
+      <Query>
+		WITH all_purchase
+		AS
+		(
+			SELECT
+				inventory.stores.store_id,
+				inventory.items.item_id,
+				inventory.items.brand_id,
+				inventory.brands.brand_name,
+				SUM(inventory.checkout_details.base_quantity) AS base_quantity,
+				inventory.checkout_details.base_unit_id,
+				SUM(inventory.checkout_details.price * inventory.checkout_details.quantity) AS amount
+			FROM purchase.purchases
+			INNER JOIN inventory.checkouts
+			ON purchase.purchases.checkout_id = inventory.checkouts.checkout_id
+			INNER JOIN inventory.checkout_details
+			ON inventory.checkout_details.checkout_id = inventory.checkouts.checkout_id
+			INNER JOIN inventory.stores
+			ON inventory.stores.store_id = inventory.checkout_details.store_id
+			INNER JOIN inventory.items
+			ON inventory.items.item_id = inventory.checkout_details.item_id
+			INNER JOIN inventory.brands
+			ON inventory.brands.brand_id = inventory.items.brand_id
+			INNER JOIN finance.transaction_master
+			ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
+			WHERE finance.transaction_master.book_date BETWEEN @From::date AND @To::date
+			AND finance.transaction_master.office_id = @OfficeId
+			AND (COALESCE(@StoreId, 0) = 0 OR inventory.stores.store_id = @StoreId)
+			AND (COALESCE(@BrandId, 0) = 0 OR inventory.brands.brand_id = @BrandId)
+			GROUP BY
+				inventory.stores.store_id,
+				inventory.items.item_id,
+				inventory.checkout_details.base_unit_id,
+				inventory.items.brand_id,
+				inventory.brands.brand_name
+		)
+		SELECT
+			inventory.stores.store_name,
+			all_purchase.brand_name,
+			inventory.items.item_code,
+			inventory.items.item_name,
+			inventory.convert_unit(all_purchase.base_unit_id, inventory.items.unit_id) * all_purchase.base_quantity AS quantity,
+			inventory.units.unit_name,
+			all_purchase.amount
+		FROM all_purchase
+		INNER JOIN inventory.stores
+		ON inventory.stores.store_id = all_purchase.store_id
+		INNER JOIN inventory.items
+		ON inventory.items.item_id = all_purchase.item_id
+		INNER JOIN inventory.units
+		ON inventory.units.unit_id = inventory.items.unit_id;
+	</Query>
+      <Parameters>
+        <Parameter Name="@OfficeId" FieldLabel="Office Id" Type="int"  DefaultValue="{Meta.OfficeId}" />
+        <Parameter Name="@StoreId" FieldLabel="Store Id" Type="int"  PopulateFrom="/api/forms/inventory/stores/display-fields" KeyField="Key" ValueField="Value" Optional="true"  />
+        <Parameter Name="@BrandId" FieldLabel="Brand Id" Type="int"  PopulateFrom="/api/forms/inventory/brands/display-fields" KeyField="Key" ValueField="Value" Optional="true"  />
+        <Parameter Name="@From" FieldLabel="From Date" Type="System.DateTime" />
+        <Parameter Name="@To" FieldLabel="To Date" Type="System.DateTime" />
+      </Parameters>
+      <RunningTotalTextColumnIndex>5</RunningTotalTextColumnIndex>
+      <RunningTotalFieldIndices>6</RunningTotalFieldIndices>
+    </DataSource>
+  </DataSources>
+</FrapidReport>
