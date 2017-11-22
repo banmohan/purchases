@@ -132,15 +132,15 @@ function initializeClickAndAction() {
 
         var barCode = el.attr("data-barcode");
         var brand = el.attr("data-brand");
-        var unitId = window.parseInt2(el.attr("data-unit-id"));
+        var unitId = window.parseInt(el.attr("data-unit-id"));
         var validUnits = el.attr("data-valid-units");
         var itemGroup = el.attr("data-item-group");
         var itemName = el.attr("data-item-name");
         var itemCode = el.attr("data-item-code");
-        var itemId = window.parseInt2(el.attr("data-item-id"));
-        var price = window.parseFloat2(costPrice || 0);
+        var itemId = window.parseInt(el.attr("data-item-id"));
+        var price = window.parseFloat(costPrice || 0);
         var isTaxableItem = el.attr("data-is-taxable-item") === "true";
-        var taxRate = window.parseFloat2($("#SalesTaxRateHidden").val());
+        var taxRate = window.parseFloat($("#SalesTaxRateHidden").val());
 
         if (!price) {
             alert(window.translate("CannotAddItemBecausePriceZero"));
@@ -294,7 +294,7 @@ function initializeClickAndAction() {
             };
 
             const itemId = el.attr("data-item-id");
-            const supplierId = window.parseInt2($("#SupplierSelect").val() || 0);
+            const supplierId = window.parseInt($("#SupplierSelect").val() || 0);
             const unitId = el.val();
 
             $(".pos.purchase.segment").addClass("loading");
@@ -340,7 +340,7 @@ $("#SummaryItems div.discount .money input, " +
 function updateTotal() {
     const candidates = $("#PurchaseItems div.item");
     const amountEl = $("#SummaryItems div.amount .money");
-    var taxRate = window.parseFloat2($("#SalesTaxRateHidden").val());
+    var taxRate = window.parseFloat($("#SalesTaxRateHidden").val());
 
     window.setRegionalFormat();
 
@@ -461,7 +461,7 @@ function displayProducts(category, searchQuery) {
         var costPrice = product.CostPrice;
 
         if (product.CostPriceIncludesTax) {
-            costPrice = (100 * costPrice) / (100 + window.parseFloat2(product.SalesTaxRate));
+            costPrice = (100 * costPrice) / (100 + window.parseFloat(product.SalesTaxRate));
             costPrice = window.round(costPrice, 2);
         };
 
@@ -579,7 +579,7 @@ function getTaxRate() {
     const ajax = request();
 
     ajax.success(function(response) {
-        const salesTaxRate = window.parseFloat2(response[0].SalesTaxRate);
+        const salesTaxRate = window.parseFloat(response[0].SalesTaxRate);
         $("#SalesTaxRateHidden").val(salesTaxRate);
     });
 };

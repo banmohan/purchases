@@ -25,6 +25,12 @@
 @Html.InventoryPartialView("Shared/ClassicCheckout.cshtml", TenantConvention.GetTenant())
 
 <script>
+    setTimeout(function () {
+        if (window.getQueryStringByName("type") === "nontaxable") {
+            $("#SalesTaxRateHidden").remove();
+        };
+    }, 1000);
+
     $(".customer.field").remove();
     $("#SaveButton").off("click").on("click", function () {
         function request(model) {
@@ -43,6 +49,15 @@
             };
 
             model.TransactionMasterId = window.getQueryStringByName("TransactionMasterId");
+
+            if (window.getQueryStringByName("type") === "nontaxable") {
+                for (let i = 0; i < model.Details.length; i++) {
+                    model.Details[i].IsTaxed = false;
+                };
+
+                model.NonTaxableTotal += model.TaxableTotal;
+                model.TaxableTotal = 0;
+            };
 
             return model;
         };
@@ -74,7 +89,22 @@
         Title: window.translate("PurchaseReturn"),
         ProductApi: "/dashboard/purchase/tasks/items",
         PriceTypeApi: "/api/forms/purchase/price-types/display-fields",
-        BookDateText: "Expected Delivery Date",
+        BookDateText: "Book Date",
+        UpdateTotalExtension: function () {
+            if (window.getQueryStringByName("type") === "nontaxable") {
+                const taxableTotalEl = $("#TaxableTotalInputText");
+                const nonTaxableTotalEl = $("#NonTaxableTotalInputText");
+
+                let taxableTotal = window.parseFloat2(taxableTotalEl.val());
+                let nonTaxableTotal = window.parseFloat2(nonTaxableTotalEl.val());
+
+                nonTaxableTotal += taxableTotal;
+                taxableTotal = 0;
+
+                taxableTotalEl.val(window.getFormattedCurrency(taxableTotal));
+                nonTaxableTotalEl.val(window.getFormattedCurrency(nonTaxableTotal));
+            };
+        },
         UpdatePrice: function () {
             function request(itemId, supplierId, priceTypeId, unitId) {
                 var url = "/dashboard/purchase/tasks/cost-price/{itemId}/{supplierId}/{unitId}";
@@ -87,8 +117,8 @@
             };
 
             const itemId = $("#ItemSelect").val();
-            const supplierId = window.parseInt2($("#SupplierSelect").val()) || 0;
-            const priceTypeId = window.parseInt2($("#PriceTypeSelect").val()) || 0;
+            const supplierId = window.parseInt($("#SupplierSelect").val()) || 0;
+            const priceTypeId = window.parseInt($("#PriceTypeSelect").val()) || 0;
             const unitId = $("#UnitSelect").val();
 
 
@@ -97,7 +127,7 @@
             const ajax = request(itemId, supplierId, priceTypeId, unitId);
 
             ajax.success(function (response) {
-                var costPrice = window.parseFloat2(response);
+                var costPrice = window.parseFloat(response);
                 costPrice = window.round(costPrice, 2);
 
                 $(".checkout.segment").removeClass("loading");

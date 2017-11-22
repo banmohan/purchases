@@ -86,8 +86,8 @@
             };
 
             const itemId = $("#ItemSelect").val();
-            const supplierId = window.parseInt2($("#SupplierSelect").val()) || 0;
-            const priceTypeId = window.parseInt2($("#PriceTypeSelect").val()) || 0;
+            const supplierId = window.parseInt($("#SupplierSelect").val()) || 0;
+            const priceTypeId = window.parseInt($("#PriceTypeSelect").val()) || 0;
             const unitId = $("#UnitSelect").val();
 
 
@@ -96,7 +96,7 @@
             const ajax = request(itemId, supplierId, priceTypeId, unitId);
 
             ajax.success(function (response) {
-                var costPrice = window.parseFloat2(response);
+                var costPrice = window.parseFloat(response);
                 costPrice = window.round(costPrice, 2);
 
                 $(".checkout.segment").removeClass("loading");

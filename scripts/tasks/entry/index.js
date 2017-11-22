@@ -176,20 +176,28 @@ function showInvoice(tranId) {
 
 $("#ReturnButton").click(function () {
     function getSelectedItem() {
-        const selected = $("#JournalView").find("input:checked").first();
+        const selected = $("#SearchView").find("input:checked").first();
 
         if (selected.length) {
             const row = selected.parent().parent().parent();
             const id = row.find("td:nth-child(3)").html();
-            return window.parseInt2(id);
+            return window.parseInt(id);
         };
 
         return 0;
     };
 
     const selected = getSelectedItem();
+    const purchaseType = $("#SearchView").find("input:checked").first().closest("tr").find("td:nth-child(19)").text();
+
     if (selected) {
-        const url = "/dashboard/purchase/tasks/return/new?Type=Return&TransactionMasterId=" + selected;
+        var url = "/dashboard/purchase/tasks/return/new?Type=Return&TransactionMasterId=" + selected;
+
+        if (purchaseType != "taxable") {
+            url += "&type=" + purchaseType;
+        };
+
+
         document.location = url;
         return;
     };

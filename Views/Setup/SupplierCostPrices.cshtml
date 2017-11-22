@@ -99,8 +99,8 @@
             $.each(candidates, function () {
                 const row = $(this);
 
-                const itemId = window.parseInt2(row.attr("data-item-id"));
-                const unitId = window.parseInt2(row.attr("data-unit-id"));
+                const itemId = window.parseInt(row.attr("data-item-id"));
+                const unitId = window.parseInt(row.attr("data-unit-id"));
                 const price = window.parseFloat2(row.find("input.price").val());
 
                 if (price) {
@@ -116,7 +116,7 @@
             return model;
         };
 
-        const supplierId = window.parseInt2($("#SupplierIdSelect").val());
+        const supplierId = window.parseInt($("#SupplierIdSelect").val());
         if (!supplierId) {
             return;
         };
@@ -144,7 +144,7 @@
             return window.getAjaxRequest(url);
         };
 
-        const supplierId = window.parseInt2($("#SupplierIdSelect").val());
+        const supplierId = window.parseInt($("#SupplierIdSelect").val());
         if (!supplierId) {
             return;
         };

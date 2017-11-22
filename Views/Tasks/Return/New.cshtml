@@ -13,106 +13,109 @@
 {
     @Html.PartialView("Shared/ItemList.cshtml", TenantConvention.GetTenant())
     <script>
-    $(".page.title").html(window.translate("PurchaseReturn"));
-    $("#CheckoutButton").off("click").on("click", function () {
+        $(".page.title").html(window.translate("PurchaseReturn"));
+        $("#CheckoutButton").off("click").on("click", function () {
 
-        function request(model) {
-            const url = "/dashboard/purchase/tasks/return/new";
-            const data = JSON.stringify(model);
-            return window.getAjaxRequest(url, "POST", data);
-        };
+            function request(model) {
+                const url = "/dashboard/purchase/tasks/return/new";
+                const data = JSON.stringify(model);
+                return window.getAjaxRequest(url, "POST", data);
+            };
 
-        function getModel() {
-            function getDetails() {
-                const items = $("#PurchaseItems .item");
-                var model = [];
+            function getModel() {
+                function getDetails() {
+                    const items = $("#PurchaseItems .item");
+                    var model = [];
 
-                $.each(items, function () {
-                    const el = $(this);
-                    const itemId = window.parseInt2(el.attr("data-item-id"));
-                    const quantity = window.parseFloat2(el.find("input.quantity").val());
-                    const unitId = window.parseInt2(el.find("select.unit").val());
-                    const price = window.parseFloat2(el.find("input.price").val() || 0);
-                    const discountRate = window.parseFloat2(el.find("input.discount").val() || 0);
+                    $.each(items, function () {
+                        const el = $(this);
+                        const itemId = window.parseInt(el.attr("data-item-id"));
+                        const quantity = window.parseFloat2(el.find("input.quantity").val());
+                        const unitId = window.parseInt(el.find("select.unit").val());
+                        const price = window.parseFloat2(el.find("input.price").val() || 0);
+                        const discountRate = window.parseFloat2(el.find("input.discount").val() || 0);
+                        const discount = window.parseFloat2(el.find("span.discounted.amount").text() || 0);
 
-                    model.push({
-                        StoreId: $("#StoreSelect").val(),
-                        ItemId: itemId,
-                        Quantity: quantity,
-                        UnitId: unitId,
-                        Price: price,
-                        DiscountRate: discountRate
+                        model.push({
+                            StoreId: $("#StoreSelect").val(),
+                            ItemId: itemId,
+                            Quantity: quantity,
+                            UnitId: unitId,
+                            Price: price,
+                            DiscountRate: discountRate,
+                            Discount: discount,
+                            IsTaxed: window.getQueryStringByName("type") !== "nontaxable"
+                        });
                     });
-                });
 
-                return model;
+                    return model;
+                };
+
+                const transactionMasterId = window.parseInt(window.getQueryStringByName("TransactionMasterId") || 0);
+                const valueDate = $("#ValueDateInputDate").datepicker("getDate");
+                const bookDate = $("#BookDateInputDate").datepicker("getDate");
+                const costCenterId = $("#CostCenterSelect").val();
+                const referenceNumber = $("#ReferenceNumberInputText").val();
+                const statementReference = $("#StatementReferenceInputText").val();
+                const supplierId = $("#SupplierSelect").val();
+                const priceTypeId = $("#PriceTypeSelect").val();
+                const shipperId = $("#ShipperSelect").val();
+                const storeId = $("#StoreSelect").val();
+                const discount = window.parseFloat2($("#DiscountInputText").val());
+                const details = getDetails();
+
+                return {
+                    TransactionMasterId: transactionMasterId,
+                    ValueDate: valueDate,
+                    BookDate: bookDate,
+                    CostCenterId: costCenterId,
+                    ReferenceNumber: referenceNumber,
+                    StatementReference: statementReference,
+                    SupplierId: supplierId,
+                    PriceTypeId: priceTypeId,
+                    ShipperId: shipperId,
+                    StoreId: storeId,
+                    Discount: discount,
+                    Details: details
+                };
             };
 
-            const transactionMasterId = window.parseInt2(window.getQueryStringByName("TransactionMasterId") || 0);
-            const valueDate = $("#ValueDateInputDate").datepicker("getDate");
-            const bookDate = $("#BookDateInputDate").datepicker("getDate");
-            const costCenterId = $("#CostCenterSelect").val();
-            const referenceNumber = $("#ReferenceNumberInputText").val();
-            const statementReference = $("#StatementReferenceInputText").val();
-            const supplierId = $("#SupplierSelect").val();
-            const priceTypeId = $("#PriceTypeSelect").val();
-            const shipperId = $("#ShipperSelect").val();
-            const storeId = $("#StoreSelect").val();
-            const discount = window.parseFloat2($("#DiscountInputText").val());
-            const details = getDetails();
+            const model = getModel();
 
-            return {
-                TransactionMasterId: transactionMasterId,
-                ValueDate: valueDate,
-                BookDate: bookDate,
-                CostCenterId: costCenterId,
-                ReferenceNumber: referenceNumber,
-                StatementReference: statementReference,
-                SupplierId: supplierId,
-                PriceTypeId: priceTypeId,
-                ShipperId: shipperId,
-                StoreId: storeId,
-                Discount: discount,
-                Details: details
+            if (!model.TransactionMasterId) {
+                alert(window.translate("AccessIsDenied"));
+                document.location = "/dashboard/purchase/tasks/entry";
+                return;
             };
-        };
 
-        const model = getModel();
+            if (!model.Details.length) {
+                window.displayMessage(window.translate("PleaseSelectItem"));
+                return;
+            };
 
-        if (!model.TransactionMasterId) {
-            alert(window.translate("AccessIsDenied"));
-            document.location = "/dashboard/purchase/tasks/entry";
-            return;
-        };
+            const confirmed = confirm(window.translate("AreYouSure"));
 
-        if (!model.Details.length) {
-            window.displayMessage(window.translate("PleaseSelectItem"));
-            return;
-        };
-
-        const confirmed = confirm(window.translate("AreYouSure"));
-
-        if (!confirmed) {
-            return;
-        };
+            if (!confirmed) {
+                return;
+            };
 
 
-        $("#CheckoutButton").addClass("loading").prop("disabled", true);
+            $("#CheckoutButton").addClass("loading").prop("disabled", true);
 
-        const ajax = request(model);
+            const ajax = request(model);
 
-        ajax.success(function (response) {
-            const id = response;
-            document.location = "/dashboard/purchase/tasks/return/checklist/" + id;
+            ajax.success(function (response) {
+                const id = response;
+                document.location = "/dashboard/purchase/tasks/return/checklist/" + id;
+            });
+
+            ajax.fail(function (xhr) {
+                $("#CheckoutButton").removeClass("loading").prop("disabled", false);
+                window.logAjaxErrorMessage(xhr);
+            });
         });
 
-        ajax.fail(function (xhr) {
-            $("#CheckoutButton").removeClass("loading").prop("disabled", false);
-            window.logAjaxErrorMessage(xhr);
-        });
-    });
-
-    window.overridePath = "/dashboard/purchase/tasks/return";
+        window.overridePath = "/dashboard/purchase/tasks/return";
     </script>
 }
 else

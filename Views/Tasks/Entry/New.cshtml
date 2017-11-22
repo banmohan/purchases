@@ -29,11 +29,12 @@
 
                     $.each(items, function() {
                         const el = $(this);
-                        const itemId = window.parseInt2(el.attr("data-item-id"));
+                        const itemId = window.parseInt(el.attr("data-item-id"));
                         const quantity = window.parseFloat2(el.find("input.quantity").val());
-                        const unitId = window.parseInt2(el.find("select.unit").val());
+                        const unitId = window.parseInt(el.find("select.unit").val());
                         const price = window.parseFloat2(el.find("input.price").val() || 0);
                         const discountRate = window.parseFloat2(el.find("input.discount").val() || 0);
+                        const discount = window.parseFloat2(el.find("span.discounted.amount").text() || 0);
 
                         model.push({
                             StoreId: $("#StoreSelect").val(),
@@ -41,7 +42,9 @@
                             Quantity: quantity,
                             UnitId: unitId,
                             Price: price,
-                            DiscountRate: discountRate
+                            DiscountRate: discountRate,
+                            Discount: discount,
+                            IsTaxed: window.getQueryStringByName("type") !== "nontaxable"
                         });
                     });
 
