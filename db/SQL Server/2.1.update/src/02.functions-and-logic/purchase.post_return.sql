@@ -48,6 +48,34 @@ BEGIN
 	DECLARE @original_checkout_id	bigint;
 	DECLARE @original_supplier_id	integer;
 	DECLARE @difference				purchase.purchase_detail_type;
+	DECLARE @validate				bit;
+
+	SELECT @validate = validate_returns 
+	FROM inventory.inventory_setup
+	WHERE office_id = @office_id;
+
+	
+	IF(COALESCE(@transaction_master_id, 0) = 0 AND @validate = 0)
+	BEGIN
+		EXECUTE purchase.post_return_without_validation
+			@office_id                      ,
+			@user_id                        ,
+			@login_id                       ,
+			@value_date                     ,
+			@book_date                      ,
+			@store_id                       ,
+			@cost_center_id                 ,
+			@supplier_id                    ,
+			@price_type_id                  ,
+			@shipper_id						,
+			@reference_number               ,
+			@statement_reference            ,
+			@details                        ,
+			@invoice_discount				,
+			@tran_master_id                 OUTPUT;
+		
+		RETURN;
+	END;
 
 	SELECT 
 		@original_supplier_id = purchase.purchases.supplier_id,

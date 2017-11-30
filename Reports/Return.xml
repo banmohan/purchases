@@ -238,13 +238,13 @@
     			inventory.items.item_code,
     			inventory.items.item_name,
     			inventory.checkout_details.price,
-    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * inventory.checkout_details.quantity AS quantity,
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Dr' THEN -1 ELSE 1 END * inventory.checkout_details.quantity AS quantity,
     			inventory.units.unit_name,
-    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * ROUND(inventory.checkout_details.price * inventory.checkout_details.quantity, 4) AS amount,
-    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * inventory.checkout_details.shipping_charge AS shipping_charge,
-    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * inventory.checkout_details.discount AS discount,
-    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * ROUND((inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount, 4) AS sub_total,
-    			CASE WHEN  inventory.checkout_details.transaction_type = 'Cr' THEN -1 ELSE 1 END * ROUND((inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount, 4) AS total
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Dr' THEN -1 ELSE 1 END * ROUND(inventory.checkout_details.price * inventory.checkout_details.quantity, 4) AS amount,
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Dr' THEN -1 ELSE 1 END * inventory.checkout_details.shipping_charge AS shipping_charge,
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Dr' THEN -1 ELSE 1 END * inventory.checkout_details.discount AS discount,
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Dr' THEN -1 ELSE 1 END * ROUND((inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount, 4) AS sub_total,
+    			CASE WHEN  inventory.checkout_details.transaction_type = 'Dr' THEN -1 ELSE 1 END * ROUND((inventory.checkout_details.price * inventory.checkout_details.quantity) - inventory.checkout_details.discount, 4) AS total
     		FROM inventory.checkout_details
     		INNER JOIN inventory.stores
     		ON inventory.stores.store_id = inventory.checkout_details.store_id

@@ -40,7 +40,7 @@
         }
     ],
     AddNewButtonText: window.translate("AddNew"),
-    AddNewUrl: "/dashboard/purchase/tasks/return/new",
+    AddNewUrl: "/dashboard/purchase/tasks/return/new?TransactionMasterId=0",
     SearchApi: "/dashboard/purchase/tasks/return/search",
     FormatExpression: function (cell, columnName, originalValue) {
         var value = originalValue;

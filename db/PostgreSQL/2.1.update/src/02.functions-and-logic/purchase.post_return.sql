@@ -58,7 +58,33 @@ $$
     DECLARE _error_message          text;
 	DECLARE _original_checkout_id	bigint;
 	DECLARE _original_supplier_id	integer;
+	DECLARE _validate				boolean;
 BEGIN
+	SELECT validate_returns INTO _validate
+	FROM inventory.inventory_setup
+	WHERE office_id = @office_id;
+
+	IF(COALESCE(_transaction_master_id, 0) = 0 AND NOT _validate) THEN
+        RETURN purchase.post_return_without_validation
+        (
+            _transaction_master_id                  ,
+            _office_id                              ,
+            _user_id                                ,
+            _login_id                               ,
+            _value_date                             ,
+            _book_date                              ,
+            _store_id								,
+            _cost_center_id                         ,
+            _supplier_id                            ,
+            _price_type_id                          ,
+            _shipper_id                             ,
+            _reference_number                       ,
+            _statement_reference                    ,
+            _details                                ,
+            _invoice_discount						
+        );
+	END IF;
+
 	SELECT 
 		purchase.purchases.supplier_id,
 		inventory.checkouts.checkout_id

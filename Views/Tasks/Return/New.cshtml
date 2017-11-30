@@ -82,12 +82,6 @@
 
             const model = getModel();
 
-            if (!model.TransactionMasterId) {
-                alert(window.translate("AccessIsDenied"));
-                document.location = "/dashboard/purchase/tasks/entry";
-                return;
-            };
-
             if (!model.Details.length) {
                 window.displayMessage(window.translate("PleaseSelectItem"));
                 return;
