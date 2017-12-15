@@ -33,8 +33,14 @@
                     <th>
                         @I18N.Unit
                     </th>
-                    <th style="width: 200px;">
+                    <th style="width: 300px;">
                         @I18N.Price
+                    </th>
+                    <th>
+                        <div class="ui checkbox">
+                            <input type="checkbox" class="check all item" />
+                            <label>@I18N.IsTaxableItem</label>
+                        </div>
                     </th>
                 </tr>
             </thead>
@@ -63,17 +69,28 @@
                 <td>
                     <input type="text" class="item price currency" value='{Price}' />
                 </td>
+                 <td>
+                    <div class ="ui checkbox">
+                        <input type="checkbox" class ="check each item" {checked} />
+                        <label></label>
+                    </div>
+                </td>
             </tr>`;
 
         for (let i = 0; i < model.length; i++) {
             const price = model[i];
-
+            
             let item = template;
             item = item.replace(/{ItemId}/g, price.ItemId);
             item = item.replace(/{ItemCode}/g, price.ItemCode);
             item = item.replace(/{ItemName}/g, price.ItemName);
             item = item.replace(/{Unit}/g, price.Unit);
             item = item.replace(/{UnitId}/g, price.UnitId);
+            if (price.IsTaxable === false) {
+                item = item.replace(/{checked}/g, '');
+            } else {
+                item = item.replace(/{checked}/g, 'checked');
+            }
             item = item.replace(/{Price}/g, price.Price);
 
             $(item).appendTo(target);
@@ -81,6 +98,14 @@
 
         window.setRegionalFormat();
     };
+
+    $(".check.all.item").off("change").on("change", function() {
+            if ($(this).is(":checked")) {
+                $(".check.each.item").prop("checked", true);
+                return;
+            };
+        $(".check.each.item").prop("checked", false);
+    });
 
     $("#SaveButton").off("click").on("click", function () {
         function request(supplierId, model) {
@@ -102,13 +127,15 @@
                 const itemId = window.parseInt(row.attr("data-item-id"));
                 const unitId = window.parseInt(row.attr("data-unit-id"));
                 const price = window.parseFloat2(row.find("input.price").val());
-
+                const isTaxable = row.find(".check.each.item").prop("checked");
+                
                 if (price) {
                     model.push({
                         SupplierId: supplierId,
                         ItemId: itemId,
                         UnitId: unitId,
-                        Price: price
+                        Price: price,
+                        IsTaxable: isTaxable
                     });
                 };
             });
@@ -144,14 +171,15 @@
             return window.getAjaxRequest(url);
         };
 
+        const target = $(".price.list .table tbody");
+        target.html("");
+
         const supplierId = window.parseInt($("#SupplierIdSelect").val());
         if (!supplierId) {
             return;
         };
 
         $(".price.list.segment").addClass("loading");
-        const target = $(".price.list .table tbody");
-        target.html("");
 
         const ajax = request(supplierId);
 

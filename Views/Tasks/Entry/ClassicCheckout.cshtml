@@ -24,13 +24,57 @@
 @Html.InventoryPartialView("Shared/ClassicCheckout.cshtml", TenantConvention.GetTenant())
 
 <script>
+
+	// allow 4 decimal digits
+    $("#QuantityInputText").removeClass("decimal");
+
+    $("#QuantityInputText").off("keypress").on("keypress", function (evt) {
+
+        var charCode = evt.which;
+        const quantity = $(this).val();
+
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        };
+
+        if (!quantity) {
+            if (charCode === 46) {
+                $(this).val("0");
+            };
+            return true;
+        };
+
+        if (quantity.indexOf(".") === 0) {
+            return true;
+        };
+
+        if (charCode === 46) {
+            if (quantity.indexOf(".") > 0) {
+                return false;
+            };
+
+            if (quantity.split('.').length === 2)
+                if (quantity.split('.')[1].length > 4) {
+                    return false;
+                };
+        };
+    });
+
+    $("body").on("keyup", "#QuantityInputText", function (evt) {
+        const quantity = $(this).val().split('.');
+
+        if (quantity.length === 2 && quantity[1].length > 4) {
+            $(this).val(quantity[0] + "." + quantity[1].substring(0, 4));
+        };
+    });
+	
     setTimeout(function() {
         if (window.getQueryStringByName("type") === "nontaxable") {
             $("#SalesTaxRateHidden").remove();
         };
     }, 1000);
 
-    $("#SaveButton").off("click").on("click", function () {
+    $("#SaveButton").off("click").on("click", function() {
         function request(model) {
             const url = "/dashboard/purchase/tasks/entry/new";
             const data = JSON.stringify(model);
@@ -63,13 +107,18 @@
 
         const ajax = request(model);
 
-        ajax.success(function (response) {
+        ajax.success(function(response) {
             button.removeClass("loading").prop("disabled", false);
             const id = response;
-            document.location = `/dashboard/purchase/tasks/entry/checklist/${id}`;
+            if (window.location.href.slice(window.location.href.indexOf('?')) === "?type=nontaxable")
+                document.location =
+                    `/dashboard/purchase/tasks/entry/checklist/${id}${window.location.href.slice(window.location.href
+                        .indexOf('?'))}`;
+            else
+                document.location = `/dashboard/purchase/tasks/entry/checklist/${id}`;
         });
 
-        ajax.fail(function (xhr) {
+        ajax.fail(function(xhr) {
             button.removeClass("loading").prop("disabled", false);
             window.displayMessage(JSON.stringify(xhr));
         });
@@ -108,22 +157,22 @@
             };
 
             const itemId = $("#ItemSelect").val();
-            const supplierId = window.parseInt($("#SupplierSelect").val()) || 0;
-            const priceTypeId = window.parseInt($("#PriceTypeSelect").val()) || 0;
+            const supplierId = window.parseInt2($("#SupplierSelect").val()) || 0;
+            const priceTypeId = window.parseInt2($("#PriceTypeSelect").val()) || 0;
             const unitId = $("#UnitSelect").val();
-
 
             $(".checkout.segment").addClass("loading");
 
             const ajax = request(itemId, supplierId, priceTypeId, unitId);
 
             ajax.success(function (response) {
-                var costPrice = window.parseFloat(response);
+                var costPrice = window.parseFloat2(response);
                 costPrice = window.round(costPrice, 2);
 
                 $(".checkout.segment").removeClass("loading");
+
                 const priceInput = $("#PriceInputText");
-                priceInput.val(window.getFormattedNumber(costPrice)).trigger("keyup").trigger("change");
+                priceInput.val(costPrice).trigger("keyup").trigger("change");
             });
 
             ajax.fail(function (xhr) {

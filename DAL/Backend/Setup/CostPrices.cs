@@ -27,13 +27,13 @@ namespace MixERP.Purchases.DAL.Backend.Setup
                                                 OR purchase.supplierwise_cost_prices.supplier_id = @0
                                             )
                                     )
-
                                     SELECT
 	                                    inventory.items.item_id,
 	                                    inventory.items.item_code,
 	                                    inventory.items.item_name,
 	                                    inventory.items.unit_id,
 	                                    inventory.get_unit_name_by_unit_id(inventory.items.unit_id) AS unit,
+										price_list.is_taxable,
 	                                    COALESCE(price_list.price, purchase.get_item_cost_price(@1, inventory.items.item_id, @0, inventory.items.unit_id)) AS price
                                     FROM inventory.items
                                     LEFT JOIN price_list
