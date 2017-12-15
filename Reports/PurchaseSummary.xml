@@ -2,8 +2,6 @@
 <FrapidReport>
   <Header />
   <Title>Purchase Summary</Title>
-  <TopSection>
-  </TopSection>
   <Body>
     <GridViews>
       <GridView>
@@ -15,66 +13,69 @@
   <DataSources>
     <DataSource>
       <Query>
-		WITH all_purchase
-		AS
-		(
-			SELECT
-				inventory.stores.store_id,
-				inventory.items.item_id,
-				inventory.items.brand_id,
-				inventory.brands.brand_name,
-				SUM(inventory.checkout_details.base_quantity) AS base_quantity,
-				inventory.checkout_details.base_unit_id,
-				SUM(inventory.checkout_details.price * inventory.checkout_details.quantity) AS amount
-			FROM purchase.purchases
-			INNER JOIN inventory.checkouts
-			ON purchase.purchases.checkout_id = inventory.checkouts.checkout_id
-			INNER JOIN inventory.checkout_details
-			ON inventory.checkout_details.checkout_id = inventory.checkouts.checkout_id
-			INNER JOIN inventory.stores
-			ON inventory.stores.store_id = inventory.checkout_details.store_id
-			INNER JOIN inventory.items
-			ON inventory.items.item_id = inventory.checkout_details.item_id
-			INNER JOIN inventory.brands
-			ON inventory.brands.brand_id = inventory.items.brand_id
-			INNER JOIN finance.transaction_master
-			ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
-			WHERE finance.transaction_master.book_date BETWEEN @From::date AND @To::date
-			AND finance.transaction_master.office_id = @OfficeId
-			AND (COALESCE(@StoreId, 0) = 0 OR inventory.stores.store_id = @StoreId)
-			AND (COALESCE(@BrandId, 0) = 0 OR inventory.brands.brand_id = @BrandId)
-			GROUP BY
-				inventory.stores.store_id,
-				inventory.items.item_id,
-				inventory.checkout_details.base_unit_id,
-				inventory.items.brand_id,
-				inventory.brands.brand_name
-		)
-		SELECT
-			inventory.stores.store_name,
-			all_purchase.brand_name,
-			inventory.items.item_code,
-			inventory.items.item_name,
-			inventory.convert_unit(all_purchase.base_unit_id, inventory.items.unit_id) * all_purchase.base_quantity AS quantity,
-			inventory.units.unit_name,
-			all_purchase.amount
-		FROM all_purchase
-		INNER JOIN inventory.stores
-		ON inventory.stores.store_id = all_purchase.store_id
-		INNER JOIN inventory.items
-		ON inventory.items.item_id = all_purchase.item_id
-		INNER JOIN inventory.units
-		ON inventory.units.unit_id = inventory.items.unit_id;
-	</Query>
+		SELECT 
+ 			finance.transaction_master.value_date,
+	 		finance.transaction_master.book_date,
+ 			finance.transaction_master.transaction_master_id AS tran_id,
+			finance.cost_centers.cost_center_code,
+ 			inventory.suppliers.supplier_name,
+			SUM(inventory.checkouts.taxable_total + inventory.checkouts.nontaxable_total) AS amount,
+ 			inventory.checkouts.taxable_total,
+			inventory.checkouts.nontaxable_total,
+			inventory.checkouts.discount,
+ 			inventory.checkouts.tax,
+ 			inventory.checkouts.taxable_total
+			+
+ 			inventory.checkouts.nontaxable_total
+			-
+			inventory.checkouts.discount
+			+
+ 			inventory.checkouts.tax AS total
+
+		FROM purchase.purchases
+		INNER JOIN inventory.checkouts
+		ON inventory.checkouts.checkout_id = purchase.purchases.checkout_id
+		INNER JOIN inventory.suppliers
+		ON inventory.suppliers.supplier_id = purchase.purchases.supplier_id
+		INNER JOIN finance.transaction_master
+		ON finance.transaction_master.transaction_master_id = inventory.checkouts.transaction_master_id
+		LEFT JOIN finance.cost_centers
+		ON finance.cost_centers.cost_center_id = finance.transaction_master.cost_center_id
+		WHERE finance.transaction_master.verification_status_id &gt; 0
+		AND finance.transaction_master.value_date BETWEEN @From::date AND @To::date
+		AND finance.transaction_master.office_id = @OfficeId::integer
+		AND (COALESCE(@CostCenterId::integer, 0) = 0 OR finance.cost_centers.cost_center_id = @CostCenterId::integer)
+		AND (COALESCE(@UserId::integer, 0) = 0 OR finance.transaction_master.user_id = @UserId::integer)
+		GROUP BY
+			finance.transaction_master.value_date,
+	 		finance.transaction_master.book_date,
+ 			finance.transaction_master.transaction_master_id,
+			finance.cost_centers.cost_center_code,
+ 			inventory.suppliers.supplier_name,
+ 			inventory.checkouts.taxable_total,
+			inventory.checkouts.nontaxable_total,
+			inventory.checkouts.discount,
+ 			inventory.checkouts.tax;
+			
+      </Query>
       <Parameters>
         <Parameter Name="@OfficeId" FieldLabel="Office Id" Type="int"  DefaultValue="{Meta.OfficeId}" />
-        <Parameter Name="@StoreId" FieldLabel="Store Id" Type="int"  PopulateFrom="/api/forms/inventory/stores/display-fields" KeyField="Key" ValueField="Value" Optional="true"  />
-        <Parameter Name="@BrandId" FieldLabel="Brand Id" Type="int"  PopulateFrom="/api/forms/inventory/brands/display-fields" KeyField="Key" ValueField="Value" Optional="true"  />
+        <Parameter Name="@UserId" FieldLabel="User" Type="int" PopulateFrom="/api/views/account/user-selector-view/display-fields" KeyField="Key" ValueField="Value" Optional="True"/>
+        <Parameter Name="@CostCenterId" FieldLabel="Cost Center" Type="int" PopulateFrom="/api/forms/finance/cost-centers/display-fields" KeyField="Key" ValueField="Value" Optional="True"/>
         <Parameter Name="@From" FieldLabel="From Date" Type="System.DateTime" />
         <Parameter Name="@To" FieldLabel="To Date" Type="System.DateTime" />
       </Parameters>
-      <RunningTotalTextColumnIndex>5</RunningTotalTextColumnIndex>
-      <RunningTotalFieldIndices>6</RunningTotalFieldIndices>
+      <RunningTotalTextColumnIndex>4</RunningTotalTextColumnIndex>
+      <RunningTotalFieldIndices>5,6,7,8,9,10</RunningTotalFieldIndices>
     </DataSource>
+    <DataSource>
+        <Query>
+          SELECT * FROM core.offices
+          WHERE office_id = @OfficeId::integer;
+        </Query>
+        <Parameters>
+          <Parameter Name="@OfficeId" FieldLabel="Office Id" Type="int"  DefaultValue="{Meta.OfficeId}" />
+        </Parameters>
+      </DataSource>
   </DataSources>
 </FrapidReport>
