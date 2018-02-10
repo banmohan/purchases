@@ -142,7 +142,7 @@ BEGIN
     
     
 		INSERT INTO purchase.supplier_payments(transaction_master_id, supplier_id, currency_code, amount, er_debit, er_credit, cash_repository_id, posted_date, bank_id, bank_instrument_code, bank_transaction_code)
-		SELECT @transaction_master_id, @supplier_id, @currency_code, @amount,  @exchange_rate_debit, @exchange_rate_credit, @cash_repository_id, @posted_date, @bank_account_id, @bank_instrument_code, @bank_tran_code;
+		SELECT @transaction_master_id, @supplier_id, @currency_code, @amount,  @exchange_rate_debit, @exchange_rate_credit, @cash_repository_id, @posted_date, @bank_id, @bank_instrument_code, @bank_tran_code;
 
 		EXECUTE finance.auto_verify @transaction_master_id, @office_id;
 

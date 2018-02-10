@@ -30,57 +30,65 @@
         <div class="ui two column relaxed grid receipt flat form">
             <div class="column">
                 <div class="field">
-                    <label for="DueAmountInputText">@I18N.TotalDueAmountInBaseCurrency
-                    </label>
-                    <input type="text" id="DueAmountInputText" readonly="readonly" class="currency" />
-                </div>
-                <div class="field">
-                    <label for="CurrencyInputText">@I18N.BaseCurrency
-                    </label>
-                    <input type="text" id="CurrencyInputText" readonly="readonly" class="text-right" />
-                </div>
-
-                <div class="field">
-                    <label for="CurrencyCodeSelect">@I18N.PaidCurrency</label>
-                    <select id="CurrencyCodeSelect" data-persist class="ui search dropdown text-right"></select>
-                </div>
-                <div class="field">
-                    <label for="AmountInputText">@I18N.PaidAmountInAboveCurrency
-                    </label>
-                    <input type="text" id="AmountInputText" class="currency decimal" />
-                </div>
-                <div class="field">
-                    <label for="DebitExchangeRateInputText">@I18N.DebitExchangeRate
-                    </label>
-                    <input type="text" id="DebitExchangeRateInputText" class="decimal text-right" />
-                </div>
-                <div class="field">
-                    <label for="AmountInHomeCurrencyInputText"> @I18N.ConvertedToHomeCurrency
-                    </label>
-                    <input type="text" id="AmountInHomeCurrencyInputText" class="decimal currency" readonly="readonly" />
-                </div>
-
-                <div class="field">
-                    <label for="CreditExchangeRateInputText">@I18N.CreditExchangeRate
-                    </label>
-                    <input type="text" id="CreditExchangeRateInputText" class="decimal text-right" />
-                </div>
-                <div class="field">
-                    <label for="BaseAmountInputText">@I18N.ConvertedToBaseCurrency
-                    </label>
-                    <input type="text" id="BaseAmountInputText" readonly="readonly" class="decimal currency text-right" />
-                </div>
-
-                <div class="field">
-                    <label for="FinalDueAmountInputText">
-                    @I18N.FinalDueAmountInBaseCurrency
-                    </label>
-                    <input type="text" id="FinalDueAmountInputText" readonly="readonly" class="decimal currency text-right" />
-                </div>
+                    <label for="DueAmountInputText">
+                        @I18N.TotalDueAmountInBaseCurrency
+                </label>
+                <input type="text" id="DueAmountInputText" readonly="readonly" class="currency" />
             </div>
+            <div class="field">
+                <label for="CurrencyInputText">
+                    @I18N.BaseCurrency
+            </label>
+            <input type="text" id="CurrencyInputText" readonly="readonly" class="text-right" />
+        </div>
+
+        <div class="field">
+            <label for="CurrencyCodeSelect">@I18N.PaidCurrency</label>
+            <select id="CurrencyCodeSelect" data-persist class="ui search dropdown text-right"></select>
+        </div>
+        <div class="field">
+            <label for="AmountInputText">
+                @I18N.PaidAmountInAboveCurrency
+        </label>
+        <input type="text" id="AmountInputText" class="currency decimal" />
+    </div>
+    <div class="field">
+        <label for="DebitExchangeRateInputText">
+            @I18N.DebitExchangeRate
+    </label>
+    <input type="text" id="DebitExchangeRateInputText" class="decimal text-right" />
+</div>
+<div class="field">
+    <label for="AmountInHomeCurrencyInputText">
+        @I18N.ConvertedToHomeCurrency
+    </label>
+    <input type="text" id="AmountInHomeCurrencyInputText" class="decimal currency" readonly="readonly" />
+</div>
+
+<div class="field">
+    <label for="CreditExchangeRateInputText">
+        @I18N.CreditExchangeRate
+</label>
+<input type="text" id="CreditExchangeRateInputText" class="decimal text-right" />
+</div>
+<div class="field">
+    <label for="BaseAmountInputText">
+        @I18N.ConvertedToBaseCurrency
+</label>
+<input type="text" id="BaseAmountInputText" readonly="readonly" class="decimal currency text-right" />
+</div>
+
+<div class="field">
+    <label for="FinalDueAmountInputText">
+        @I18N.FinalDueAmountInBaseCurrency
+    </label>
+    <input type="text" id="FinalDueAmountInputText" readonly="readonly" class="decimal currency text-right" />
+</div>
+</div>
             <div class="column">
                 <div class="field">
-                    <label>@I18N.PaymentType
+                    <label>
+                        @I18N.PaymentType
                     </label>
                     <div class="vpad8" id="ReceiptType">
 
@@ -92,11 +100,20 @@
                     </div>
                 </div>
 
+                <div class="two fields">
+                    <div class="field">
+                        <label for="CostCenterIdSelect">@I18N.ValueDate</label>
+                        <input type="text" id="ValueDateInputDate" class="date" required="" value="d" />
+                    </div>
+                    <div class="field">
+                        <label for="CostCenterIdSelect">@I18N.BookDate</label>
+                        <input type="text" id="BookDateInputDate" class="date" required="" value="d" />
+                    </div>
+                </div>
                 <div class="field">
                     <label for="CostCenterIdSelect">@I18N.CostCenter</label>
                     <select id="CostCenterIdSelect" class="ui dropdown"></select>
                 </div>
-
                 <div id="CashFormGroup" style="padding-bottom: 12px;">
                     <div class="field">
                         <label for="CashAccountIdSelect">@I18N.CashAccountId</label>
@@ -110,43 +127,50 @@
 
                 <div id="BankFormGroup" style="display: none; padding-bottom: 12px;">
                     <div class="field">
-                        <label for="BankAccountIdSelect">@I18N.WhichBank
+                        <label for="BankAccountIdSelect">
+                            @I18N.WhichBank
                         </label>
                         <select id="BankAccountIdSelect" class="ui dropdown"></select>
                     </div>
                     <div class="field">
-                        <label for="PostedDateTextBox">@I18N.PostedDate
+                        <label for="PostedDateTextBox">
+                            @I18N.PostedDate
                         </label>
-                        <input type="text" id="PostedDateTextBox" class="date" required="" />
+                        <input type="text" id="PostedDateInputDate" class="date" required="" />
                     </div>
                     <div class="field">
-                        <label for="BankInstrumentCodeInputText">@I18N.InstrumentCode
+                        <label for="BankInstrumentCodeInputText">
+                            @I18N.InstrumentCode
                         </label>
                         <input type="text" id="BankInstrumentCodeInputText" title="@I18N.Cheque" />
                     </div>
 
                     <div class="field">
-                        <label for="BankTransactionCodeInputText">@I18N.BankTransactionCode
+                        <label for="BankTransactionCodeInputText">
+                            @I18N.BankTransactionCode
                         </label>
                         <input type="text" id="BankTransactionCodeInputText" />
                     </div>
                 </div>
 
                 <div class="field">
-                    <label for="ReferenceNumberInputText">@I18N.ReferenceNumber
+                    <label for="ReferenceNumberInputText">
+                        @I18N.ReferenceNumber
                     </label>
                     <input type="text" id="ReferenceNumberInputText" />
                 </div>
 
                 <div class="field">
-                    <label for="StatementReferenceTextArea">@I18N.StatementReference
+                    <label for="StatementReferenceTextArea">
+                        @I18N.StatementReference
                     </label>
                     <textarea id="StatementReferenceTextArea" rows="3"></textarea>
                 </div>
                 <button type="button" id="SaveButton" class="ui small submit button green">
-                @I18N.Save</button>
+                    @I18N.Save
+                </button>
             </div>
-        </div>
-    </div>
+</div>
+</div>
 </div>
 <script src="/Areas/MixERP.Purchases/scripts/tasks/payment/new.js"></script>
