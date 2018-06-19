@@ -53,9 +53,11 @@
 			WHERE transaction_master.verification_status_id &gt; 0
 			AND checkouts.value_date BETWEEN @From AND @To
 			AND checkouts.office_id = @OfficeId
-			AND items.item_id = @ItemId;
+			AND (COALESCE(@ItemId, 0) = 0 OR items.item_id = @ItemId)
+			AND (COALESCE(@BrandId, 0) = 0 OR items.brand_id = @BrandId);
       </Query>
       <Parameters>
+        <Parameter Name="@BrandId" FieldLabel="Brand Id" Type="int" PopulateFrom="/api/forms/inventory/brands/display-fields" KeyField="Key" ValueField="Value" Optional="True"  />
         <Parameter Name="@ItemId" FieldLabel="Item Id" Type="int" PopulateFrom="/api/forms/inventory/items/display-fields" KeyField="Key" ValueField="Value" Optional="True"  />
         <Parameter Name="@From" FieldLabel="From Date" Type="System.DateTime" />
         <Parameter Name="@To" FieldLabel="To Date" Type="System.DateTime" />
