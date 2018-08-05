@@ -24,6 +24,7 @@
 @Html.InventoryPartialView("Shared/ClassicCheckout.cshtml", TenantConvention.GetTenant())
 
 <script>
+	window.isSales = false;
 
 	// allow 4 decimal digits
     $("#QuantityInputText").removeClass("decimal");

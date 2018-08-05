@@ -10,6 +10,11 @@ namespace MixERP.Purchases.Extensions
             return helper.PartialView<AreaRegistration>(path, tenant);
         }
 
+        public static MvcHtmlString DashboardPartialView(this HtmlHelper helper, string path, string tenant)
+        {
+            return helper.PartialView<Frapid.Dashboard.AreaRegistration>(path, tenant);
+        }
+
         public static MvcHtmlString FinancePartialView(this HtmlHelper helper, string path, string tenant)
         {
             return helper.PartialView<Finance.AreaRegistration>(path, tenant);

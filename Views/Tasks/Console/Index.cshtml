@@ -1,0 +1,6 @@
+﻿@using MixERP.Purchases.Extensions
+<script>
+    window.overridePath = "/dashboard/purchase/tasks/entry";
+    window.widgetScope = "Purchases";
+</script>
+@Html.DashboardPartialView("Default/Console.cshtml", TenantConvention.GetTenant())
